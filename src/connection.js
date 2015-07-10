@@ -10,7 +10,7 @@
 const io = require('socket.io-client');
 const utilities = require('./utilities');
 
-const log = new utilities.Logger('Connection');
+const log = new utilities.Logger({ name: 'Connection' });
 var socket = null;
 
 const status_ = {
