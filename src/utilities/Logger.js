@@ -62,9 +62,9 @@
  * @param {payload} callback The payload to log.
  */
 
-const Stream = function(options) {
+const Stream = function(logger, level, type) {
   this.write = function (message, payload) {
-    console[options.type]('[' + options.name + ']:' + message, payload);
+    console[type]('[' + logger.name + ']:' + message, payload);
   };
 };
 
