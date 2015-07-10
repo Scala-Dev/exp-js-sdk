@@ -23,7 +23,7 @@ var token;
  * @memberof  scala.credentials.events
  * @event change
  */
-const events = new utilities.EventNode;
+const events = new utilities.EventNode();
 
 /**
  * Set the uuid and secret of the device.
