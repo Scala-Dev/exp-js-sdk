@@ -64,7 +64,7 @@
 
 const Stream = function(options) {
   this.write = function (message, payload) {
-    console[options.type]('[' + options.logger.name + ']:' + message, payload);
+    console[options.type]('[' + options.name + ']:' + message, payload);
   };
 };
 
