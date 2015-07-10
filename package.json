@@ -1,8 +1,8 @@
 {
-  "name": "exp-sdk",
+  "name": "exp-js-sdk",
   "version": "0.0.0",
   "description": "Scala EXP Javascript SDK",
-  "main": "./main.js",
+  "main": "./index.js",
   "scripts": {
     "install": "gulp"
   },
