@@ -12,7 +12,7 @@ const utilities = require('./utilities');
 
 var uuid;
 var secret;
-
+var token;
 
 /** 
  * Event Node (see {@link scala.utilities.EventNode})
@@ -41,18 +41,32 @@ function set (uuid_, secret_) {
 }
 
 /**
+ * Set the token of the device directly.
+ * @name setToken
+ * @memberOf scala.credentials
+ * @method
+ * @param {string} token The token.
+ * @returns {Promise} A promise representing the events triggered by the setting of the credentials.
+ */
+function setToken (token_) {
+  token = token_;
+  return events.trigger('change');
+}
+
+/**
  * Generate a token for an API request.
- * @name generateToken
+ * @name getToken
  * @memberOf scala.credentials
  * @method
  * @returns {Promise} A promise the will resolve with the auth token.
  */
-function generateToken () {
+function getToken () {
+  if (token) return Promise.resolve(token);
   return Promise.resolve()
     .then(() => {
       if (!uuid || !secret) {
         throw new utilities.Error('noCredentials', 'You must supply credentials');
-      }
+      }     
     })
     .then(() => {
       var header = JSON.stringify({ alg: 'HS256', 'typ': 'JWT' });
@@ -64,5 +78,6 @@ function generateToken () {
 }
 
 module.exports.set = set;
-module.exports.generateToken = generateToken;
+module.exports.setToken = setToken;
+module.exports.getToken = getToken;
 module.exports.events = events;
