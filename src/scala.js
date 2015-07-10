@@ -11,7 +11,8 @@ var sdk = {
   credentials: require('./credentials'),
   api: require('./api'),
   device: require('./device'),
-  experience: require('./experience')
+  experience: require('./experience'),
+  utilities: require('./utilities')
 };
 
 if (typeof window === 'object') window.scala = sdk;
