@@ -71,7 +71,7 @@ function request(options) {
     requests[id] = {
       resolve: resolve,
       reject: reject,
-      timeout: setTimeout(() => {
+      timeout: setTimeout(function () {
         reject(new Error('timeout'));
         delete requests[id];
       }, 10000)
@@ -103,8 +103,8 @@ function respond(options, callback) {
 function onResponse(message) {
   var request = requests[message.id];
   if (!request) return;
-  delete requests[message.id];
   clearTimeout(request.timeout);
+  delete requests[message.id];
   if (message.error) {
     request.reject(message.error);
   } else {

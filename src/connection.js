@@ -49,6 +49,7 @@ const events = new utilities.EventNode();
 const send = message => {
   return Promise.resolve()
     .then(() => {
+      if (!socket) return null;
       log.trace('Sending message', { message: message });
       return socket.emit('message', message);
     });
@@ -71,40 +72,34 @@ const connect = token => {
         socket = null;
       }
     })
-    .then(() => {
+    .then(() => {      
       // Establish the socket connection.
       socket = io('http://localhost:9000', {
         forceNew: true,
-        query: 'token=' + token,
+        query: 'token=' + (token || ''),
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 20000,
         timeout: 20000,
         reconnectionAttempts: Infinity
       });
-    })
-    .then(() => {
       // Set up handler for incoming messages.
       socket.on('message', function (message) {
         log.trace('Receiving message', message);
         return events.trigger('message', message);
       });
-    })
-    .then(() => {
-      // Set up promise resolutions on connect/error.
-      return new Promise((resolve, reject) => {
-        socket.on('connect', function () {
-          log.debug('Connected');
-          status_.isConnected = true;
-          resolve();
-          return events.trigger('online');
-        });
-        socket.on('connect_error', function () {
-          log.debug('Disconnected');
-          status_.isConnected = false;
-          reject();
-          return events.trigger('offline');
-        });
+      socket.on('connect', function () {
+        log.debug('Connected');
+        status_.isConnected = true;
+        return events.trigger('online');
+      });
+      socket.on('error', function (error) {
+        log.error(error);
+      });
+      socket.on('connect_error', function () {
+        log.debug('Disconnected');
+        status_.isConnected = false;
+        return events.trigger('offline');
       });
     });
 };
