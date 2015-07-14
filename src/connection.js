@@ -59,10 +59,13 @@ const send = message => {
  * Initiate the connection to the server .
  * @memberof scala.connection
  * @method connect
- * @param {string} token The authorization token.
+ * @param {object} options 
+ * @param {string} options.token The authorization token.
+ * @param {string} options.host The host to connect to.
  * @returns {Promise}
 */
-const connect = token => {
+const connect = options => {
+  options = options || {};
   return Promise.resolve()
     .then(() => {
       // Close the connection if its currently open.
@@ -74,9 +77,9 @@ const connect = token => {
     })
     .then(() => {      
       // Establish the socket connection.
-      socket = io('http://localhost:9000', {
+      socket = io(options.host || 'http://localhost:9000', {
         forceNew: true,
-        query: 'token=' + (token || ''),
+        query: 'token=' + (options.token || ''),
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 20000,
