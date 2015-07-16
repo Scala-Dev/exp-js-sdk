@@ -10,9 +10,8 @@ var sdk = {
   interface: require('./interface'),
   credentials: require('./credentials'),
   api: require('./api'),
-  device: require('./device'),
-  experience: require('./experience'),
-  utilities: require('./utilities')
+  utilities: require('./utilities'),
+  getCurrentDevice: require('./getCurrentDevice')
 };
 
 if (typeof window === 'object') window.scala = sdk;

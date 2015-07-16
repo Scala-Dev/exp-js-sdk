@@ -39,7 +39,7 @@ const fetch_ = (path, options) => {
   const url = base + path;
   options.headers = options.headers || {};
   return Promise.resolve()
-    .then(() => credentials.generateToken())
+    .then(() => credentials.getToken())
     .then(token => {
       options.headers.Authorization = 'Bearer ' + token;
       return fetch(url, options);

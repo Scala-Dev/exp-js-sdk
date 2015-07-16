@@ -77,7 +77,13 @@ function getToken () {
     });
 }
 
+
+function getUuid () {
+  return Promise.resolve(uuid);
+}
+
 module.exports.set = set;
 module.exports.setToken = setToken;
 module.exports.getToken = getToken;
 module.exports.events = events;
+module.exports.getUuid = getUuid;
