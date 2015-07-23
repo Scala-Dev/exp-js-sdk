@@ -13,8 +13,10 @@ module.exports = () => {
   return Promise.resolve()
     .then(() => {
       return iface.request({ 
-        name: 'getDevice',
-        target: 'system'
+        name: 'getCurrentDevice',
+        target: {
+          device: 'system'
+        }
       });
     })
     .then(device => new Device({ device: device }));

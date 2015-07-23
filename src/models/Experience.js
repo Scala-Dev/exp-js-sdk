@@ -23,6 +23,7 @@ iface.listen({ name: 'experienceUpdate' }, () => {
  */
 
 module.exports = function (context) {
+
   this.uuid = context.experience.uuid;
 
   /**

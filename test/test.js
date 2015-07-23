@@ -3,12 +3,18 @@ const scala = require('..//src/scala');
 //scala.credentials.set('ee146ed3-437a-46cd-89e1-f91ce8bbb942', 'DEVICE-SECRET');
 scala.connection.connect();
 scala.connection.events.on('online', () => {
-  scala.interface.request({ target: { device: 'system' }, name: 'getCurrentExperience' })
-    .then(experience => {
+  scala.getCurrentDevice().then(device => {
+    console.log('ok1');
+    device.getExperience().then(experience => {
+      console.log('ok');
       console.log(experience);
-    })
-    .catch(error => { console.error(error); });
-          
+    });
+    device.getPlans().then(plan => {
+/*
+      console.log(plan);
+      console.log('ok2');*/
+    });
+  });        
 });
 
 

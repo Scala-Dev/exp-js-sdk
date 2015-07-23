@@ -25,8 +25,8 @@ module.exports = function (context) {
       .then(() => {
         // TODO: This is always the current experience!
         return iface.request({ 
-          name: 'getExperience',
-          target: 'system'
+          name: 'getCurrentExperience',
+          target: { device: 'system' }
         });
       })
       .then(experience => new Experience({ experience: experience }));
@@ -44,8 +44,8 @@ module.exports = function (context) {
       .then(() => {
         // TODO: This is always the current experience!
         return iface.request({ 
-          name: 'getExperience',
-          target: 'system'
+          name: 'getCurrentExperience',
+          target: { device: 'system' }
         });
       })
       .then(experience => {
