@@ -216,6 +216,10 @@ zone.getDevices().then(devices => {});
 #### zone.getLocation()
 Get the zone's location. Returns a [Location Object](#location-object)
 
+```javascript
+zone.getLocation().then(location => {});
+```
+
 #### zone.broadcast(options)
 Broadcast a message about the zone.
 ```javascript
