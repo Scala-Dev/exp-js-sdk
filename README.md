@@ -67,6 +67,18 @@ Get the device's experience. Resolves to an [Experience Object](#experience-obje
 device.getExperience().then(experience => {});
 ```
 
+#### device.getLocation()
+Get the device's location. Resolves to a [Location Object](#location-object)
+```javascript
+device.getLocation().then(location => {});
+```
+
+### device.getZone()
+Get the device's zone. Resolves to a [Zone Object](#zone-object)
+```javascript
+device.getZone().then(zone => {});
+```
+
 #### device.broadcast(options)
 Broadcast a message about this device.
 ```javascript
@@ -122,8 +134,10 @@ device.request({
 
 
 ## Experience Object
+
 #### experience.uuid 
-The experiences UUID.
+The experience's UUID.
+
 #### experience.raw
 Temporary. The raw experience object. 
 
@@ -140,3 +154,38 @@ const cancel = device.listen({
   name: 'IAmExperiencing'
 }, payload => {});
 ```
+
+## Location Object
+
+#### location.uuid
+The location's UUID.
+
+### location.getDevices()
+Get all of the devices in this locaiton. Returns an array of [Device Objects](#device-object).
+```javascript
+location.getDevices().then(devices => {});
+```
+
+### location.getZones()
+Get all of the zones in this location. Returns an array of [Zone Objects](#zone-object).
+```javascript
+location.getZones().then(zones => {});
+```
+
+#### location.broadcast(options)
+Broadcast a message about this location.
+```javascript
+location.broadcast({name: 'thisDudeIsDancingHere', payload: { name: 'joe' }})
+```
+
+#### location.listen(options, callback)
+Listen for events about this location.
+```javascript
+const cancel = location.listen({
+  name: ''
+}, payload => {});
+```
+
+
+
+## Zone Object
