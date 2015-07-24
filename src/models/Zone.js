@@ -6,14 +6,14 @@ module.exports = function (context) {
   const iface = require('../iface');
 
   const Device = require('./Device');
-  const Zone = require('./Zone');
+  const Location = require('./Location');
 
-  // Record the location's UUID
-  this.uuid = context.location.uuid;
+  // Record the zone's UUID
+  this.uuid = context.zone.uuid;
 
-  // Get devices at this location.
+  // Get devices at this zone.
   this.getDevices = () => {
-    return api.get('/api/devices', { locationUuid: this.uuid })
+    return api.get('/api/devices', { zoneUuid: this.uuid })
       .then(query => {
         const devices = [];
         query.results.forEach(device => {
@@ -23,19 +23,15 @@ module.exports = function (context) {
       });    
   };
 
-  // Get zones at this location
-  this.getZones = () => {
-    return api.get('/api/zones', { locationUuid: this.uuid })
-      .then(query => {
-        const zones = [];
-        query.results.forEach(zone => {
-          zones.push(new Zone({ zone: zone }));
-        });
-        return zones;
+  // Get this zone's location.
+  this.getLocation = () => {
+    return api.get('/api/locations/' + context.zone.locationUuid)
+      .then(location => {
+        return new Location({ location: location });
       });    
   };
 
-  // Broadcast a message about this location.
+  // Broadcast a message about this zone.
   this.broadcast = options => {
     return iface.broadcast({
       name: options.name,
@@ -44,7 +40,7 @@ module.exports = function (context) {
     });
   };
 
-  // Listen for a message about this location.
+  // Listen for a message about this zone.
   this.listen = (options, callback) => {
     return iface.listen({
       name: options.name,

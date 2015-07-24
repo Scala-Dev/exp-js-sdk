@@ -13,6 +13,7 @@ module.exports = function (context) {
   this.broadcast = options => {
     return iface.broadcast({
       name: options.name,
+      topic: options.topic,
       scope: context.experience.uuid
     });
   };
@@ -21,6 +22,7 @@ module.exports = function (context) {
   this.listen = (options, callback) => {
     return iface.listen({
       name: options.name,
+      topic: options.topic,
       scope: context.experience.uuid
     }, callback);
   };
