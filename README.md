@@ -82,14 +82,18 @@ device.getZone().then(zone => {});
 #### device.broadcast(options)
 Broadcast a message about this device.
 ```javascript
-device.broadcast({name: 'I see this device!'})
+device.broadcast({
+  name: 'I see this device!',
+  topic: 'devicesSeen' //optional
+})
 ```
 
 #### device.listen(options, callback)
 Listen for events about this device.
 ```javascript
 const cancel = device.listen({
-  name: 'I see this device!'
+  name: 'I see this device!',
+  topic: 'devicesSeen' // optional
 }, (payload, message) => { 
   console.log(message.source + ' saw the device! Going to stop listening now.');
   cancel(); 
@@ -104,7 +108,7 @@ Respond to a request sent to the device.
 ```javascript
 const cancel = device.respond({
   name: 'giveMeSomeMoney',
-  scope: 'moneyRequests', // optional filter
+  topic: 'moneyRequests', // optional 
 }, payload => { 
   if (payload.amount > 2) {
    throw new Error('sorry i haz only 2 dolla');
@@ -124,7 +128,7 @@ Send a request to the device.
 ```javascript
 device.request({
   name: 'giveMeSomeMoney',
-  scope: 'moneyRequests'  // optional filter
+  topic: 'moneyRequests'  // optional
   payload: {
     amount: 'much'
   }
@@ -144,14 +148,19 @@ Temporary. The raw experience object.
 #### experience.broadcast(options)
 Broadcast a message about this experience.
 ```javascript
-experience.broadcast({name: 'IAmExperiencing', payload: { foo: 'manchu' }})
+experience.broadcast({
+  name: 'IAmExperiencing',
+  topic: 'musings', // optional
+  payload: { foo: 'manchu' } // optional
+})
 ```
 
 #### experience.listen(options, callback)
 Listen for events about this experience.
 ```javascript
 const cancel = device.listen({
-  name: 'IAmExperiencing'
+  name: 'IAmExperiencing',
+  topic: 'musings' // optional
 }, payload => {});
 ```
 
@@ -175,17 +184,53 @@ location.getZones().then(zones => {});
 #### location.broadcast(options)
 Broadcast a message about this location.
 ```javascript
-location.broadcast({name: 'thisDudeIsDancingHere', payload: { name: 'joe' }})
+location.broadcast({
+  name: 'thisDudeIsDancingHere',
+  topic: 'dancingDudes', // optional
+  payload: { name: 'joe' }
+})
 ```
 
 #### location.listen(options, callback)
 Listen for events about this location.
 ```javascript
 const cancel = location.listen({
-  name: ''
+  name: 'thisDudeIsDancingHere',
+  topic: 'dancingDudes' // optional
 }, payload => {});
 ```
 
 
 
 ## Zone Object
+#### zone.uuid
+The zone's UUID.
+
+#### zone.getDevices()
+Get the zone's devices. Returns an array of [Device Objects](#device-object)
+
+```javascript
+zone.getDevices().then(devices => {});
+```
+
+#### zone.getLocation()
+Get the zone's location. Returns a [Location Object](#location-object)
+
+#### zone.broadcast(options)
+Broadcast a message about the zone.
+```javascript
+zone.broadcast({
+  name: 'flingStart',
+  topic: 'fling', // optional
+  payload: { // stuff about fling, optional }
+});
+```
+
+#### zone.listen(options, callback)
+Listen to messages about this zone.
+```javascript
+const cancel = zone.listen({
+  name: 'flingStart',
+  topic: 'fling' // optional
+}, payload => {});
+```
