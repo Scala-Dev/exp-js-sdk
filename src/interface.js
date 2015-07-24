@@ -11,7 +11,7 @@ const listeners = {};
 const broadcast = options => {
   return connection.send({
     type: 'broadcast',
-    target: options.target,
+    target: options.target || { device: '*' },
     name: options.name,
     topic: options.topic || 'default',
     scope: options.scope || 'default',
@@ -51,8 +51,8 @@ const request = options => {
       id: id,
       target: options.target,
       name: options.name,
-      topic: options.topic,
-      scope: options.scope,
+      topic: options.topic || 'default',
+      scope: options.scope || 'default',
       payload: options.payload
     });
   });

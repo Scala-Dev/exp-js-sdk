@@ -3,7 +3,7 @@
 module.exports = function (context) {
 
   const api = require('../api');
-  const iface = require('../iface');
+  const iface = require('../interface');
 
   const Device = require('./Device');
   const Location = require('./Location');

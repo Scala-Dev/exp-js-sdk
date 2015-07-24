@@ -54,8 +54,8 @@ const getCurrentDevice = () => {
   return Promise.resolve()
     .then(() => {
       return iface.request({
-        target: { device: 'system' },
-        name: 'getCurrentDevice'
+        name: 'getCurrentDevice',
+        target: { device: 'system' }
       });
     })
     .then(device => {

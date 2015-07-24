@@ -14,7 +14,17 @@ module.exports = function (context) {
 
   // Get this devices experience.
   this.getExperience = () => {
-    return api.get('/api/experiences/' + context.device.experienceUuid)
+    return Promise.resolve()
+      .then(() => {
+        if (context.current) {
+          return iface.request({ 
+            name: 'getCurrentExperience',
+            target: { device: 'system' }
+          });
+        } else {
+          return api.get('/api/experiences/' + context.device.experienceUuid);
+        }
+      })
       .then(experience => {
         return new Experience({ experience: experience });
       });
