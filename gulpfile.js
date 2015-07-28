@@ -5,8 +5,7 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var babel = require('gulp-babel');
-
-// player tasks
+var babelify = require('babelify');
 
 gulp.task('build-node', function () {
   return gulp.src('./src/**/*')
@@ -19,7 +18,8 @@ gulp.task('build-webbrowser', function () {
     basedir: './src',
     paths: ['./']
   })
-    .bundle()
+    .transform(babelify)
+    .bundle()                   
     .pipe(source('scala-sdk.js'))
     .pipe(buffer())
     .pipe(replace('http://localhost:9000', argv.baseUrl || 'http://localhost:9000'))
