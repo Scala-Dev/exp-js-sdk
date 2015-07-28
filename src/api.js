@@ -8,7 +8,12 @@
 require('isomorphic-fetch');
 const credentials = require('./credentials');
 
-const base = 'http://localhost:9000';
+var base = 'http://develop.exp.scala.com:9000';
+
+const setHost = host => {
+  base = host;
+};
+
 
 const createQueryString = obj => {
   var parts = ['?'];
@@ -54,6 +59,7 @@ const fetch_ = (path, options) => {
 };
 
 
+module.exports.setHost = setHost;
 module.exports.fetch = fetch_;
 module.exports.get = get;
 
