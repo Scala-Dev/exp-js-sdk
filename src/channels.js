@@ -1,6 +1,6 @@
 'use strict';
 
-const connection = require('./connection');
+const socket = require('./socket');
 
 const Interface = function (channel) {
 
@@ -11,7 +11,7 @@ const Interface = function (channel) {
   this.listeners = {};
 
   this.broadcast = options => {
-    return connection.send({
+    return socket.send({
       type: 'broadcast',
       name: options.name,
       channel: channel,
@@ -43,7 +43,7 @@ const Interface = function (channel) {
           delete self.requests[id];
         }, 10000)
       };
-      connection.send({
+      socket.send({
         type: 'request',
         id: id,
         target: options.device.uuid,
@@ -92,24 +92,22 @@ const Interface = function (channel) {
       })
       .then(payload => {
         response.payload = payload;
-        connection.send(response);
+        socket.send(response);
       })
       .catch(error => {
         response.error = error.message;
-        connection.send(response);
+        socket.send(response);
       });
   };
 
   /* Message Routing */
-  connection.events.on('message', message => {
+  socket.events.on('message', message => {
     if (message.type === 'response') return self.onResponse(message);
     if (message.channel !== channel) return null;
     if (message.type === 'request') return self.onRequest(message);
     if (message.type === 'broadcast') return self.onBroadcast(message);
     return null;
   });
-
-
 
 };
 

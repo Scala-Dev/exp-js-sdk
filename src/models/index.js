@@ -2,5 +2,7 @@
 
 module.exports = {
   Device: require('./Device'),
-  Experience: require('./Experience')
+  Experience: require('./Experience'),
+  Location: require('./Location'),
+  Zone: require('./Zone')
 };

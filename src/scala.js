@@ -1,10 +1,12 @@
 'use strict';
 
 var sdk = {
-  connection: require('./connection'),
-  credentials: require('./credentials'),
+  init: require('./init'),
+  config: require('./config'),
   api: require('./api'),
-  channels: require('./channels')
+  connection: require('./connection'),
+  channels: require('./channels'),
+  utilities: require('./utilities')
 };
 
 if (typeof window === 'object') window.scala = sdk;

@@ -7,6 +7,23 @@ const base = 'http://localhost:9000';
 const models = require('./models');
 const channels = require('./channels');
 
+const fetch_ = (path, options) => {
+  const url = base + path;
+  options.headers = options.headers || {};
+  return Promise.resolve()
+    .then(() => credentials.getToken())
+    .then(token => {
+      options.headers.Authorization = 'Bearer ' + token;
+      return fetch(url, options);
+    })
+    .then(response => {
+      return response.json();
+    })
+    .catch(error => {
+      throw new Error(error);
+    });
+};
+
 const createQueryString = obj => {
   var parts = ['?'];
   for (var i in obj) {
@@ -23,35 +40,8 @@ const get = (path, params) => {
 };
 
 
-/**
- * Make a remote request
- * @name fetch
- * @memberOf scala.api
- * @method
- * @param {string} path The api path, i.e., /api/devices
- * @param {object} options Fetch compatible options.
- * @returns {Promise} A promise that will resolve with a javascript object.
- */
-const fetch_ = (path, options) => {
-  const url = base + path;
-  options.headers = options.headers || {};
-  return Promise.resolve()
-    .then(() => credentials.getToken())
-    .then(token => {
-      options.headers.Authorization = 'Bearer ' + token;
-      return fetch(url, options);
-    })
-    .then(response => {
-      return response.json();
-    })
-    .catch(error => {
-      throw new Error(error);
-    });
-  
-};
 
 const getCurrentDevice = () => {
-
   return Promise.resolve()
     .then(() => {
       return channels.system.request({ name: 'getCurrentDevice' });
@@ -61,31 +51,6 @@ const getCurrentDevice = () => {
     });
 };
 
-const getDevice = options => {
-  return Promise.resolve()
-    .then(() => {
-      if (!options.uuid) throw new Error('uuidRequired');
-      return get('/api/devices/' + options.uuid);
-    })
-    .then(device => {
-      return new models.Device({ device: device });
-    });
-};
-
-const getDevices = options => {
-  options = options || {};
-  return Promise.resolve()
-    .then(() => {
-      return get('/api/devices', options.params);
-    })
-    .then(query => {
-      const devices = [];
-      query.results.forEach(device => {
-        devices.push(new models.Device({ device: device }));
-      });
-      return devices;
-    });
-};
 
 const getCurrentExperience = () => {
   return Promise.resolve()
@@ -94,6 +59,32 @@ const getCurrentExperience = () => {
     })
     .then(experience => {
       return new models.Experience({ experience: experience });
+    });
+};
+
+
+const getDevice = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/devices/' + uuid);
+    })
+    .then(device => {
+      return new models.Device({ device: device });
+    });
+};
+
+const getDevices = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/devices', params);
+    })
+    .then(query => {
+      const devices = [];
+      query.results.forEach(device => {
+        devices.push(new models.Device({ device: device }));
+      });
+      return devices;
     });
 };
 
@@ -124,12 +115,71 @@ const getExperiences = options => {
 };
 
 
+const getLocation = options => {
+  return Promise.resolve()
+    .then(() => {
+      if (!options.uuid) throw new Error('uuidRequired');
+      return get('/api/locations/' + options.uuid);
+    })
+    .then(location => {
+      return new models.Location({ location: location });
+    });
+};
+
+const getLocations = options => {
+  options = options || {};
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/locations', options.params);
+    })
+    .then(query => {
+      const locations = [];
+      query.results.forEach(locations => {
+        locations.push(new models.Location({ location: location }));
+      });
+      return locations;
+    });
+};
 
 
-module.exports.getDevices = getDevices;
-module.exports.getDevice = getDevice;
+const getZone = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/zones/' + uuid);
+    })
+    .then(zone => {
+      return new models.Zone({ zone: zone });
+    });
+};
+
+const getZones = options => {
+  options = options || {};
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/zones', options.params);
+    })
+    .then(query => {
+      const zones = [];
+      query.results.forEach(zones => {
+        zones.push(new models.Zone({ zone: zone }));
+      });
+      return zones;
+    });
+};
+
+
 module.exports.getCurrentDevice = getCurrentDevice;
-
 module.exports.getCurrentExperience = getCurrentExperience;
-module.exports.getExperiences = getExperiences;
+
 module.exports.getExperience = getExperience;
+module.exports.getExperiences = getExperiences;
+
+module.exports.getDevice = getDevice;
+module.exports.getDevices = getDevices;
+
+module.exports.getLocation = getLocation;
+module.exports.getLocations = getLocations;
+
+module.exports.getZone = getZone;
+module.exports.getZones = getZones;
