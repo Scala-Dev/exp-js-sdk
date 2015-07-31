@@ -91,7 +91,7 @@ scala.channels.organization.respond({
 ```
 Response callbacks will only be triggered when the request was sent on the same channel.
 
-## scala.api
+# scala.api
 
 ### scala.api.getCurrentDevice()
 Get the current device. Resolves to a [Device Object](#device-object).
