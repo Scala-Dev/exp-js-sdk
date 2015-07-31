@@ -1,18 +1,10 @@
 'use strict';
 
-const Interface = require('./interface');
-
 var sdk = {
   connection: require('./connection'),
   credentials: require('./credentials'),
   api: require('./api'),
-  utilities: require('./utilities'),
-  channels: {
-    system: new Interface('system'),
-    organization: new Interface('organization'),
-    experience: new Interface('experience'),
-    location: new Interface('location')
-  }
+  channels: require('./channels')
 };
 
 if (typeof window === 'object') window.scala = sdk;

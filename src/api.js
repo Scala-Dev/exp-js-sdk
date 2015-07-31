@@ -4,8 +4,8 @@ require('isomorphic-fetch');
 const credentials = require('./credentials');
 
 const base = 'http://localhost:9000';
-const iface = require('./interface');
 const models = require('./models');
+const channels = require('./channels');
 
 const createQueryString = obj => {
   var parts = ['?'];
@@ -51,12 +51,10 @@ const fetch_ = (path, options) => {
 };
 
 const getCurrentDevice = () => {
+
   return Promise.resolve()
     .then(() => {
-      return iface.request({
-        name: 'getCurrentDevice',
-        target: { device: 'system' }
-      });
+      return channels.system.request({ name: 'getCurrentDevice' });
     })
     .then(device => {
       return new models.Device({ device: device, current: true });
@@ -92,10 +90,7 @@ const getDevices = options => {
 const getCurrentExperience = () => {
   return Promise.resolve()
     .then(() => {
-      return iface.request({
-        target: { device: 'system' },
-        name: 'getCurrentExperience'
-      });
+      return channels.system.request({ name: 'getCurrentExperience' });
     })
     .then(experience => {
       return new models.Experience({ experience: experience });
