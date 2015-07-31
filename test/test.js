@@ -23,9 +23,15 @@ scala.connection.events.on('online', () => {
     name: 'test',
     topic: 'test2'
   });
-  scala.channels.experience.broadcast({
-    name: 'test3',
-    topic: 'test4'
-  });
+  scala.channels.system.request({
+    name: 'getCurrentExperience'
+  })
+    .then(() => {
+      console.log('Y');
+    })
+    .catch(error => {
+      console.log(error);
+      console.log('N');
+    });
 });
 
