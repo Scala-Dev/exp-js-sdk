@@ -99,24 +99,20 @@ Get the current device. Resolves to a [Device Object](#device-object).
 scala.api.getCurrentDevice().then(device => {});
 ```
 
-### scala.api.getDevice(options)
+### scala.api.getDevice(uuid)
 Get a single device by UUID. Resolves to a [Device Object](#device-object).
 ```javascript
-scala.api.getDevice({
-  uuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942' // The uuid of the device.
-}).then(device => {});
+scala.api.getDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(device => {});
 ```
 
-### scala.api.getDevices(options)
+### scala.api.getDevices(params)
 Query for multiple devices. Resolves to an array of [Device Objects](#device-object).
 ```javascript
 scala.api.getDevices({
-  params: {
     limit: 20, // The number of devices to retrieve at most
     skip: 5, // The number of devices to skip
     sort: 'field1', // The field to sort by.
-  }
-}).then(devices => {});
+  }).then(devices => {});
 ```
 
 ### scala.api.getCurrentExperience()
@@ -125,24 +121,52 @@ Get the current experience. Resolves to an [Experience Object](#experience-objec
 scala.api.getCurrentExperience().then(experience => {});
 ```
 
-### scala.api.getExperience(options)
+### scala.api.getExperience(uuid)
 Get a single experience by UUID. Resolves to a [Experience Object](#experience-object).
 ```javascript
-scala.api.getExperience({
-  uuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942' // The uuid of the experience.
-}).then(experience => {});
+scala.api.getExperience('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(experience => {});
 ```
 
-### scala.api.getExperiences(options)
+### scala.api.getExperiences(params)
 Query for multiple experiences. Resolves to an array of [Experience Objects](#experience-object).
 ```javascript
 scala.api.getExperiences({
-  params: {
     limit: 20, // The number of devices to retrieve at most
     skip: 5, // The number of devices to skip
     sort: 'field1', // The field to sort by.
-  }
-}).then(experiences => {});
+  }).then(experiences => {});
+```
+
+### scala.api.getLocation(uuid)
+Get a single location by UUID. Resolves to a [Location Object](#location-object).
+```javascript
+scala.api.getLocation('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(location => {});
+```
+
+### scala.api.getLocations(params)
+Query for multiple locations. Resolves to an array of [Location Objects](#location-object).
+```javascript
+scala.api.getLocations({
+    limit: 20, // The number of devices to retrieve at most
+    skip: 5, // The number of devices to skip
+    sort: 'field1', // The field to sort by.
+  }).then(locations => {});
+```
+
+### scala.api.getZone(uuid)
+Get a single zone by UUID. Resolves to a [Zone Object](#zone-object).
+```javascript
+scala.api.getZone('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(zone => {});
+```
+
+### scala.api.getZones(params)
+Query for multiple zones. Resolves to an array of [Zone Objects](#zone-object).
+```javascript
+scala.api.getZones({
+    limit: 20, // The number of devices to retrieve at most
+    skip: 5, // The number of devices to skip
+    sort: 'field1', // The field to sort by.
+  }).then(zones => {});
 ```
 
 # Abstract API Objects
