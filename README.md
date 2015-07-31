@@ -1,5 +1,59 @@
 # exp-js-sdk
 
+## scala.init(options)
+Initialize the SDK and connect to EXP.
+```javascript
+scala.init({
+  host: 'http://exp.scala.com',
+  uuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Device uuid.
+  secret: 'potatoes' // Device secret
+}).then(() => {}); // sdk is initialized and connected to EXP 
+```
+
+## scala.config
+#### scala.config.host
+The host name of EXP.
+
+## scala.connection
+
+#### scala.connection.on(name, callback)
+Attach a listener for connection events. The possible events are `online` (when a connection is established to EXP) and `offline` (when the connection to EXP is lost).
+
+```javascript
+scala.connection.on('online', () => {});
+scala.connection.on('offline', () => {});
+```
+
+## scala.channels.[name]
+
+There are four channels available:
+- "system": Messages to/from the system.
+- "organization": Messages to/from devices across the organization.
+- "experience": Messages to/from devices in the current experience.
+- "location": Messages to/from devices in the current location.
+
+#### channel.listen(options, callback)
+Register a callback for a message on this channel.
+```javascript
+scala.channels.location.listen({ name: 'eventName1' }, payload => {
+  // do something with payload.
+});
+```
+
+#### channel.broadcast(options)
+Broadcast a message out on this channel.
+```javascript
+scala.channels.experience.broadcast({ 
+  name: 'checkOutMySweetEventJoke', 
+  payload: {
+    opening: 'knock knock?'
+  },
+});
+```
+#### channel.request(options)
+#### channel.respond(options, callback)
+
+
 ## scala.api
 
 #### scala.api.getCurrentDevice()
@@ -67,73 +121,10 @@ Get the device's experience. Resolves to an [Experience Object](#experience-obje
 device.getExperience().then(experience => {});
 ```
 
-#### device.getLocation()
-Get the device's location. Resolves to a [Location Object](#location-object)
-```javascript
-device.getLocation().then(location => {});
-```
-
 ### device.getZone()
 Get the device's zone. Resolves to a [Zone Object](#zone-object)
 ```javascript
 device.getZone().then(zone => {});
-```
-
-#### device.broadcast(options)
-Broadcast a message about this device.
-```javascript
-device.broadcast({
-  name: 'I see this device!',
-  topic: 'devicesSeen' //optional
-})
-```
-
-#### device.listen(options, callback)
-Listen for events about this device.
-```javascript
-const cancel = device.listen({
-  name: 'I see this device!',
-  topic: 'devicesSeen' // optional
-}, (payload, message) => { 
-  console.log(message.source + ' saw the device! Going to stop listening now.');
-  cancel(); 
-});
-```
-
-#### device.respond(options, callback)
-** ONLY IF DEVICE IS THE CURRENT DEVICE **
-
-Respond to a request sent to the device. 
-
-```javascript
-const cancel = device.respond({
-  name: 'giveMeSomeMoney',
-  topic: 'moneyRequests', // optional 
-}, payload => { 
-  if (payload.amount > 2) {
-   throw new Error('sorry i haz only 2 dolla');
-  } 
-  cancel(); // I'm gone giving away money.
-  return {
-    moneyForYou: payload.amount,
-  };
-})
-```  
-  
-#### device.request(options)
-** ONLY IF DEVICE IS NOT THE CURRENT DEVICE **
-
-Send a request to the device.
-
-```javascript
-device.request({
-  name: 'giveMeSomeMoney',
-  topic: 'moneyRequests'  // optional
-  payload: {
-    amount: 'much'
-  }
-}).then(response => { console.log('I got some money!'); })
-  .catch(error => { console.log('sad face'); })
 ```
 
 
@@ -145,35 +136,10 @@ The experience's UUID.
 #### experience.raw
 Temporary. The raw experience object. 
 
-#### experience.broadcast(options)
-Broadcast a message about this experience.
-```javascript
-experience.broadcast({
-  name: 'IAmExperiencing',
-  topic: 'musings', // optional
-  payload: { foo: 'manchu' } // optional
-})
-```
-
-#### experience.listen(options, callback)
-Listen for events about this experience.
-```javascript
-const cancel = device.listen({
-  name: 'IAmExperiencing',
-  topic: 'musings' // optional
-}, payload => {});
-```
-
 ## Location Object
 
 #### location.uuid
 The location's UUID.
-
-### location.getDevices()
-Get all of the devices in this locaiton. Returns an array of [Device Objects](#device-object).
-```javascript
-location.getDevices().then(devices => {});
-```
 
 ### location.getZones()
 Get all of the zones in this location. Returns an array of [Zone Objects](#zone-object).
@@ -181,24 +147,6 @@ Get all of the zones in this location. Returns an array of [Zone Objects](#zone-
 location.getZones().then(zones => {});
 ```
 
-#### location.broadcast(options)
-Broadcast a message about this location.
-```javascript
-location.broadcast({
-  name: 'thisDudeIsDancingHere',
-  topic: 'dancingDudes', // optional
-  payload: { name: 'joe' }
-})
-```
-
-#### location.listen(options, callback)
-Listen for events about this location.
-```javascript
-const cancel = location.listen({
-  name: 'thisDudeIsDancingHere',
-  topic: 'dancingDudes' // optional
-}, payload => {});
-```
 
 
 
@@ -218,23 +166,4 @@ Get the zone's location. Returns a [Location Object](#location-object)
 
 ```javascript
 zone.getLocation().then(location => {});
-```
-
-#### zone.broadcast(options)
-Broadcast a message about the zone.
-```javascript
-zone.broadcast({
-  name: 'flingStart',
-  topic: 'fling', // optional
-  payload: { // stuff about fling, optional }
-});
-```
-
-#### zone.listen(options, callback)
-Listen to messages about this zone.
-```javascript
-const cancel = zone.listen({
-  name: 'flingStart',
-  topic: 'fling' // optional
-}, payload => {});
 ```
