@@ -1,14 +1,27 @@
 'use strict';
 
-/**
- * Shortcut for API Calls
- * @namespace scala.api
- */
-
 require('isomorphic-fetch');
 const credentials = require('./credentials');
 
-const base = 'http://localhost:9000';
+const models = require('./models');
+const channels = require('./channels');
+
+const fetch_ = (path, options) => {
+  const url = config.host + path;
+  options.headers = options.headers || {};
+  return Promise.resolve()
+    .then(() => credentials.getToken())
+    .then(token => {
+      options.headers.Authorization = 'Bearer ' + token;
+      return fetch(url, options);
+    })
+    .then(response => {
+      return response.json();
+    })
+    .catch(error => {
+      throw new Error(error);
+    });
+};
 
 const createQueryString = obj => {
   var parts = ['?'];
@@ -26,34 +39,143 @@ const get = (path, params) => {
 };
 
 
-/**
- * Make a remote request
- * @name fetch
- * @memberOf scala.api
- * @method
- * @param {string} path The api path, i.e., /api/devices
- * @param {object} options Fetch compatible options.
- * @returns {Promise} A promise that will resolve with a javascript object.
- */
-const fetch_ = (path, options) => {
-  const url = base + path;
-  options.headers = options.headers || {};
+
+const getCurrentDevice = () => {
   return Promise.resolve()
-    .then(() => credentials.getToken())
-    .then(token => {
-      options.headers.Authorization = 'Bearer ' + token;
-      return fetch(url, options);
+    .then(() => {
+      return channels.system.request({ name: 'getCurrentDevice' });
     })
-    .then(response => {
-      return response.json();
-    })
-    .catch(error => {
-      throw new Error(error);
+    .then(device => {
+      return new models.Device({ device: device, current: true });
     });
-  
 };
 
 
-module.exports.fetch = fetch_;
-module.exports.get = get;
+const getCurrentExperience = () => {
+  return Promise.resolve()
+    .then(() => {
+      return channels.system.request({ name: 'getCurrentExperience' });
+    })
+    .then(experience => {
+      return new models.Experience({ experience: experience });
+    });
+};
 
+
+const getDevice = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/devices/' + uuid);
+    })
+    .then(device => {
+      return new models.Device({ device: device });
+    });
+};
+
+const getDevices = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/devices', params);
+    })
+    .then(query => {
+      const devices = [];
+      query.results.forEach(device => {
+        devices.push(new models.Device({ device: device }));
+      });
+      return devices;
+    });
+};
+
+const getExperience = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/experiences/' + uuid);
+    })
+    .then(experience => {
+      return new models.Experience({ experience: experience });
+    });
+};
+
+const getExperiences = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/experiences', params);
+    })
+    .then(query => {
+      const experiences = [];
+      query.results.forEach(experience => {
+        experiences.push(new models.Experience({ experience: experience }));
+      });
+      return experiences;
+    });
+};
+
+
+const getLocation = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/locations/' + uuid);
+    })
+    .then(location => {
+      return new models.Location({ location: location });
+    });
+};
+
+const getLocations = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/locations', params);
+    })
+    .then(query => {
+      const locations = [];
+      query.results.forEach(location => {
+        locations.push(new models.Location({ location: location }));
+      });
+      return locations;
+    });
+};
+
+
+const getZone = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/zones/' + uuid);
+    })
+    .then(zone => {
+      return new models.Zone({ zone: zone });
+    });
+};
+
+const getZones = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/zones', params);
+    })
+    .then(query => {
+      const zones = [];
+      query.results.forEach(zone => {
+        zones.push(new models.Zone({ zone: zone }));
+      });
+      return zones;
+    });
+};
+
+
+module.exports.getCurrentDevice = getCurrentDevice;
+module.exports.getCurrentExperience = getCurrentExperience;
+
+module.exports.getExperience = getExperience;
+module.exports.getExperiences = getExperiences;
+
+module.exports.getDevice = getDevice;
+module.exports.getDevices = getDevices;
+
+module.exports.getLocation = getLocation;
+module.exports.getLocations = getLocations;
+
+module.exports.getZone = getZone;
+module.exports.getZones = getZones;

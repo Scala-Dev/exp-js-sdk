@@ -1,22 +1,19 @@
 'use strict';
 
-/**
- * Scala 
- * @namespace scala
- */
-
 var sdk = {
-  connection: require('./connection'),
-  interface: require('./interface'),
-  credentials: require('./credentials'),
+  init: require('./init'),
+  config: require('./config'),
   api: require('./api'),
-  utilities: require('./utilities'),
-  getCurrentDevice: require('./getCurrentDevice')
+  connection: require('./connection'),
+  channels: require('./channels'),
+  utilities: require('./utilities')
 };
 
 if (typeof window === 'object') window.scala = sdk;
 
 module.exports = sdk;
+
+
 
 
 
