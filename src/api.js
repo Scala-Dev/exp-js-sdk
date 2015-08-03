@@ -3,12 +3,11 @@
 require('isomorphic-fetch');
 const credentials = require('./credentials');
 
-const base = 'http://localhost:9000';
 const models = require('./models');
 const channels = require('./channels');
 
 const fetch_ = (path, options) => {
-  const url = base + path;
+  const url = config.host + path;
   options.headers = options.headers || {};
   return Promise.resolve()
     .then(() => credentials.getToken())
@@ -88,22 +87,21 @@ const getDevices = params => {
     });
 };
 
-const getExperience = options => {
+const getExperience = uuid => {
   return Promise.resolve()
     .then(() => {
-      if (!options.uuid) throw new Error('uuidRequired');
-      return get('/api/experiences/' + options.uuid);
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/experiences/' + uuid);
     })
     .then(experience => {
       return new models.Experience({ experience: experience });
     });
 };
 
-const getExperiences = options => {
-  options = options || {};
+const getExperiences = params => {
   return Promise.resolve()
     .then(() => {
-      return get('/api/experiences', options.params);
+      return get('/api/experiences', params);
     })
     .then(query => {
       const experiences = [];
@@ -115,26 +113,25 @@ const getExperiences = options => {
 };
 
 
-const getLocation = options => {
+const getLocation = uuid => {
   return Promise.resolve()
     .then(() => {
-      if (!options.uuid) throw new Error('uuidRequired');
-      return get('/api/locations/' + options.uuid);
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/locations/' + uuid);
     })
     .then(location => {
       return new models.Location({ location: location });
     });
 };
 
-const getLocations = options => {
-  options = options || {};
+const getLocations = params => {
   return Promise.resolve()
     .then(() => {
-      return get('/api/locations', options.params);
+      return get('/api/locations', params);
     })
     .then(query => {
       const locations = [];
-      query.results.forEach(locations => {
+      query.results.forEach(location => {
         locations.push(new models.Location({ location: location }));
       });
       return locations;
@@ -153,15 +150,14 @@ const getZone = uuid => {
     });
 };
 
-const getZones = options => {
-  options = options || {};
+const getZones = params => {
   return Promise.resolve()
     .then(() => {
-      return get('/api/zones', options.params);
+      return get('/api/zones', params);
     })
     .then(query => {
       const zones = [];
-      query.results.forEach(zones => {
+      query.results.forEach(zone => {
         zones.push(new models.Zone({ zone: zone }));
       });
       return zones;

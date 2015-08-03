@@ -79,16 +79,17 @@ const Interface = function (channel) {
   };
 
   this.onRequest = message => {
+    var self = this;
     var response = {
       type: 'response',
       id: message.id
     };
     return Promise.resolve()
       .then(() => {
-        if (!this.responders[message.name]) { 
+        if (!self.responders[message.name]) { 
           throw new Error('unhandled');
         }
-        return this.responders(message.payload, message);
+        return self.responders[message.name](message.payload, message);
       })
       .then(payload => {
         response.payload = payload;

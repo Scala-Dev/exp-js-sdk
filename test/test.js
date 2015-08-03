@@ -1,37 +1,22 @@
 const scala = require('../src/scala');
 
-//scala.credentials.set('ee146ed3-437a-46cd-89e1-f91ce8bbb942', 'DEVICE-SECRET');
-/*scala.connection.connect();
-scala.connection.events.on('online', () => {
-  scala.api.getCurrentDevice().then(device => {
-    device.getExperience().then(experience => {
-      console.log(experience.raw);
-      experience.broadcast({
-        scope: 'location',
-        name: 'hi',
-        topic: 'dude',
-        channel: 'private',
-        payload: { 'test': 12}
-      });
-    });
+/* TEST R-R Pattern */
+scala.init({
+  host: 'http://localhost:9000',
+  uuid: 'de710dcd-2e09-447d-9ae4-5050d73358c1',
+  secret: 'DEVICE-SECRET'
+}).then(() => {
+  scala.channels.organization.respond({ name: 'hi' }, () => {
+    console.log('RESPONDING');
+    return 'OK';
   });
-});*/
 
-scala.connection.connect();
-scala.connection.events.on('online', () => {
-  scala.channels.system.broadcast({
-    name: 'test',
-    topic: 'test2'
+  scala.channels.organization.request({ name: 'hi', device: {
+    uuid: 'de710dcd-2e09-447d-9ae4-5050d73358c1'
+  }}).then(p => {
+    console.log('SUCCESS');
+  }).catch(error => {
+    console.log(error);
   });
-  scala.channels.system.request({
-    name: 'getCurrentExperience'
-  })
-    .then(() => {
-      console.log('Y');
-    })
-    .catch(error => {
-      console.log(error);
-      console.log('N');
-    });
+
 });
-
