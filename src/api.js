@@ -11,7 +11,7 @@ const fetch_ = (path, options) => {
   const url = config.host + path;
   options.headers = options.headers || {};
   return Promise.resolve()
-    .then(() => credentials.getToken())
+    .then(() => credentials.generateToken())
     .then(token => {
       options.headers.Authorization = 'Bearer ' + token;
       return fetch(url, options);
