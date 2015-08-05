@@ -5,6 +5,7 @@ const credentials = require('./credentials');
 
 const models = require('./models');
 const channels = require('./channels');
+const config = require('./config');
 
 const fetch_ = (path, options) => {
   const url = config.host + path;
