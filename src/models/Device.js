@@ -5,6 +5,7 @@ module.exports = function (context) {
   const api = require('../api');
 
   this.uuid = context.device.uuid;
+  this.raw = context.device;
 
   this.getExperience = () => {
     if (context.current) {
