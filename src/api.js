@@ -180,3 +180,6 @@ module.exports.getLocations = getLocations;
 
 module.exports.getZone = getZone;
 module.exports.getZones = getZones;
+
+module.exports.get = get;
+module.exports.fetch = fetch_;
