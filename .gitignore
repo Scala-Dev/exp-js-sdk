@@ -3,5 +3,5 @@ bower_components
 *.sublime-workspace
 .DS_Store
 out
-build
 dist
+*~
