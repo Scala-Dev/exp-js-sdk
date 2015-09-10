@@ -6,6 +6,11 @@
   "scripts": {
     "install": "gulp"
   },
+  "jspm": {
+    "scripts": {
+      "install": "gulp"
+    }
+  },
   "author": "James Dalessio <jrd261@gmail.com>",
   "license": "MIT",
   "dependencies": {
