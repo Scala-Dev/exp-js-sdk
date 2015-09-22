@@ -5,7 +5,7 @@ scala.init({
   host: 'http://exp.scala.com',
   uuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Device uuid.
   secret: 'mashed potatoes' // Device secret
-}).then(() => {}); // sdk is initialized and connected to EXP 
+}).then(() => {}); // sdk is initialized and connected to EXP
 ```
 
 # scala.config
@@ -31,7 +31,7 @@ scala.connection.on('offline', () => {
 # scala.channels
 
 There are four channels available:
-- "system": Messages to/from the system. 
+- "system": Messages to/from the system.
 - "organization": Messages to/from devices across the organization.
 - "experience": Messages to/from devices in the current experience.
 - "location": Messages to/from devices in the current location.
@@ -46,22 +46,22 @@ scala.channels.location.listen({ name: 'joke72' }, payload => {
 ```
 
 ### scala.channels.[channel].broadcast(options)
-Broadcast a message out on this channel. 
+Broadcast a message out on this channel.
 ```javascript
-scala.channels.location.broadcast({ 
-  name: 'joke72', 
+scala.channels.location.broadcast({
+  name: 'joke72',
   payload: {
     opening: 'knock knock?'
   },
 });
 ```
-Broadcasts can be recieved by any device that is connected to the same organization/experience/location on the given channel. 
+Broadcasts can be recieved by any device that is connected to the same organization/experience/location on the given channel.
 
 ### scala.channels.[channel].request(options)
 Send a request to another device. Returns a promise.
 ```javascript
 scala.channels.organization.request({
-  target: Device3, 
+  target: Device3,
   name: 'joke',
   payload: 'knock knock'
 }).then(response => {
@@ -169,6 +169,12 @@ scala.api.getZones({
   }).then(zones => {});
 ```
 
+### scala.api.identifyDevice(deviceUuid)
+Request a device to identify itself. Resolve to response from targeted device
+```javascript
+scala.api.identifyDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(rsp => {});
+```
+
 # Abstract API Objects
 
 ### Device Object
@@ -188,14 +194,20 @@ Get the device's zone. Resolves to a [Zone Object](#zone-object)
 device.getZone().then(zone => {});
 ```
 
+##### device.identify()
+Request the device to identify itself. Resolve to response from targeted device
+```javascript
+device.identify().then(rsp => {});
+```
+
 
 ### Experience Object
 
-#### experience.uuid 
+#### experience.uuid
 The experience's UUID.
 
 #### experience.raw
-Temporary. The raw experience object. 
+Temporary. The raw experience object.
 
 ### Location Object
 
