@@ -84,7 +84,7 @@ module.exports.clear = () => {
 
 // DEPRECATED
 module.exports.set = (uuid, secret) => {
-  console.log('SDK DEPRECATED: Set in credentials.');
+  console.warn('SDK DEPRECATED: Set in credentials.');
   locals.uuid = uuid;
   locals.secret = secret;
 };
