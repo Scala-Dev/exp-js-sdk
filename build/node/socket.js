@@ -47,6 +47,13 @@ var connect = function connect(options) {
   });
 };
 
+var disconnect = function disconnect() {
+  if (socket) {
+    socket.close();
+    docket = null;
+  }
+};
+
 module.exports.connect = connect;
 module.exports.send = send;
 module.exports.events = events;

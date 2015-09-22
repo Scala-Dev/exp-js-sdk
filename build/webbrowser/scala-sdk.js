@@ -25567,11 +25567,11 @@ module.exports = {
   location: new Interface('location')
 };
 
-},{"./socket":231}],221:[function(require,module,exports){
+},{"./socket":232}],221:[function(require,module,exports){
 'use strict';
 
 module.exports = {
-  host: 'http://develop.exp.scala.com:9000'
+  host: 'http://api-develop.exp.scala.com'
 };
 
 },{}],222:[function(require,module,exports){
@@ -25599,23 +25599,99 @@ module.exports.on = events.on;
 
 
 
-},{"./socket":231,"./utilities":236}],223:[function(require,module,exports){
+},{"./socket":232,"./utilities":237}],223:[function(require,module,exports){
 'use strict';
+
+require('isomorphic-fetch');
 
 const crypto = require('crypto');
 const base64url = require('base64url');
+const config = require('./config');
+        
+var locals = { tokenTime: 0 };
 
-var uuid, secret;
+const refreshToken = () => {
+  if (locals.uuid && locals.secret) {
+    return refreshDeviceToken();
+  } else if (locals.username && locals.password && locals.organization) {
+    return refreshUserToken();
+  } else {
+    return Promise.reject('No token available.');
+  }
+};
 
-module.exports.set = (uuid_, secret_) => {
-  uuid = uuid_;
-  secret = secret_;
+const refreshUserToken = () => {
+  return fetch(config.host + '/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      username: locals.username,
+      password: locals.password,
+      organization: locals.organization
+    })
+  }).then(response => {
+    return response.json().then(body => {
+      locals.token = body.token;
+      return locals.token;
+    });
+  });
+};
+
+const refreshDeviceToken = () => {
+  var header = JSON.stringify({ alg: 'HS256', 'typ': 'JWT' });
+  var body = JSON.stringify({ uuid: locals.uuid });
+  var hmac = crypto.createHmac('sha256', locals.secret);
+  var message = base64url.encode(header) + '.' + base64url.encode(body);
+  locals.token = message + '.' + base64url.encode(hmac.update(message).digest());
+  locals.tokenTime = new Date();
+  return Promise.resolve(locals.token);
+};
+
+module.exports.setDeviceCredentials = (uuid, secret) => {
+  locals.uuid = uuid;
+  locals.secret = secret;
+};
+
+module.exports.setUserCredentials = (username, password, organization) => {
+  locals.username = username;
+  locals.password = password;
+  locals.organization = organization;
+};
+
+module.exports.setToken = token => {
+  locals.token = token;
+  locals.tokenTime = Infinity;
+};
+
+module.exports.getToken = () => {
+  if (locals.token && (new Date() - locals.tokenTime) < 3600 * 1000) {
+    return Promise.resolve(locals.token);
+  }
+  return refreshToken();
+};
+
+module.exports.clear = () => {
+  locals = {};
+  locals.tokenTime = 0;
+};
+
+
+
+
+// DEPRECATED methods.
+module.exports.set = (uuid, secret) => {
+  console.log('SDK DEPRECATED: Set in credentials.');
+  locals.uuid = uuid;
+  locals.secret = secret;
 };
 
 module.exports.generateToken = () => {
+  console.warn('SDK DEPRECATED: generateToken in credentials.');
   return Promise.resolve()
     .then(() => {
-      if (!uuid || !secret) {
+      if (!locals.uuid || !locals.secret) {
         throw new Error('No credentials available.');
       }
       var header = JSON.stringify({ alg: 'HS256', 'typ': 'JWT' });
@@ -25626,7 +25702,7 @@ module.exports.generateToken = () => {
     });
 };
 
-},{"base64url":1,"crypto":7}],224:[function(require,module,exports){
+},{"./config":221,"base64url":1,"crypto":7,"isomorphic-fetch":167}],224:[function(require,module,exports){
 'use strict';
 
 const config = require('./config');
@@ -25654,7 +25730,7 @@ module.exports = options => {
   });
 };
 
-},{"./config":221,"./credentials":223,"./socket":231}],225:[function(require,module,exports){
+},{"./config":221,"./credentials":223,"./socket":232}],225:[function(require,module,exports){
 'use strict';
 
 module.exports = function (context) {
@@ -25745,13 +25821,53 @@ module.exports = {
 },{"./Device":225,"./Experience":226,"./Location":227,"./Zone":228}],230:[function(require,module,exports){
 'use strict';
 
+const config = require('./config');
+const credentials = require('./credentials');
+const socket = require('./socket');
+
+var resolve_;
+
+socket.events.on('online', () => {
+  if (!resolve_) return;
+  resolve_();
+  resolve_ = null;
+});
+
+module.exports.start = options => {
+  options = options || {};
+  config.host = options.host || config.host;
+  if (options.uuid && options.secret) {
+    credentials.setDeviceCredentials(options.uuid, options.secret);
+  } else if (options.username && options.password && options.organization) {
+    credentials.setUserCredentials(options.username, options.password, options.organization);
+  } else if (options.token) {
+    credentials.setToken(options.token);
+  } 
+  return new Promise((resolve, reject) => {
+    resolve_ = resolve;
+    return credentials.getToken()
+      .then(token => {
+        socket.connect({ token: token, host: config.host });        
+      });
+  });
+};
+
+module.exports.stop = () => {
+  credentials.clear();
+  socket.disconnect();
+};
+
+},{"./config":221,"./credentials":223,"./socket":232}],231:[function(require,module,exports){
+'use strict';
+
 var sdk = {
   init: require('./init'),
   config: require('./config'),
   api: require('./api'),
   connection: require('./connection'),
   channels: require('./channels'),
-  utilities: require('./utilities')
+  utilities: require('./utilities'),
+  runtime: require('./runtime')
 };
 
 if (typeof window === 'object') window.scala = sdk;
@@ -25763,7 +25879,7 @@ module.exports = sdk;
 
 
 
-},{"./api":219,"./channels":220,"./config":221,"./connection":222,"./init":224,"./utilities":236}],231:[function(require,module,exports){
+},{"./api":219,"./channels":220,"./config":221,"./connection":222,"./init":224,"./runtime":230,"./utilities":237}],232:[function(require,module,exports){
 'use strict';
 
 const io = require('socket.io-client');
@@ -25813,6 +25929,13 @@ const connect = options => {
   });
 };
 
+const disconnect = () => {
+  if (socket) {
+    socket.close();
+    docket = null;
+  }
+};
+
 module.exports.connect = connect;
 module.exports.send = send;
 module.exports.events = events;
@@ -25824,7 +25947,7 @@ module.exports.events = events;
 
 
 
-},{"./utilities":236,"socket.io-client":169}],232:[function(require,module,exports){
+},{"./utilities":237,"socket.io-client":169}],233:[function(require,module,exports){
 'use strict';
 
 /**
@@ -25881,7 +26004,7 @@ function DataNode (options) {
 
 module.exports = DataNode;
 
-},{"./EventNode":234,"./Logger":235}],233:[function(require,module,exports){
+},{"./EventNode":235,"./Logger":236}],234:[function(require,module,exports){
 'use strict';
 
 function SDKError (code, message) {
@@ -25896,7 +26019,7 @@ SDKError.prototype.constructor = SDKError;
 
 module.exports = SDKError;
 
-},{}],234:[function(require,module,exports){
+},{}],235:[function(require,module,exports){
 'use strict';
 
 function EventNode () {
@@ -25919,7 +26042,7 @@ function EventNode () {
 
 module.exports = EventNode;
 
-},{}],235:[function(require,module,exports){
+},{}],236:[function(require,module,exports){
 'use strict';
 
 /**
@@ -26007,7 +26130,7 @@ const Logger = function(options) {
 
 module.exports = Logger;
 
-},{}],236:[function(require,module,exports){
+},{}],237:[function(require,module,exports){
 'use strict';
 
 /**
@@ -26027,4 +26150,4 @@ module.exports = {
   Error: SDKError
 };
 
-},{"./DataNode":232,"./Error":233,"./EventNode":234,"./Logger":235}]},{},[230]);
+},{"./DataNode":233,"./Error":234,"./EventNode":235,"./Logger":236}]},{},[231]);
