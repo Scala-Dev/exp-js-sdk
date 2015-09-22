@@ -25632,6 +25632,7 @@ const refreshUserToken = () => {
       organization: locals.organization
     })
   }).then(response => {
+    if (!response.ok) return Promise.reject('Authentication failed');
     return response.json().then(body => {
       locals.token = body.token;
       return locals.token;
@@ -25650,17 +25651,20 @@ const refreshDeviceToken = () => {
 };
 
 module.exports.setDeviceCredentials = (uuid, secret) => {
+  module.exports.clear();
   locals.uuid = uuid;
   locals.secret = secret;
 };
 
 module.exports.setUserCredentials = (username, password, organization) => {
+  module.exports.clear();
   locals.username = username;
   locals.password = password;
   locals.organization = organization;
 };
 
 module.exports.setToken = token => {
+  module.exports.clear();
   locals.token = token;
   locals.tokenTime = Infinity;
 };
@@ -25680,13 +25684,14 @@ module.exports.clear = () => {
 
 
 
-// DEPRECATED methods.
+// DEPRECATED
 module.exports.set = (uuid, secret) => {
-  console.log('SDK DEPRECATED: Set in credentials.');
+  console.warn('SDK DEPRECATED: Set in credentials.');
   locals.uuid = uuid;
   locals.secret = secret;
 };
 
+// DEPRECATED
 module.exports.generateToken = () => {
   console.warn('SDK DEPRECATED: generateToken in credentials.');
   return Promise.resolve()
@@ -25695,8 +25700,8 @@ module.exports.generateToken = () => {
         throw new Error('No credentials available.');
       }
       var header = JSON.stringify({ alg: 'HS256', 'typ': 'JWT' });
-      var body = JSON.stringify({ uuid: uuid });
-      var hmac = crypto.createHmac('sha256', secret);
+      var body = JSON.stringify({ uuid: locals.uuid });
+      var hmac = crypto.createHmac('sha256', locals.secret);
       var message = base64url.encode(header) + '.' + base64url.encode(body);
       return  message + '.' + base64url.encode(hmac.update(message).digest());
     });
@@ -25739,6 +25744,7 @@ module.exports = function (context) {
 
   this.uuid = context.device.uuid;
   this.raw = context.device;
+  this.document = context.device;
 
   this.getExperience = () => {
     if (context.current) {
@@ -25766,6 +25772,7 @@ module.exports = function (context) {
   // TODO: Expose subdocs through API Objects?
   // Are we breaking out subdocs?
   this.raw = context.experience;
+  this.document = context.experience;
 
 };
 
@@ -25780,6 +25787,7 @@ module.exports = function (context) {
   const api = require('../api');
 
   this.uuid = context.location.uuid;
+  this.document = context.location;
 
   this.getZones = () => {
     return api.getZones({ locationUuid: context.location.uuid });
@@ -25796,6 +25804,7 @@ module.exports = function (context) {
   const api = require('../api');
 
   this.uuid = context.zone.uuid;
+  this.document = context.zone;
 
   this.getDevices = () => {
     return api.getDevices({ zoneUuid: context.zone.uuid });
@@ -25824,13 +25833,20 @@ module.exports = {
 const config = require('./config');
 const credentials = require('./credentials');
 const socket = require('./socket');
+const utilities = require('./utilities');
 
+const events = new utilities.EventNode();
 var resolve_;
 
 socket.events.on('online', () => {
+  events.trigger('online');
   if (!resolve_) return;
   resolve_();
   resolve_ = null;
+});
+
+socket.events.on('offline', () => {
+  events.trigger('offline');
 });
 
 module.exports.start = options => {
@@ -25848,7 +25864,8 @@ module.exports.start = options => {
     return credentials.getToken()
       .then(token => {
         socket.connect({ token: token, host: config.host });        
-      });
+      })
+      .catch(reject)
   });
 };
 
@@ -25857,7 +25874,9 @@ module.exports.stop = () => {
   socket.disconnect();
 };
 
-},{"./config":221,"./credentials":223,"./socket":232}],231:[function(require,module,exports){
+module.exports.on = events.on;
+
+},{"./config":221,"./credentials":223,"./socket":232,"./utilities":237}],231:[function(require,module,exports){
 'use strict';
 
 var sdk = {
@@ -25905,7 +25924,7 @@ const connect = options => {
   }
   socket = io(options.host, {
     forceNew: true,
-    query: 'token=' + options.token,
+    query: 'token=' + (options.token || ''),
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 20000,
@@ -25932,11 +25951,12 @@ const connect = options => {
 const disconnect = () => {
   if (socket) {
     socket.close();
-    docket = null;
+    socket = null;
   }
 };
 
 module.exports.connect = connect;
+module.exports.disconnect = disconnect;
 module.exports.send = send;
 module.exports.events = events;
 

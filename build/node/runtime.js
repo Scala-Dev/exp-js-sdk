@@ -3,13 +3,20 @@
 var config = require('./config');
 var credentials = require('./credentials');
 var socket = require('./socket');
+var utilities = require('./utilities');
 
+var events = new utilities.EventNode();
 var resolve_;
 
 socket.events.on('online', function () {
+  events.trigger('online');
   if (!resolve_) return;
   resolve_();
   resolve_ = null;
+});
+
+socket.events.on('offline', function () {
+  events.trigger('offline');
 });
 
 module.exports.start = function (options) {
@@ -26,7 +33,7 @@ module.exports.start = function (options) {
     resolve_ = resolve;
     return credentials.getToken().then(function (token) {
       socket.connect({ token: token, host: config.host });
-    });
+    })['catch'](reject);
   });
 };
 
@@ -34,3 +41,5 @@ module.exports.stop = function () {
   credentials.clear();
   socket.disconnect();
 };
+
+module.exports.on = events.on;

@@ -30,6 +30,7 @@ var refreshUserToken = function refreshUserToken() {
       organization: locals.organization
     })
   }).then(function (response) {
+    if (!response.ok) return Promise.reject('Authentication failed');
     return response.json().then(function (body) {
       locals.token = body.token;
       return locals.token;
@@ -48,17 +49,20 @@ var refreshDeviceToken = function refreshDeviceToken() {
 };
 
 module.exports.setDeviceCredentials = function (uuid, secret) {
+  module.exports.clear();
   locals.uuid = uuid;
   locals.secret = secret;
 };
 
 module.exports.setUserCredentials = function (username, password, organization) {
+  module.exports.clear();
   locals.username = username;
   locals.password = password;
   locals.organization = organization;
 };
 
 module.exports.setToken = function (token) {
+  module.exports.clear();
   locals.token = token;
   locals.tokenTime = Infinity;
 };
@@ -75,13 +79,14 @@ module.exports.clear = function () {
   locals.tokenTime = 0;
 };
 
-// DEPRECATED methods.
+// DEPRECATED
 module.exports.set = function (uuid, secret) {
-  console.log('SDK DEPRECATED: Set in credentials.');
+  console.warn('SDK DEPRECATED: Set in credentials.');
   locals.uuid = uuid;
   locals.secret = secret;
 };
 
+// DEPRECATED
 module.exports.generateToken = function () {
   console.warn('SDK DEPRECATED: generateToken in credentials.');
   return Promise.resolve().then(function () {
@@ -89,8 +94,8 @@ module.exports.generateToken = function () {
       throw new Error('No credentials available.');
     }
     var header = JSON.stringify({ alg: 'HS256', 'typ': 'JWT' });
-    var body = JSON.stringify({ uuid: uuid });
-    var hmac = crypto.createHmac('sha256', secret);
+    var body = JSON.stringify({ uuid: locals.uuid });
+    var hmac = crypto.createHmac('sha256', locals.secret);
     var message = base64url.encode(header) + '.' + base64url.encode(body);
     return message + '.' + base64url.encode(hmac.update(message).digest());
   });
