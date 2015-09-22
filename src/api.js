@@ -165,6 +165,11 @@ const getZones = params => {
     });
 };
 
+const identifyDevice = deviceUuid => {
+  return channels.system.request({ name: 'identify' }, { deviceUuid: deviceUuid });
+};
+
+module.exports.identifyDevice = identifyDevice;
 
 module.exports.getCurrentDevice = getCurrentDevice;
 module.exports.getCurrentExperience = getCurrentExperience;
