@@ -2,23 +2,25 @@
 
 const Content = function (context) {
 
+  const self = this;
   const api = require('../api');
-  const config = require('./config');
+  const config = require('../config');
 
   this.uuid = context.content.uuid;
   this.document = context.content;
 
   this.children = [];
 
-  if (this.document.children.length === this.document.itemCount) {
+  console.log(this.document);
+
+  if (this.document.children && this.document.children.length === this.document.itemCount) {
     this.document.children.forEach(child => {
-      this.children.push(new Content({ content: child }));
+      self.children.push(new Content({ content: child }));
     });
   }
 
   this.getChildren = () => {
     if (this.document.itemCount != this.children.length) {
-      const self = this;
       return api.getContentNode(this.uuid)
       .then(that => {
         self.document = that.document;
