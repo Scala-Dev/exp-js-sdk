@@ -6,7 +6,8 @@ var sdk = {
   api: require('./api'),
   connection: require('./connection'),
   channels: require('./channels'),
-  utilities: require('./utilities')
+  utilities: require('./utilities'),
+  runtime: require('./runtime')
 };
 
 if (typeof window === 'object') window.scala = sdk;

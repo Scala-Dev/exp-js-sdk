@@ -23,7 +23,7 @@ var connect = function connect(options) {
   }
   socket = io(options.host, {
     forceNew: true,
-    query: 'token=' + options.token,
+    query: 'token=' + (options.token || ''),
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 20000,
@@ -47,6 +47,14 @@ var connect = function connect(options) {
   });
 };
 
+var disconnect = function disconnect() {
+  if (socket) {
+    socket.close();
+    socket = null;
+  }
+};
+
 module.exports.connect = connect;
+module.exports.disconnect = disconnect;
 module.exports.send = send;
 module.exports.events = events;
