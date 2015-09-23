@@ -11,8 +11,6 @@ const Content = function (context) {
 
   this.children = [];
 
-  console.log(this.document);
-
   if (this.document.children && this.document.children.length === this.document.itemCount) {
     this.document.children.forEach(child => {
       self.children.push(new Content({ content: child }));
