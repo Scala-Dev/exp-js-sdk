@@ -6,6 +6,7 @@ module.exports = function (context) {
 
   this.uuid = context.device.uuid;
   this.raw = context.device;
+  this.document = context.device;
 
   this.getExperience = function () {
     if (context.current) {
