@@ -32,7 +32,7 @@ const Content = function (context) {
   };
 
   this.getUrl = () => {
-    return config.host + '/api/delivery' + this.document.path;
+    return config.host + '/api/delivery' + escape(this.document.path);
   };
 
 };
