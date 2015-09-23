@@ -25453,11 +25453,11 @@ const identifyDevice = deviceUuid => {
   return channels.system.request({ name: 'identify' }, { deviceUuid: deviceUuid });
 };
 
-const getContentNode = contentUuid => {
+const getContentNode = uuid => {
   return Promise.resolve()
     .then(() => {
       if (!uuid) throw new Error('uuidRequired');
-      return get('/api/content/' + uuid);
+      return get('/api/content/' + uuid + '/children');
     })
     .then(content => {
       return new models.Content({ content: content });
@@ -25469,6 +25469,8 @@ const getContentNodes = params => {
 };
 
 module.exports.identifyDevice = identifyDevice;
+
+module.exports.getContentNode = getContentNode;
 
 module.exports.getCurrentDevice = getCurrentDevice;
 module.exports.getCurrentExperience = getCurrentExperience;
@@ -25488,7 +25490,7 @@ module.exports.getZones = getZones;
 module.exports.get = get;
 module.exports.fetch = fetch_;
 
-},{"./channels":219,"./config":220,"./credentials":222,"./models":228,"isomorphic-fetch":168}],219:[function(require,module,exports){
+},{"./channels":219,"./config":220,"./credentials":222,"./models":229,"isomorphic-fetch":168}],219:[function(require,module,exports){
 'use strict';
 
 const socket = require('./socket');
@@ -25611,7 +25613,7 @@ module.exports = {
   location: new Interface('location')
 };
 
-},{"./socket":231}],220:[function(require,module,exports){
+},{"./socket":232}],220:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -25643,7 +25645,7 @@ module.exports.on = events.on;
 
 
 
-},{"./socket":231,"./utilities":236}],222:[function(require,module,exports){
+},{"./socket":232,"./utilities":237}],222:[function(require,module,exports){
 'use strict';
 
 require('isomorphic-fetch');
@@ -25779,7 +25781,49 @@ module.exports = options => {
   });
 };
 
-},{"./config":220,"./credentials":222,"./socket":231}],224:[function(require,module,exports){
+},{"./config":220,"./credentials":222,"./socket":232}],224:[function(require,module,exports){
+'use strict';
+
+const Content = function (context) {
+
+  const self = this;
+  const api = require('../api');
+  const config = require('../config');
+
+  this.uuid = context.content.uuid;
+  this.document = context.content;
+
+  this.children = [];
+
+  if (this.document.children && this.document.children.length === this.document.itemCount) {
+    this.document.children.forEach(child => {
+      self.children.push(new Content({ content: child }));
+    });
+  }
+
+  this.getChildren = () => {
+    if (this.document.itemCount != this.children.length) {
+      return api.getContentNode(this.uuid)
+      .then(that => {
+        self.document = that.document;
+        self.children = that.children;
+
+        return self.children;
+      });
+    } else {
+      return Promise.resolve(this.children);
+    }
+  };
+
+  this.getUrl = () => {
+    return config.host + '/api/delivery' + escape(this.document.path);
+  };
+
+};
+
+module.exports = Content;
+
+},{"../api":218,"../config":220}],225:[function(require,module,exports){
 'use strict';
 
 module.exports = function (context) {
@@ -25809,7 +25853,7 @@ module.exports = function (context) {
 
 
 
-},{"../api":218}],225:[function(require,module,exports){
+},{"../api":218}],226:[function(require,module,exports){
 'use strict';
 
 module.exports = function (context) {
@@ -25826,7 +25870,7 @@ module.exports = function (context) {
 
 
 
-},{}],226:[function(require,module,exports){
+},{}],227:[function(require,module,exports){
 'use strict';
 
 module.exports = function (context) {
@@ -25843,7 +25887,7 @@ module.exports = function (context) {
 };
 
 
-},{"../api":218}],227:[function(require,module,exports){
+},{"../api":218}],228:[function(require,module,exports){
 'use strict';
 
 module.exports = function (context) {
@@ -25864,17 +25908,18 @@ module.exports = function (context) {
 };
 
 
-},{"../api":218}],228:[function(require,module,exports){
+},{"../api":218}],229:[function(require,module,exports){
 'use strict';
 
 module.exports = {
+  Content: require('./Content'),
   Device: require('./Device'),
   Experience: require('./Experience'),
   Location: require('./Location'),
   Zone: require('./Zone')
 };
 
-},{"./Device":224,"./Experience":225,"./Location":226,"./Zone":227}],229:[function(require,module,exports){
+},{"./Content":224,"./Device":225,"./Experience":226,"./Location":227,"./Zone":228}],230:[function(require,module,exports){
 'use strict';
 
 const config = require('./config');
@@ -25923,7 +25968,7 @@ module.exports.stop = () => {
 
 module.exports.on = events.on;
 
-},{"./config":220,"./credentials":222,"./socket":231,"./utilities":236}],230:[function(require,module,exports){
+},{"./config":220,"./credentials":222,"./socket":232,"./utilities":237}],231:[function(require,module,exports){
 'use strict';
 
 var sdk = {
@@ -25945,7 +25990,7 @@ module.exports = sdk;
 
 
 
-},{"./api":218,"./channels":219,"./config":220,"./connection":221,"./init":223,"./runtime":229,"./utilities":236}],231:[function(require,module,exports){
+},{"./api":218,"./channels":219,"./config":220,"./connection":221,"./init":223,"./runtime":230,"./utilities":237}],232:[function(require,module,exports){
 'use strict';
 
 const io = require('socket.io-client');
@@ -26014,7 +26059,7 @@ module.exports.events = events;
 
 
 
-},{"./utilities":236,"socket.io-client":170}],232:[function(require,module,exports){
+},{"./utilities":237,"socket.io-client":170}],233:[function(require,module,exports){
 'use strict';
 
 /**
@@ -26071,7 +26116,7 @@ function DataNode (options) {
 
 module.exports = DataNode;
 
-},{"./EventNode":234,"./Logger":235}],233:[function(require,module,exports){
+},{"./EventNode":235,"./Logger":236}],234:[function(require,module,exports){
 'use strict';
 
 function SDKError (code, message) {
@@ -26086,7 +26131,7 @@ SDKError.prototype.constructor = SDKError;
 
 module.exports = SDKError;
 
-},{}],234:[function(require,module,exports){
+},{}],235:[function(require,module,exports){
 'use strict';
 
 function EventNode () {
@@ -26109,7 +26154,7 @@ function EventNode () {
 
 module.exports = EventNode;
 
-},{}],235:[function(require,module,exports){
+},{}],236:[function(require,module,exports){
 'use strict';
 
 /**
@@ -26197,7 +26242,7 @@ const Logger = function(options) {
 
 module.exports = Logger;
 
-},{}],236:[function(require,module,exports){
+},{}],237:[function(require,module,exports){
 'use strict';
 
 /**
@@ -26217,4 +26262,4 @@ module.exports = {
   Error: SDKError
 };
 
-},{"./DataNode":232,"./Error":233,"./EventNode":234,"./Logger":235}]},{},[230]);
+},{"./DataNode":233,"./Error":234,"./EventNode":235,"./Logger":236}]},{},[231]);
