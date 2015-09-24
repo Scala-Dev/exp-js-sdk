@@ -137,6 +137,27 @@ var getZones = function getZones(params) {
   });
 };
 
+var identifyDevice = function identifyDevice(deviceUuid) {
+  return channels.system.request({ name: 'identify' }, { deviceUuid: deviceUuid });
+};
+
+var getContentNode = function getContentNode(uuid) {
+  return Promise.resolve().then(function () {
+    if (!uuid) throw new Error('uuidRequired');
+    return get('/api/content/' + uuid + '/children');
+  }).then(function (content) {
+    return new models.Content({ content: content });
+  });
+};
+
+var getContentNodes = function getContentNodes(params) {
+  return Promise.reject();
+};
+
+module.exports.identifyDevice = identifyDevice;
+
+module.exports.getContentNode = getContentNode;
+
 module.exports.getCurrentDevice = getCurrentDevice;
 module.exports.getCurrentExperience = getCurrentExperience;
 

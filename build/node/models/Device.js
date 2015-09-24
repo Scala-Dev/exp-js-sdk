@@ -19,4 +19,8 @@ module.exports = function (context) {
   this.getZone = function () {
     return api.getZone(context.device.zoneUuid);
   };
+
+  this.identify = function () {
+    return api.identifyDevice(context.device.uuid);
+  };
 };

@@ -169,7 +169,24 @@ const identifyDevice = deviceUuid => {
   return channels.system.request({ name: 'identify' }, { deviceUuid: deviceUuid });
 };
 
+const getContentNode = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/content/' + uuid + '/children');
+    })
+    .then(content => {
+      return new models.Content({ content: content });
+    });
+};
+
+const getContentNodes = params => {
+  return Promise.reject();
+};
+
 module.exports.identifyDevice = identifyDevice;
+
+module.exports.getContentNode = getContentNode;
 
 module.exports.getCurrentDevice = getCurrentDevice;
 module.exports.getCurrentExperience = getCurrentExperience;
