@@ -176,7 +176,7 @@ const getContentNode = uuid => {
       return get('/api/content/' + uuid + '/children');
     })
     .then(content => {
-      return new models.Content({ content: content });
+      return new models.ContentNode({ content: content });
     });
 };
 

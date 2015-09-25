@@ -1,6 +1,6 @@
 'use strict';
 
-const Content = function (context) {
+const ContentNode = function (context) {
 
   const self = this;
   const api = require('../api');
@@ -13,7 +13,7 @@ const Content = function (context) {
 
   if (this.document.children && this.document.children.length === this.document.itemCount) {
     this.document.children.forEach(child => {
-      self.children.push(new Content({ content: child }));
+      self.children.push(new ContentNode({ content: child }));
     });
   }
 
@@ -37,4 +37,4 @@ const Content = function (context) {
 
 };
 
-module.exports = Content;
+module.exports = ContentNode;

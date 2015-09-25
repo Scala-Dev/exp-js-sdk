@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  Content: require('./Content'),
+  ContentNode: require('./ContentNode'),
   Device: require('./Device'),
   Experience: require('./Experience'),
   Location: require('./Location'),
