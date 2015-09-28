@@ -93,6 +93,13 @@ Response callbacks will only be triggered when the request was sent on the same 
 
 # scala.api
 
+### scala.api.getContentNode(uuid)
+Get a content node by UUID. Resolves to a [ContentNode Object](#content-object). Note: The UUID value of 'root' will return the contents of the root folder of the current organization.
+```javascript
+scala.api.getContentNode('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(content => {});
+```
+
+
 ### scala.api.getCurrentDevice()
 Get the current device. Resolves to a [Device Object](#device-object).
 ```javascript
@@ -177,13 +184,32 @@ scala.api.identifyDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(rsp => {})
 
 # Abstract API Objects
 
+
+### ContentNode Object
+
+##### content.uuid
+The content's UUID.
+
+##### content.getChildren()
+Get the immediate children of this content node. Resolves to an array of [ContentNode Objects](#content-object).
+```javascript
+content.getChildren().then(children => {});
+```
+
+##### content.getUrl()
+Get the absolute url to the content node data. Useful for image/video tags or to download a content file.
+```javascript
+const url = content.getUrl();
+```
+
+
 ### Device Object
 
 ##### device.uuid
 The devices UUID
 
 ##### device.getExperience()
-Get the device's experience. Resolves to an [Experience Object](#experience-object)
+Get the device's experience. Resolves to an [Experience Object](#experience-object).
 ```javascript
 device.getExperience().then(experience => {});
 ```
@@ -195,7 +221,7 @@ device.getZone().then(zone => {});
 ```
 
 ##### device.identify()
-Request the device to identify itself. Resolve to response from targeted device
+Request the device to identify itself. Resolve to the response from targeted device.
 ```javascript
 device.identify().then(rsp => {});
 ```
@@ -209,18 +235,17 @@ The experience's UUID.
 #### experience.raw
 Temporary. The raw experience object.
 
+
 ### Location Object
 
 ##### location.uuid
 The location's UUID.
 
 ##### location.getZones()
-Get all of the zones in this location. Returns an array of [Zone Objects](#zone-object).
+Get all of the zones in this location. Resolves to an array of [Zone Objects](#zone-object).
 ```javascript
 location.getZones().then(zones => {});
 ```
-
-
 
 
 ### Zone Object
@@ -228,14 +253,14 @@ location.getZones().then(zones => {});
 The zone's UUID.
 
 ##### zone.getDevices()
-Get the zone's devices. Returns an array of [Device Objects](#device-object)
+Get the zone's devices. Resolves to an array of [Device Objects](#device-object)
 
 ```javascript
 zone.getDevices().then(devices => {});
 ```
 
 ##### zone.getLocation()
-Get the zone's location. Returns a [Location Object](#location-object)
+Get the zone's location. Resolves to a [Location Object](#location-object)
 
 ```javascript
 zone.getLocation().then(location => {});
