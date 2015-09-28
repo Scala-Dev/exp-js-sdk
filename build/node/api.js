@@ -11,7 +11,7 @@ var fetch_ = function fetch_(path, options) {
   var url = config.host + path;
   options.headers = options.headers || {};
   return Promise.resolve().then(function () {
-    return credentials.generateToken();
+    return credentials.getToken();
   }).then(function (token) {
     options.headers.Authorization = 'Bearer ' + token;
     return fetch(url, options);
@@ -146,7 +146,7 @@ var getContentNode = function getContentNode(uuid) {
     if (!uuid) throw new Error('uuidRequired');
     return get('/api/content/' + uuid + '/children');
   }).then(function (content) {
-    return new models.Content({ content: content });
+    return new models.ContentNode({ content: content });
   });
 };
 

@@ -1,6 +1,6 @@
 'use strict';
 
-var Content = function Content(context) {
+var ContentNode = function ContentNode(context) {
   var _this = this;
 
   var self = this;
@@ -14,7 +14,7 @@ var Content = function Content(context) {
 
   if (this.document.children && this.document.children.length === this.document.itemCount) {
     this.document.children.forEach(function (child) {
-      self.children.push(new Content({ content: child }));
+      self.children.push(new ContentNode({ content: child }));
     });
   }
 
@@ -36,4 +36,4 @@ var Content = function Content(context) {
   };
 };
 
-module.exports = Content;
+module.exports = ContentNode;

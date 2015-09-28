@@ -10,7 +10,7 @@ var sdk = {
   runtime: require('./runtime')
 };
 
-if (typeof window === 'object') window.scala = sdk;
+if (typeof window === 'object') window.exp = sdk;
 
 module.exports = sdk;
 
