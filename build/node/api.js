@@ -154,6 +154,26 @@ var getContentNodes = function getContentNodes(params) {
   return Promise.reject();
 };
 
+var getData = function getData(key, group) {
+  return Promise.resolve().then(function () {
+    return get('/api/data/' + group + '/' + key);
+  }).then(function (data) {
+    return new models.Data({ data: data });
+  });
+};
+
+var findData = function findData(params) {
+  return Promise.resolve().then(function () {
+    return get('/api/data', params);
+  }).then(function (query) {
+    var results = [];
+    query.results.forEach(function (data) {
+      results.push(new models.Data({ data: data }));
+    });
+    return results;
+  });
+};
+
 module.exports.identifyDevice = identifyDevice;
 
 module.exports.getContentNode = getContentNode;
@@ -172,6 +192,9 @@ module.exports.getLocations = getLocations;
 
 module.exports.getZone = getZone;
 module.exports.getZones = getZones;
+
+module.exports.getData = getData;
+module.exports.findData = findData;
 
 module.exports.get = get;
 module.exports.fetch = fetch_;

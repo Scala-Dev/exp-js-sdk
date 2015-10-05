@@ -184,6 +184,30 @@ const getContentNodes = params => {
   return Promise.reject();
 };
 
+const getData = (key, group) => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/data/' + group + '/' + key);
+    })
+    .then(data => {
+      return new models.Data({ data: data });
+    });
+};
+
+const findData = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/data', params);
+    })
+    .then(query => {
+      const results = [];
+      query.results.forEach(data => {
+	results.push(new models.Data({ data: data }));
+      });
+      return results;
+    });
+};
+
 module.exports.identifyDevice = identifyDevice;
 
 module.exports.getContentNode = getContentNode;
@@ -202,6 +226,9 @@ module.exports.getLocations = getLocations;
 
 module.exports.getZone = getZone;
 module.exports.getZones = getZones;
+
+module.exports.getData = getData;
+module.exports.findData = findData;
 
 module.exports.get = get;
 module.exports.fetch = fetch_;
