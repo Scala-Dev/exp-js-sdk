@@ -202,7 +202,7 @@ const findData = params => {
     .then(query => {
       const results = [];
       query.results.forEach(data => {
-	results.push(new models.Data({ data: data }));
+        results.push(new models.Data({ data: data }));
       });
       return results;
     });
