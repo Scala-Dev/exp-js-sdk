@@ -234,6 +234,12 @@ Get the absolute url to the content node data. Useful for image/video tags or to
 const url = content.getUrl();
 ```
 
+##### content.getVariantUrl(variantName)
+Get the url to the content nodes variant data.
+```javascript
+const url = content.getVariantUrl('320.png');
+```
+
 
 ### Device Object
 
