@@ -35,6 +35,11 @@ const ContentNode = function (context) {
     return config.host + '/api/delivery' + escape(this.document.path);
   };
 
+  this.getVariantUrl = name => {
+    const query = '?variant=' + encodeURIComponent(name);
+    return config.host + '/api/delivery' + escape(this.document.path) + query;
+  };
+
 };
 
 module.exports = ContentNode;
