@@ -187,7 +187,7 @@ const getContentNodes = params => {
 const getData = (key, group) => {
   return Promise.resolve()
     .then(() => {
-      return get('/api/data/' + group + '/' + key);
+      return get('/api/data/' + encodeURIComponent(group) + '/' + encodeURIComponent(key));
     })
     .then(data => {
       return new models.Data({ data: data });
