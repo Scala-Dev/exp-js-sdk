@@ -201,6 +201,19 @@ Request a device to identify itself. Resolve to response from targeted device
 exp.api.identifyDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(rsp => {});
 ```
 
+### exp.api.getData(key, group)
+Get data by key and group. Resolves to a [Data Object](#data-object).
+```javascript
+exp.api.getData("fluffy", "cats").then(data => {});
+```
+
+### exp.api.findData(params)
+Query for multiple data objects. Resolve to an array of [Data Objects](#data-object).
+```javascript
+exp.api.findData({
+  group: 'cats'
+}).then(cats => {});
+```
 # Abstract API Objects
 
 
@@ -284,3 +297,9 @@ Get the zone's location. Resolves to a [Location Object](#location-object)
 ```javascript
 zone.getLocation().then(location => {});
 ```
+
+### Data Object
+### data.key
+### data.value
+### data.group
+
