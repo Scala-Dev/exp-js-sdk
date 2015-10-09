@@ -8,6 +8,7 @@ const ContentNode = function (context) {
 
   this.uuid = context.content.uuid;
   this.document = context.content;
+  this.subtype = this.document.subtype;
 
   this.children = [];
 
@@ -18,7 +19,7 @@ const ContentNode = function (context) {
   }
 
   this.getChildren = () => {
-    if (this.document.itemCount != this.children.length) {
+    if (this.document.itemCount !== this.children.length) {
       return api.getContentNode(this.uuid)
       .then(that => {
         self.document = that.document;
@@ -32,12 +33,28 @@ const ContentNode = function (context) {
   };
 
   this.getUrl = () => {
-    return config.host + '/api/delivery' + escape(this.document.path);
+    if (this.subtype === 'scala:content:file') {
+      return config.host + '/api/delivery' + escape(this.document.path);
+    } else if (this.subtype === 'scala:content:app') {
+      return config.host + '/api/delivery' + escape(this.document.path) + '/index.html';
+    } else if (this.subtype === 'scala:content:url') {
+      return this.document.url;
+    }
+
+    return null;
   };
 
   this.getVariantUrl = name => {
-    const query = '?variant=' + encodeURIComponent(name);
-    return config.host + '/api/delivery' + escape(this.document.path) + query;
+    if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
+      const query = '?variant=' + encodeURIComponent(name);
+      return config.host + '/api/delivery' + escape(this.document.path) + query;
+    }
+
+    return null;
+  };
+
+  this.hasVariant = name => {
+    return this.document.variants && this.document.variants[name];
   };
 
 };
