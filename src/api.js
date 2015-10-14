@@ -88,6 +88,7 @@ const getDevices = params => {
     });
 };
 
+
 const getExperience = uuid => {
   return Promise.resolve()
     .then(() => {
@@ -139,32 +140,6 @@ const getLocations = params => {
     });
 };
 
-
-const getZone = uuid => {
-  return Promise.resolve()
-    .then(() => {
-      if (!uuid) throw new Error('uuidRequired');
-      return get('/api/zones/' + uuid);
-    })
-    .then(zone => {
-      return new models.Zone({ zone: zone });
-    });
-};
-
-const getZones = params => {
-  return Promise.resolve()
-    .then(() => {
-      return get('/api/zones', params);
-    })
-    .then(query => {
-      const zones = [];
-      query.results.forEach(zone => {
-        zones.push(new models.Zone({ zone: zone }));
-      });
-      return zones;
-    });
-};
-
 const identifyDevice = deviceUuid => {
   return channels.system.request({ name: 'identify' }, { deviceUuid: deviceUuid });
 };
@@ -180,9 +155,6 @@ const getContentNode = uuid => {
     });
 };
 
-const getContentNodes = params => {
-  return Promise.reject();
-};
 
 const getData = (key, group) => {
   return Promise.resolve()
@@ -211,21 +183,22 @@ const findData = params => {
 module.exports.identifyDevice = identifyDevice;
 
 module.exports.getContentNode = getContentNode;
+module.exports.getContent = getContentNode;
 
 module.exports.getCurrentDevice = getCurrentDevice;
 module.exports.getCurrentExperience = getCurrentExperience;
 
 module.exports.getExperience = getExperience;
 module.exports.getExperiences = getExperiences;
+module.exports.findExperiences = getExperiences;
 
 module.exports.getDevice = getDevice;
 module.exports.getDevices = getDevices;
+module.exports.findDevices = getDevices;
 
 module.exports.getLocation = getLocation;
 module.exports.getLocations = getLocations;
-
-module.exports.getZone = getZone;
-module.exports.getZones = getZones;
+module.exports.findLocations = getLocations;
 
 module.exports.getData = getData;
 module.exports.findData = findData;
