@@ -54,6 +54,9 @@ There are four channels available:
 - "organization": Messages to/from devices across the organization.
 - "experience": Messages to/from devices in the current experience.
 - "location": Messages to/from devices in the current location.
+ 
+### exp.channels.[channel].fling(uuid)
+Fling content on a channel. UUID is the UUID of the content object you are flinging.
 
 ### exp.channels.[channel].listen(options, callback)
 Register a callback for a message on this channel.
