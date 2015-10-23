@@ -1,9 +1,13 @@
 # Getting Started
 
-Add the JavaScript SDK to your node.js project as an NPM dependency, by adding the following to the `dependencies` section of your `package.json`
+If you are using NPM add the JavaScript SDK to your node.js project as an NPM dependency, by adding the following to the `dependencies` section of your `package.json`
 ```
 "exp-js-sdk": "git+https://github.com/scalainc/exp-js-sdk.git#develop",
 ```
+
+For use in a node.js application v0.12.7 and npm@2.14.0 are recommended - see the [embedded boilerplate](https://github.com/ScalaInc/exp-embedded-boilerplate) project.
+
+For use in a web app, browserify is recommended.
 
 # exp.runtime
 
