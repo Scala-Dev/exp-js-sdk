@@ -119,10 +119,10 @@ Response callbacks will only be triggered when the request was sent on the same 
 
 # exp.api
 
-### exp.api.getContent(uuid)
+### exp.api.getContentNode(uuid)
 Get a content object by UUID. Resolves to a [Content Object](#content-object). Note: The UUID value of 'root' will return the contents of the root folder of the current organization.
 ```javascript
-exp.api.getContent('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(content => {});
+exp.api.getContentNode('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(content => {});
 ```
 
 
