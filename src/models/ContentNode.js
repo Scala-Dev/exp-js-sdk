@@ -54,7 +54,9 @@ const ContentNode = function (context) {
   };
 
   this.hasVariant = name => {
-    return this.document.variants && this.document.variants[name];
+    return this.document.variants && this.document.variants.some(element => {
+      return element.name === name;
+    });
   };
 
 };
