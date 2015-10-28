@@ -11,7 +11,7 @@ For use in a web app, browserify is recommended.
 
 # exp.runtime
 
-## exp.runtime.start(options) 
+## exp.runtime.start(options)
 Initialize the SDK and connect to EXP.
 ```javascript
 exp.runtime.start({
@@ -58,7 +58,7 @@ There are four channels available:
 - "organization": Messages to/from devices across the organization.
 - "experience": Messages to/from devices in the current experience.
 - "location": Messages to/from devices in the current location.
- 
+
 ### exp.channels.[channel].fling(uuid)
 Fling content on a channel. UUID is the UUID of the content object you are flinging.
 
@@ -139,13 +139,29 @@ exp.api.getDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(device => {});
 ```
 
 ### exp.api.findDevices(params)
-Query for multiple devices. Resolves to an array of [Device Objects](#device-object).
+Query for multiple devices. Resolves to an object with a `results` array of [Device Objects](#device-object).
 ```javascript
 exp.api.findDevices({
     limit: 20, // The number of devices to retrieve at most
     skip: 5, // The number of devices to skip
     sort: 'field1', // The field to sort by.
   }).then(devices => {});
+```
+
+### exp.api.getThing(uuid)
+Get a single device by UUID. Resolves to a [Thing Object](#thing-object).
+```javascript
+exp.api.getThing('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(thing => {});
+```
+
+### exp.api.findThings(params)
+Query for multiple things. Resolves to an object with a `results` array of [Thing Objects](#thing-object).
+```javascript
+exp.api.findThing({
+    limit: 20, // The number of devices to retrieve at most
+    skip: 5, // The number of devices to skip
+    sort: 'name', // The field to sort by.
+  }).then(things => {});
 ```
 
 ### exp.api.getCurrentExperience()
@@ -161,9 +177,9 @@ exp.api.getExperience('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(experience =>
 ```
 
 ### exp.api.findExperiences(params)
-Query for multiple experiences. Resolves to an array of [Experience Objects](#experience-object).
+Query for multiple experiences. Resolves to an object with a `results` array of [Experience Objects](#experience-object).
 ```javascript
-exp.api.getExperiences({
+exp.api.findExperiences({
     limit: 20, // The number of devices to retrieve at most
     skip: 5, // The number of devices to skip
     sort: 'field1', // The field to sort by.
@@ -177,9 +193,9 @@ exp.api.getLocation('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(location => {})
 ```
 
 ### exp.api.findLocations(params)
-Query for multiple locations. Resolves to an array of [Location Objects](#location-object).
+Query for multiple locations. Resolves to an object with a `results` array of [Location Objects](#location-object).
 ```javascript
-exp.api.getLocations({
+exp.api.findLocations({
     limit: 20, // The number of devices to retrieve at most
     skip: 5, // The number of devices to skip
     sort: 'field1', // The field to sort by.
@@ -200,7 +216,7 @@ exp.api.getData("fluffy", "cats").then(data => {});
 ```
 
 ### exp.api.findData(params)
-Query for multiple data objects. Resolve to an array of [Data Objects](#data-object).
+Query for multiple data objects. Resolve to an object with a `results` array of [Data Objects](#data-object).
 ```javascript
 exp.api.findData({
   group: 'cats'
@@ -236,7 +252,7 @@ const url = content.getVariantUrl('320.png');
 ### Device Object
 
 ##### device.uuid
-The devices UUID
+The device's UUID
 
 ##### device.getExperience()
 Get the device's experience. Resolves to an [Experience Object](#experience-object).
@@ -249,6 +265,12 @@ Request the device to identify itself. Resolve to the response from targeted dev
 ```javascript
 device.identify().then(rsp => {});
 ```
+
+
+### Thing Object
+
+##### thing.uuid
+The thing's UUID
 
 
 ### Experience Object
@@ -267,7 +289,11 @@ The location's UUID.
 
 
 ### Data Object
-### data.key
-### data.value
-### data.group
+#### data.key
+The data item's key.
 
+#### data.value
+An arbitrary object that contains any data you want.
+
+#### data.group
+The data item's group.
