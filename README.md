@@ -15,7 +15,7 @@ For use in a web app, browserify is recommended.
 Initialize the SDK and connect to EXP.
 ```javascript
 exp.runtime.start({
-  host: 'http://exp.scala.com',
+  host: 'https://api.exp.scala.com',
   uuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Device uuid.
   secret: 'mashed potatoes' // Device secret
 }).then(() => {}); // sdk is initialized and connected to EXP
