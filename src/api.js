@@ -84,7 +84,33 @@ const getDevices = params => {
       query.results.forEach(device => {
         devices.push(new models.Device({ device: device }));
       });
-      return devices;
+      return { total: query.total, results: devices };
+    });
+};
+
+
+const getThing = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/things/' + uuid);
+    })
+    .then(thing => {
+      return new models.Device({ thing: thing });
+    });
+};
+
+const findThings = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/things', params);
+    })
+    .then(query => {
+      const things = [];
+      query.results.forEach(thing => {
+        things.push(new models.Thing({ thing: thing }));
+      });
+      return { total: query.total, results: things };
     });
 };
 
@@ -110,7 +136,7 @@ const getExperiences = params => {
       query.results.forEach(experience => {
         experiences.push(new models.Experience({ experience: experience }));
       });
-      return experiences;
+      return { total: query.total, results: experiences };
     });
 };
 
@@ -136,7 +162,7 @@ const getLocations = params => {
       query.results.forEach(location => {
         locations.push(new models.Location({ location: location }));
       });
-      return locations;
+      return { total: query.total, results: locations };
     });
 };
 
@@ -176,7 +202,7 @@ const findData = params => {
       query.results.forEach(data => {
         results.push(new models.Data({ data: data }));
       });
-      return results;
+      return { total: query.total, results: results };
     });
 };
 
@@ -199,6 +225,9 @@ module.exports.findDevices = getDevices;
 module.exports.getLocation = getLocation;
 module.exports.getLocations = getLocations;
 module.exports.findLocations = getLocations;
+
+module.exports.getThing = getThing;
+module.exports.findThing = findThing;
 
 module.exports.getData = getData;
 module.exports.findData = findData;
