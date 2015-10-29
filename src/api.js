@@ -227,7 +227,7 @@ module.exports.getLocations = getLocations;
 module.exports.findLocations = getLocations;
 
 module.exports.getThing = getThing;
-module.exports.findThing = findThing;
+module.exports.findThings = findThings;
 
 module.exports.getData = getData;
 module.exports.findData = findData;
