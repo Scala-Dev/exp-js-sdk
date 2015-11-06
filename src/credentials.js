@@ -29,7 +29,7 @@ const refreshUserToken = () => {
     body: JSON.stringify({
       username: locals.username,
       password: locals.password,
-      organization: locals.organization
+      org: locals.organization
     })
   }).then(response => {
     if (!response.ok) return Promise.reject('Authentication failed');
