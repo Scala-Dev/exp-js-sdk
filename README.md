@@ -13,7 +13,7 @@ For use in a web app, browserify is recommended.
 
 ## exp.runtime.start(options)
 Initialize the SDK and connect to EXP.
-User authentication is also supported:
+To authenticate on a consumer network call start():
 ```javascript
 exp.runtime.start({
   networkUuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Network uuid
