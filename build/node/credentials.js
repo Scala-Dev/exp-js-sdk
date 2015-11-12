@@ -11,6 +11,8 @@ var locals = { tokenTime: 0 };
 var refreshToken = function refreshToken() {
   if (locals.uuid && locals.secret) {
     return refreshDeviceToken();
+  } else if (locals.networkUuid && locals.apiKey) {
+    return refreshNetworkToken();
   } else if (locals.username && locals.password && locals.organization) {
     return refreshUserToken();
   } else {
@@ -27,7 +29,7 @@ var refreshUserToken = function refreshUserToken() {
     body: JSON.stringify({
       username: locals.username,
       password: locals.password,
-      organization: locals.organization
+      org: locals.organization
     })
   }).then(function (response) {
     if (!response.ok) return Promise.reject('Authentication failed');
@@ -40,8 +42,18 @@ var refreshUserToken = function refreshUserToken() {
 
 var refreshDeviceToken = function refreshDeviceToken() {
   var header = JSON.stringify({ alg: 'HS256', 'typ': 'JWT' });
-  var body = JSON.stringify({ uuid: locals.uuid });
+  var body = JSON.stringify({ uuid: locals.uuid, deviceUuid: locals.uuid });
   var hmac = crypto.createHmac('sha256', locals.secret);
+  var message = base64url.encode(header) + '.' + base64url.encode(body);
+  locals.token = message + '.' + base64url.encode(hmac.update(message).digest());
+  locals.tokenTime = new Date();
+  return Promise.resolve(locals.token);
+};
+
+var refreshNetworkToken = function refreshNetworkToken() {
+  var header = JSON.stringify({ alg: 'HS256', 'typ': 'JWT' });
+  var body = JSON.stringify({ networkUuid: locals.networkUuid });
+  var hmac = crypto.createHmac('sha256', locals.apiKey);
   var message = base64url.encode(header) + '.' + base64url.encode(body);
   locals.token = message + '.' + base64url.encode(hmac.update(message).digest());
   locals.tokenTime = new Date();
@@ -52,6 +64,12 @@ module.exports.setDeviceCredentials = function (uuid, secret) {
   module.exports.clear();
   locals.uuid = uuid;
   locals.secret = secret;
+};
+
+module.exports.setNetworkCredentials = function (uuid, apiKey) {
+  module.exports.clear();
+  locals.networkUuid = uuid;
+  locals.apiKey = apiKey;
 };
 
 module.exports.setUserCredentials = function (username, password, organization) {

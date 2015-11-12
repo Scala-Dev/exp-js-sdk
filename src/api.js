@@ -36,32 +36,41 @@ const createQueryString = obj => {
 
 const get = (path, params) => {
   if (params) path += createQueryString(params);
-  return fetch_(path, { method: 'get' });
+  return fetch_(path, {method: 'get'});
 };
 
-
+const post = (path, params, body) => {
+  var options = {
+    method: 'post',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  };
+  if (body) options.body = body;
+  if (params) path += createQueryString(params);
+  return fetch_(path, options);
+};
 
 const getCurrentDevice = () => {
   return Promise.resolve()
     .then(() => {
-      return channels.system.request({ name: 'getCurrentDevice' });
+      return channels.system.request({name: 'getCurrentDevice'});
     })
     .then(device => {
-      return new models.Device({ device: device, current: true });
+      return new models.Device({device: device, current: true});
     });
 };
-
 
 const getCurrentExperience = () => {
   return Promise.resolve()
     .then(() => {
-      return channels.system.request({ name: 'getCurrentExperience' });
+      return channels.system.request({name: 'getCurrentExperience'});
     })
     .then(experience => {
-      return new models.Experience({ experience: experience });
+      return new models.Experience({experience: experience});
     });
 };
-
 
 const getDevice = uuid => {
   return Promise.resolve()
@@ -70,7 +79,7 @@ const getDevice = uuid => {
       return get('/api/devices/' + uuid);
     })
     .then(device => {
-      return new models.Device({ device: device });
+      return new models.Device({device: device});
     });
 };
 
@@ -82,12 +91,11 @@ const getDevices = params => {
     .then(query => {
       const devices = [];
       query.results.forEach(device => {
-        devices.push(new models.Device({ device: device }));
+        devices.push(new models.Device({device: device}));
       });
-      return { total: query.total, results: devices };
+      return {total: query.total, results: devices};
     });
 };
-
 
 const getThing = uuid => {
   return Promise.resolve()
@@ -96,7 +104,7 @@ const getThing = uuid => {
       return get('/api/things/' + uuid);
     })
     .then(thing => {
-      return new models.Device({ thing: thing });
+      return new models.Device({thing: thing});
     });
 };
 
@@ -108,12 +116,11 @@ const findThings = params => {
     .then(query => {
       const things = [];
       query.results.forEach(thing => {
-        things.push(new models.Thing({ thing: thing }));
+        things.push(new models.Thing({thing: thing}));
       });
-      return { total: query.total, results: things };
+      return {total: query.total, results: things};
     });
 };
-
 
 const getExperience = uuid => {
   return Promise.resolve()
@@ -122,7 +129,7 @@ const getExperience = uuid => {
       return get('/api/experiences/' + uuid);
     })
     .then(experience => {
-      return new models.Experience({ experience: experience });
+      return new models.Experience({experience: experience});
     });
 };
 
@@ -134,12 +141,11 @@ const getExperiences = params => {
     .then(query => {
       const experiences = [];
       query.results.forEach(experience => {
-        experiences.push(new models.Experience({ experience: experience }));
+        experiences.push(new models.Experience({experience: experience}));
       });
-      return { total: query.total, results: experiences };
+      return {total: query.total, results: experiences};
     });
 };
-
 
 const getLocation = uuid => {
   return Promise.resolve()
@@ -148,7 +154,7 @@ const getLocation = uuid => {
       return get('/api/locations/' + uuid);
     })
     .then(location => {
-      return new models.Location({ location: location });
+      return new models.Location({location: location});
     });
 };
 
@@ -160,14 +166,14 @@ const getLocations = params => {
     .then(query => {
       const locations = [];
       query.results.forEach(location => {
-        locations.push(new models.Location({ location: location }));
+        locations.push(new models.Location({location: location}));
       });
-      return { total: query.total, results: locations };
+      return {total: query.total, results: locations};
     });
 };
 
 const identifyDevice = deviceUuid => {
-  return channels.system.request({ name: 'identify' }, { deviceUuid: deviceUuid });
+  return channels.system.request({name: 'identify'}, {deviceUuid: deviceUuid});
 };
 
 const getContentNode = uuid => {
@@ -177,10 +183,9 @@ const getContentNode = uuid => {
       return get('/api/content/' + uuid + '/children');
     })
     .then(content => {
-      return new models.ContentNode({ content: content });
+      return new models.ContentNode({content: content});
     });
 };
-
 
 const getData = (key, group) => {
   return Promise.resolve()
@@ -188,7 +193,7 @@ const getData = (key, group) => {
       return get('/api/data/' + encodeURIComponent(group) + '/' + encodeURIComponent(key));
     })
     .then(data => {
-      return new models.Data({ data: data });
+      return new models.Data({data: data});
     });
 };
 
@@ -200,9 +205,9 @@ const findData = params => {
     .then(query => {
       const results = [];
       query.results.forEach(data => {
-        results.push(new models.Data({ data: data }));
+        results.push(new models.Data({data: data}));
       });
-      return { total: query.total, results: results };
+      return {total: query.total, results: results};
     });
 };
 
@@ -233,4 +238,6 @@ module.exports.getData = getData;
 module.exports.findData = findData;
 
 module.exports.get = get;
+module.exports.post = post;
+
 module.exports.fetch = fetch_;
