@@ -6,5 +6,6 @@ module.exports = {
   Experience: require('./Experience'),
   Location: require('./Location'),
   Zone: require('./Zone'),
-  Data: require('./Data')
+  Data: require('./Data'),
+  Thing: require('./Thing')
 };
