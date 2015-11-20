@@ -4,10 +4,9 @@ var sdk = {
   init: require('./init'),
   config: require('./config'),
   api: require('./api'),
+  lib: require('./lib'),
   connection: require('./connection'),
   channels: require('./channels'),
-  utilities: require('./utilities'), // Deprecate for lib
-  lib: require('./utilities'),
   runtime: require('./runtime')
 };
 
