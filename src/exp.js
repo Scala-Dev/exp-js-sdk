@@ -1,6 +1,6 @@
 'use strict';
 
-const lib = require('./utilities');
+const lib = require('./lib');
 
 const sdk = new lib.Context();
 

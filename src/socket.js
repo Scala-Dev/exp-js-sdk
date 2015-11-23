@@ -1,7 +1,7 @@
 'use strict';
 
 const io = require('socket.io-client');
-const lib = require('./utilities');
+const lib = require('./lib');
 
 const log = new lib.Logger({ name: 'Socket' });
 

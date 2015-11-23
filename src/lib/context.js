@@ -8,8 +8,8 @@ module.exports = class Context {
       api: require('../api'),
       connection: require('../connection'),
       channels: require('../channels'),
-      utilities: require('../utilities'), // Deprecate for lib
-      lib: require('../utilities'),
+      utilities: require('./'), // Deprecate for lib
+      lib: require('./'),
       runtime: require('../runtime')
     };
   }

@@ -4,4 +4,5 @@ bower_components
 .DS_Store
 out
 dist
+build
 *~
