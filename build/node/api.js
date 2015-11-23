@@ -48,8 +48,8 @@ var getCurrentDevice = function getCurrentDevice() {
 var getCurrentExperience = function getCurrentExperience() {
   return Promise.resolve().then(function () {
     return channels.system.request({ name: 'getCurrentExperience' });
-  }).then(function (experience) {
-    return new models.Experience({ experience: experience });
+  }).then(function (document) {
+    return new models.Experience(document);
   });
 };
 
@@ -70,7 +70,28 @@ var getDevices = function getDevices(params) {
     query.results.forEach(function (device) {
       devices.push(new models.Device({ device: device }));
     });
-    return devices;
+    return { total: query.total, results: devices };
+  });
+};
+
+var getThing = function getThing(uuid) {
+  return Promise.resolve().then(function () {
+    if (!uuid) throw new Error('uuidRequired');
+    return get('/api/things/' + uuid);
+  }).then(function (thing) {
+    return new models.Device({ thing: thing });
+  });
+};
+
+var findThings = function findThings(params) {
+  return Promise.resolve().then(function () {
+    return get('/api/things', params);
+  }).then(function (query) {
+    var things = [];
+    query.results.forEach(function (thing) {
+      things.push(new models.Thing({ thing: thing }));
+    });
+    return { total: query.total, results: things };
   });
 };
 
@@ -78,8 +99,8 @@ var getExperience = function getExperience(uuid) {
   return Promise.resolve().then(function () {
     if (!uuid) throw new Error('uuidRequired');
     return get('/api/experiences/' + uuid);
-  }).then(function (experience) {
-    return new models.Experience({ experience: experience });
+  }).then(function (document) {
+    return new models.Experience(document);
   });
 };
 
@@ -88,10 +109,10 @@ var getExperiences = function getExperiences(params) {
     return get('/api/experiences', params);
   }).then(function (query) {
     var experiences = [];
-    query.results.forEach(function (experience) {
-      experiences.push(new models.Experience({ experience: experience }));
+    query.results.forEach(function (document) {
+      experiences.push(new models.Experience(document));
     });
-    return experiences;
+    return { total: query.total, results: experiences };
   });
 };
 
@@ -112,28 +133,7 @@ var getLocations = function getLocations(params) {
     query.results.forEach(function (location) {
       locations.push(new models.Location({ location: location }));
     });
-    return locations;
-  });
-};
-
-var getZone = function getZone(uuid) {
-  return Promise.resolve().then(function () {
-    if (!uuid) throw new Error('uuidRequired');
-    return get('/api/zones/' + uuid);
-  }).then(function (zone) {
-    return new models.Zone({ zone: zone });
-  });
-};
-
-var getZones = function getZones(params) {
-  return Promise.resolve().then(function () {
-    return get('/api/zones', params);
-  }).then(function (query) {
-    var zones = [];
-    query.results.forEach(function (zone) {
-      zones.push(new models.Zone({ zone: zone }));
-    });
-    return zones;
+    return { total: query.total, results: locations };
   });
 };
 
@@ -150,13 +150,9 @@ var getContentNode = function getContentNode(uuid) {
   });
 };
 
-var getContentNodes = function getContentNodes(params) {
-  return Promise.reject();
-};
-
 var getData = function getData(key, group) {
   return Promise.resolve().then(function () {
-    return get('/api/data/' + group + '/' + key);
+    return get('/api/data/' + encodeURIComponent(group) + '/' + encodeURIComponent(key));
   }).then(function (data) {
     return new models.Data({ data: data });
   });
@@ -170,28 +166,32 @@ var findData = function findData(params) {
     query.results.forEach(function (data) {
       results.push(new models.Data({ data: data }));
     });
-    return results;
+    return { total: query.total, results: results };
   });
 };
 
 module.exports.identifyDevice = identifyDevice;
 
 module.exports.getContentNode = getContentNode;
+module.exports.getContent = getContentNode;
 
 module.exports.getCurrentDevice = getCurrentDevice;
 module.exports.getCurrentExperience = getCurrentExperience;
 
 module.exports.getExperience = getExperience;
 module.exports.getExperiences = getExperiences;
+module.exports.findExperiences = getExperiences;
 
 module.exports.getDevice = getDevice;
 module.exports.getDevices = getDevices;
+module.exports.findDevices = getDevices;
 
 module.exports.getLocation = getLocation;
 module.exports.getLocations = getLocations;
+module.exports.findLocations = getLocations;
 
-module.exports.getZone = getZone;
-module.exports.getZones = getZones;
+module.exports.getThing = getThing;
+module.exports.findThings = findThings;
 
 module.exports.getData = getData;
 module.exports.findData = findData;

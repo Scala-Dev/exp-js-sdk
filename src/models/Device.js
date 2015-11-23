@@ -20,5 +20,3 @@ module.exports = function (context) {
     return api.identifyDevice(context.device.uuid);
   };
 };
-
-

@@ -57,8 +57,8 @@ const getCurrentExperience = () => {
     .then(() => {
       return channels.system.request({ name: 'getCurrentExperience' });
     })
-    .then(experience => {
-      return new models.Experience({ experience: experience });
+    .then(document => {
+      return new models.Experience(document);
     });
 };
 
@@ -121,8 +121,8 @@ const getExperience = uuid => {
       if (!uuid) throw new Error('uuidRequired');
       return get('/api/experiences/' + uuid);
     })
-    .then(experience => {
-      return new models.Experience({ experience: experience });
+    .then(document => {
+      return new models.Experience(document);
     });
 };
 
@@ -133,8 +133,8 @@ const getExperiences = params => {
     })
     .then(query => {
       const experiences = [];
-      query.results.forEach(experience => {
-        experiences.push(new models.Experience({ experience: experience }));
+      query.results.forEach(document => {
+        experiences.push(new models.Experience(document));
       });
       return { total: query.total, results: experiences };
     });

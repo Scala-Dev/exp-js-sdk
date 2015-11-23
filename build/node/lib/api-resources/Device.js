@@ -2,7 +2,7 @@
 
 module.exports = function (context) {
 
-  var api = require('../api');
+  var api = require('../../api');
 
   this.uuid = context.device.uuid;
   this.raw = context.device;
