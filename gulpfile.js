@@ -13,12 +13,12 @@ gulp.task('build-node', function () {
 });
 
 gulp.task('build-webbrowser', ['build-node'], function () {
-  return browserify('./scala.js', {
+  return browserify('./exp.js', {
     basedir: './build/node',
     paths: ['./']
   })
     .bundle()
-    .pipe(source('scala-sdk.js'))
+    .pipe(source('exp-js-sdk.js'))
     .pipe(buffer())
     .pipe(gulp.dest('./build/webbrowser'));
 });

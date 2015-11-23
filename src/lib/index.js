@@ -14,5 +14,6 @@ module.exports = {
   Logger: Logger,
   EventNode: EventNode,
   DataNode: DataNode,
-  Error: SDKError
+  Error: SDKError,
+  Context: require('./context')
 };

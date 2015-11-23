@@ -1,9 +1,19 @@
 'use strict';
 
+/**
+ * Utilities
+ * @namespace scala.utilities
+ */
+
+var Logger = require('./Logger');
+var EventNode = require('./EventNode');
+var DataNode = require('./DataNode');
+var SDKError = require('./Error');
+
 module.exports = {
-  apiResources: require('./api-resources'),
-  EventNode: require('./event-node'),
-  apiUtils: require('./api-utils'),
-  Logger: require('./logger'),
-  Error: require('./error')
+  Logger: Logger,
+  EventNode: EventNode,
+  DataNode: DataNode,
+  Error: SDKError,
+  Context: require('./context')
 };

@@ -3,9 +3,9 @@
 var config = require('./config');
 var credentials = require('./credentials');
 var socket = require('./socket');
-var utilities = require('./utilities');
+var lib = require('./lib');
 
-var events = new utilities.EventNode();
+var events = new lib.EventNode();
 var resolve_;
 
 socket.events.on('online', function () {

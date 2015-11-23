@@ -1,13 +1,13 @@
 'use strict';
 
 var io = require('socket.io-client');
-var utilities = require('./utilities');
+var lib = require('./utilities');
 
-var log = new utilities.Logger({ name: 'Socket' });
+var log = new lib.Logger({ name: 'Socket' });
 
 var socket = null;
 
-var events = new utilities.EventNode();
+var events = new lib.EventNode();
 
 var send = function send(message) {
   if (!socket) return null;

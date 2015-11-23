@@ -2,10 +2,10 @@
 
 /* Wrapper for socket connection/disconnection events and control. */
 
-const utilities = require('./utilities');
+const lib = require('./lib');
 const socket = require('./socket');
 
-const events = new utilities.EventNode();
+const events = new lib.EventNode();
 
 socket.events.on('online', () => {
   events.trigger('online');
