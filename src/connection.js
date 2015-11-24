@@ -1,7 +1,5 @@
 'use strict';
 
-/* Wrapper for socket connection/disconnection events and control. */
-
 const lib = require('./lib');
 const socket = require('./socket');
 

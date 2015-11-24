@@ -24,6 +24,7 @@ module.exports = class Runtime {
     options.deviceUuid = options.uuid || options.deviceUuid;
     options.deviceSecret = options.secret || options.deviceSecret;
     config.host = options.host || config.host;
+
     if (options.deviceUuid && options.deviceSecret) {
       config.deviceUuid = options.deviceUuid;
       credentials.setDeviceCredentials(options.deviceUuid, options.deviceSecret, options.allowPairing);

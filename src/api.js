@@ -40,37 +40,14 @@ const get = (path, params) => {
 };
 
 
-
-const getCurrentDevice = () => {
-  return Promise.resolve()
-    .then(() => {
-      return channels.system.request({ name: 'getCurrentDevice' });
-    })
-    .then(device => {
-      return new models.Device({ device: device, current: true });
-    });
-};
-
-
-const getCurrentExperience = () => {
-  return Promise.resolve()
-    .then(() => {
-      return channels.system.request({ name: 'getCurrentExperience' });
-    })
-    .then(document => {
-      return new models.Experience(document);
-    });
-};
-
-
 const getDevice = uuid => {
   return Promise.resolve()
     .then(() => {
       if (!uuid) throw new Error('uuidRequired');
       return get('/api/devices/' + uuid);
     })
-    .then(device => {
-      return new models.Device({ device: device });
+    .then(document => {
+      return new models.Device(document);
     });
 };
 
@@ -81,10 +58,17 @@ const getDevices = params => {
     })
     .then(query => {
       const devices = [];
-      query.results.forEach(device => {
-        devices.push(new models.Device({ device: device }));
+      query.results.forEach(document => {
+        devices.push(new models.Device(document));
       });
       return { total: query.total, results: devices };
+    });
+};
+
+const getCurrentDevice = () => {
+  return Promise.resolve()
+    .then(() => {
+      return getDevice(config.deviceUuid);
     });
 };
 
@@ -140,6 +124,20 @@ const getExperiences = params => {
     });
 };
 
+const getCurrentExperience = () => {
+  return Promise.resolve()
+    .then(() => {
+      return getCurrentDevice();
+    })
+    .then(device => {
+      console.log('TEST');
+      console.log(device);
+      if (!device.experience || !device.experience.uuid) {
+        return Promise.reject('This device has no experience.');
+      }
+      return getExperience(device.experience.uuid);
+    });
+};
 
 const getLocation = uuid => {
   return Promise.resolve()

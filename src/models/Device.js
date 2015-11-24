@@ -1,22 +1,24 @@
 'use strict';
 
-module.exports = function (context) {
+const Resource = require('./resource');
 
-  const api = require('../api');
+module.exports = class Device extends Resource {
 
-  this.uuid = context.device.uuid;
-  this.raw = context.device;
-  this.document = context.device;
+  refresh () {
+    const api = require('../api');
+    return api.getDevice(this.document.uuid).then(device => {
+      this.document = device.document;
+      return this;
+    });
+  }
 
-  this.getExperience = () => {
-    if (context.current) {
-      return api.getCurrentExperience();
-    } else {
-      return api.getExperience(context.device.experienceUuid);
-    }
-  };
+  get experience () {
+    return this.document.experience;
+  }
 
-  this.identify = () => {
-    return api.identifyDevice(context.device.uuid);
-  };
+  identify () {
+    const api = require('../api');
+    return api.identifyDevice(this.uuid);
+  }
+
 };
