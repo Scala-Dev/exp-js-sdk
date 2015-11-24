@@ -42,7 +42,7 @@ const refreshUserToken = () => {
 
 const refreshDeviceToken = () => {
   var header = JSON.stringify({ alg: 'HS256', 'typ': 'JWT' });
-  var body = JSON.stringify({ uuid: locals.uuid, deviceUuid: locals.uuid });
+  var body = JSON.stringify({ uuid: locals.uuid, deviceUuid: locals.uuid, allowPairing: locals.allowPairing });
   var hmac = crypto.createHmac('sha256', locals.secret);
   var message = base64url.encode(header) + '.' + base64url.encode(body);
   locals.token = message + '.' + base64url.encode(hmac.update(message).digest());
@@ -60,10 +60,11 @@ const refreshNetworkToken = () => {
   return Promise.resolve(locals.token);
 };
 
-module.exports.setDeviceCredentials = (uuid, secret) => {
+module.exports.setDeviceCredentials = (uuid, secret, allowPairing) => {
   module.exports.clear();
   locals.uuid = uuid;
   locals.secret = secret;
+  locals.allowPairing = allowPairing;
 };
 
 module.exports.setNetworkCredentials = (uuid, apiKey) => {
