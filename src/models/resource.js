@@ -23,4 +23,8 @@ module.exports = class Resource {
     return bus.getChannel(this.uuid).listen(name, callback);
   }
 
+  refresh () {
+    return Promise.reject('Not implemented');
+  }
+
 };
