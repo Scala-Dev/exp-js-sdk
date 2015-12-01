@@ -17,11 +17,13 @@ const fetch_ = (path, options) => {
       return fetch(url, options);
     })
     .then(response => {
+      if (!response.ok) {
+        // Why is this not the way fetch works?
+        return Promise.reject(response);
+      }
       return response.json();
-    })
-    .catch(error => {
-      throw new Error(error);
     });
+
 };
 
 const createQueryString = obj => {
@@ -47,6 +49,8 @@ const getDevice = uuid => {
       return get('/api/devices/' + uuid);
     })
     .then(document => {
+      console.log('HERE IS DEVICE');
+      console.log(document);
       return new models.Device(document);
     });
 };
@@ -106,6 +110,8 @@ const getExperience = uuid => {
       return get('/api/experiences/' + uuid);
     })
     .then(document => {
+      console.log('HERE IS EXPERIENCE');
+      console.log(document);
       return new models.Experience(document);
     });
 };

@@ -3,8 +3,7 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var babel = require('gulp-babel');
-
-// player tasks
+var mocha = require('gulp-mocha');
 
 gulp.task('build-node', function () {
   return gulp.src('./src/**/*')
@@ -23,3 +22,11 @@ gulp.task('build-webbrowser', ['build-node'], function () {
     .pipe(gulp.dest('./build/webbrowser'));
 });
 gulp.task('default', ['build-webbrowser']);
+
+
+gulp.task('test', ['build-node'], function () {
+  return gulp.src('./test/**/*.spec.js')
+    .pipe(mocha({ reporter: 'nyan' }))
+    .once('error', function () { process.exit.bind(process, 1); })
+    .once('end', function () { process.exit(); });
+});

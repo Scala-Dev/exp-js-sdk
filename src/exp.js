@@ -1,10 +1,12 @@
 'use strict';
 
-const components = require('./components');
+const Runtime = require('./components/Runtime');
+const Network = require('./components/Network');
+
 const models = require('./models');
 
 const sdk = {
-  runtime: new components.Runtime(),
+  runtime: new Runtime(),
   api: require('./api'),
   bus: require('./bus'),
   channels: require('./channels'),
@@ -12,8 +14,12 @@ const sdk = {
   connection: require('./connection'), // Deprecated
   lib: require('./lib'),
   utilities: require('./lib'), // Deprecated
-  components: components,
-  models: models
+  models: models,
+  network: new Network(),
+  components: {
+    Runtime: Runtime,
+    Network: Network
+  }
 };
 
 sdk.init = sdk.runtime.start;
