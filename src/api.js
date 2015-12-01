@@ -1,7 +1,9 @@
 'use strict';
 
 require('isomorphic-fetch');
-const credentials = require('./credentials');
+
+const Runtime = require('./components/Runtime');
+const runtime = new Runtime();
 
 const models = require('./models');
 const channels = require('./channels');
@@ -11,9 +13,8 @@ const fetch_ = (path, options) => {
   const url = config.host + path;
   options.headers = options.headers || {};
   return Promise.resolve()
-    .then(() => credentials.getToken())
-    .then(token => {
-      options.headers.Authorization = 'Bearer ' + token;
+    .then(() => {
+      options.headers.Authorization = 'Bearer ' + runtime.token;
       return fetch(url, options);
     })
     .then(response => {
