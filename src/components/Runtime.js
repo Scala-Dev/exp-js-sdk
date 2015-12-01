@@ -1,68 +1,167 @@
 'use strict';
 
+const jwt = require('jsonwebtoken');
+require('isomorphic-fetch');
+
 const lib = require('../lib');
 const socket = require('../socket');
-const credentials = require('../credentials');
-
-const config = require('../config');
 
 const runtimes = [];
+const shared = {};
 
-let startResolver;
+let resolve_;
+let reject_;
 
 module.exports = class Runtime {
 
   constructor () {
-    this.events = new lib.EventNode();
+    this._events = new lib.EventNode();
     this.on = this.events.on;
-    this.config = config;
     runtimes.push(this);
-  }
+  } 
 
-  start (options) {
-    options = options || {};
-    options.deviceUuid = options.uuid || options.deviceUuid;
-    options.deviceSecret = options.secret || options.deviceSecret;
-    config.host = options.host || config.host;
-
-    if (options.deviceUuid && options.deviceSecret) {
-      config.deviceUuid = options.deviceUuid;
-      credentials.setDeviceCredentials(options.deviceUuid, options.deviceSecret, options.allowPairing);
-    } else if (options.networkUuid && options.apiKey) {
-      credentials.setNetworkCredentials(options.networkUuid, options.apiKey);
-    } else if (options.username && options.password && options.organization) {
-      credentials.setUserCredentials(options.username, options.password, options.organization);
-    } else if (options.token) {
-      credentials.setToken(options.token);
-    }
+  start (options) {    
     return new Promise((resolve, reject) => {
-      startResolver= resolve;
-      return credentials.getToken()
-        .then(token => {
-          socket.connect({ token: token, host: config.host });
-        })
-        .catch(reject);
+      resolve_ = resolve;
+      reject_ = reject;
+      this._validateOptions(options);
+      this.stop();
+      shared = {};
+      shared.options = options || {};
+      if (shared.options.token) shared.token = shared.options.token;
+      this.refresh();
     });
   }
 
+  static _validateOptions (options) {
+    if (options.username) {
+      this._validateUserOptions();
+    } else if (options.deviceUuid) {
+      this._validateDeviceOptions();
+    } else if (options.consumerAppUuid) {
+      this._validateConsumerAppOptions();
+    } else if (!options.token) {
+      throw new Error('Please specify user, device, or consumer app credentials.');
+    } 
+  }
+
+  static _validateUserOptions (options) {
+    if (!options.password) throw new Error('Please specify a password.');
+    if (!options.org) throw new Error('Please specify an org.');    
+  }
+  
+  static _validateDeviceOptions (options) {
+    if (!options.secret) throw new Error('Please specify a secret');
+  }
+
+  static _validateConsumerAppOptions (options) {
+    if (!options.apiKey) throw new Error('Please specify an api key.');
+  }
+
+  
+  refresh () {
+    if (shared.token) {
+      this._refreshToken();
+    } else {
+      this._login();
+    }
+  }
+    
+  _refreshToken () {
+    // Stub: Token refresh.
+    shared.token = null;
+    this._login();
+  }
+
+  get host () {
+    return shared.options.host || 'https://api.exp.scala.com';
+  }
+  
+  get token () {
+    return shared.token || '';
+  }
+
+
+
   stop () {
-    credentials.clear();
-    socket.disconnect();
+
+  }
+
+
+  _login () {
+    const payload = this._getLoginPayload();
+    return fetch(this.host + '/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }).then(response => {
+      if (!response.ok) {
+        if (response.status === 401) {
+          // FATAL, STOP THE RUNTIME. REJECT THE PROMISE.
+        } 
+        return setTimeout(() => this._login(), 5000);
+      }
+      return response.json().then(body => {
+        // Alert of new token and stuff!
+        shared.token = body.token;
+      });
+    }).catch(() => {
+      setTimeout(() => this._login(), 5000);
+    });
+  }
+
+  _getLoginPayload () {
+    if (shared.options.username) {
+      return this._getUserAuthPayload();
+    } else if (shared.options.deviceUuid) {
+      return this._getDeviceAuthPayload();
+    } else if (shared.options.consumerAppUuid) {
+      return this._getConsumerAppAuthPayload();
+    } else {
+      return {};
+    }
+  }
+
+  _getUserLoginPayload () {
+    return { 
+      username: shared.options.username,
+      password: shared.options.password,
+      org: shared.options.org 
+    };
+  }
+
+  _getDeviceLoginPayload () {
+    const token = jwt.sign({ 
+      deviceUuid: shared.options.deviceUuid, 
+      allowPairing: shared.options.allowPairing
+    }, shared.options.secret);
+    return { token: token };
+  }
+
+  _getConsumerAppLoginPayload () {
+    const token = jwt.sign({
+      consumerAppUuid: shared.options.consumerAppUuid
+    }, shared.options.apiKey);
+    return { token: token };
+  }
+
+  _sendLoginRequest () {
+    
+
   }
 
 };
 
 socket.events.on('online', () => {
   runtimes.forEach(runtime => {
-    runtime.events.trigger('online');
+    runtime._events.trigger('online');
   });
-  if (!startResolver) return;
-  startResolver();
-  startResolver = null;
 });
 
 socket.events.on('offline', () => {
   runtimes.forEach(runtime => {
-    runtime.events.trigger('offline');
+    runtime._events.trigger('offline');
   });
 });
