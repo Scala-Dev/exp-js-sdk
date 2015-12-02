@@ -1,6 +1,6 @@
 const scala = require('../src/scala');
 
-scala.runtime.start({
+zscala.runtime.start({
   username: 'email@email.com',
   host: 'http://localhost:9000',
   organization: 'scala'

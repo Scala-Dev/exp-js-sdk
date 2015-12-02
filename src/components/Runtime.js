@@ -5,8 +5,9 @@ const jwt = require('jsonwebtoken');
 
 require('isomorphic-fetch');
 
-const EventNode = require('../lib/EventNode');
 const SdkError = require('../lib/SdkError');
+
+const Component = require('../lib/Component');
 
 const runtimes = [];
 
@@ -17,26 +18,27 @@ const defaultOptions = {
 let sharedContext;
 let refreshInterval;
 
-module.exports = class Runtime {
+let shared = {};
 
-  constructor () {
-    this._events = new EventNode();
-    this.on = this._events.on;
-    runtimes.push(this);
+module.exports = class Runtime extends Component {
+
+  constructor (context) {
+    super(context);
   }
 
   start (options) {
-    const context = {};
-    context.options = _.merge({}, defaultOptions, options || {});
+    
+    locals = {};
+    options = _.merge({}, defaultOptions, options || {});
     return Promise.resolve()
-      .then(() => this._validateContext(context))
+      .then(() => Runtime._validateOptions(options))
       .then(() => {
-        sharedContext = context;
-        if (context.options.token) {
-          context.token = context.options.token;
-          return this._refresh(context);
+        
+        if (options.token) {
+          locals.token = options.token;
+          return this._refresh();
         } else {
-          return this._login(context);
+          return this._login();
         }
       })
       .then(() => {

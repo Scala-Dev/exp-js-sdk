@@ -1,19 +1,42 @@
 'use strict';
 
-module.exports = class Channel {
+const Interface = require('./Interface');
+const EventNode = require('./EventNode');
 
-  constructor (name, network, context) {
-    this.name = name;
-    this.network = network;
-    this.context = context;
+class Channel extends Interface {
+
+  constructor () {
+    super();
+    this._broadcastEvents = new EventNode();
   }
 
-  broadcast (name, payload) {}
+  receive (message) {
+    if (message.type === 'broadcast') {
+      this._broadcastEvents.trigger(message.name, message.payload);
+    }
+  }
 
-  listen (name, callback) {}
+  broadcast (name, payload) {
+    this._events.trigger('broadcast', {
+      type: 'broadcast',
+      name: name,
+      payload: payload
+    });
+  }
 
-  request (target, name, payload) {}
+  get hasListeners () {
+    return this._broadcastEvents.hasListeners;
+  }
 
-  respond (name, callback) {}
+  listen (name, callback) {
+    return this._broadcastEvents.on(name, callback);
+  }
 
-};
+  clear () {
+    this._broadcastEvents.clear();
+    super.clear();
+  }
+
+}
+
+module.exports = Channel;

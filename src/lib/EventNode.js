@@ -1,28 +1,38 @@
 'use strict';
 
-function EventNode () {
-  const self = this;
-  this.map = {};
+const Namespace = require('./ListenerNamespace');
 
-  this.on = (name, callback) => {
-    if (!self.map[name]) self.map[name] = [];
-    self.map[name].push(callback);
-    const cancel = () => { self.map[name].splice(self.map[name].indexOf(callback), 1); };
-    const cancel2 = () => { self.map[name].splice(self.map[name].indexOf(callback), 1); };
-    cancel.cancel = cancel2;
-    return cancel;
-  };
+class EventNode {
 
-  this.trigger = (name, payload) => {
-    var promises = [];
-    (self.map[name] || []).forEach(callback => promises.push(callback(payload)));
-    return Promise.all(promises);
-  };
+  constructor () {
+    this._namespaces = {};
+  }
 
-  this.clear = () => {
-    this.map = {};
-  };
+  _getNamespace (name) {
+    if (!this._namespaces[name]) {
+      this._namespaces[name] = new Namespace();
+    }
+    return this._namespaces[name];
+  }
+
+  on (name, callback, thisArg) {
+    if (thisArg) callback.bind(thisArg);
+    return this._getNamespace(name).on(callback);
+  }
+
+  trigger () {
+    return this._getNamespace(arguments[0]).trigger(arguments.slice(1));
+  }
+
+  get hasListeners () {
+    return this._namespaces.some(namespace => namespace.hasListeners);
+  }
+
+  clear () {
+    this._namespaces = {};
+  }
 
 }
+
 
 module.exports = EventNode;

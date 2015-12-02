@@ -1,15 +1,11 @@
 'use strict';
 
-const Channel = require('../lib/Channel');
+const Component = require('../lib/Component');
 
-module.exports = class Network {
+class Network extends Component {
 
-  constructor (context) {
-    this.context = context;
-  }
+  constructor () {}
+}
 
-  getChannel (name, network) {
-    return new Channel(name, network, this.context);
-  }
 
-};
+module.exports = Network;
