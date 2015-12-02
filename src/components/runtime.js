@@ -1,4 +1,5 @@
 'use strict';
+/* jshint -W074 */
 
 const _ = require('lodash');
 const jwt = require('jsonwebtoken');
@@ -23,21 +24,74 @@ let shared = {};
 
 const events = new EventNode();
 
+
 class Runtime extends Component {
 
-  static validate (options) {}
-  static refresh () {}
-  static login () {}
-  static _trigger (name, payload) {}
+  constructor () {
+    this.id = Math.random();
+    this.options = null;
+    this.auth = null;
+    super(arguments);
+  }
+
+  refresh () {
+    // Get refresh token from current token.
+    // If id matches and request was successful, resolve and trigger "refresh" event, otherwise reject.
+  }
+
+  login () {
+    // 
+  }
+
+
+  static validate (options) {
+    if (!options) throw new SdkError('optionsInvalid');
+    if (options.username) {
+      if (!options.password) throw new SdkError('passwordMissing');
+      if (!options.organization) throw new SdkError('organizationMissing');
+    } else if (options.deviceUuid) {
+      if (!options.secret) throw new SdkError('secretMissing');
+    } else if (options.consumerAppUuid) {
+      if (!options.apiKey) throw new SdkError('apiKeyMissing');
+    } else if (!options.token) {
+      throw new SdkError('credentialsMissing');
+    } 
+  }
+
+  start (options) {
+    this.stop();
+    this.options = options;
+    if (this.options.token) return this.refresh();
+    return this.login();
+  }
+
+  stop () {
+    clearTimeout(this.tokenRefreshTimeout);
+    this.id = Math.random();
+    this.options = null;
+    this.auth = null;
+  }
 
 }
+
 
 class Proxy extends ComponentProxy {
 
-  start (options) {}
-  stop () {}
+  start (options) {
+    return Promise.resolve()
+      .then(() => Runtime.validate(options))
+      .then(() => this._component.start(options));
+  }
+
+  stop () {
+    return Promise.resolve()
+      .then(() => this._component.stop());
+  }
 
 }
+
+
+module.exports = new Runtime(Proxy);
 
 
 
@@ -81,32 +135,6 @@ class RuntimeProxy extends Component {
     this._trigger('stop');
   }
 
-  _validateContext (context) {
-    if (context.options.username) {
-      return this._validateUserContext(context);
-    } else if (context.options.deviceUuid) {
-      return this._validateDeviceContext(context);
-    } else if (context.options.consumerAppUuid) {
-      return this._validateConsumerAppOptions(context);
-    } else if (!context.options.token) {
-      throw new SdkError('credentialsMissing');
-    } else {
-      return null;
-    }
-  }
-
-  _validateUserContext (context) {
-    if (!context.options.password) throw new SdkError('passwordMissing');
-    if (!context.options.organization) throw new SdkError('organizationMissing');
-  }
-
-  _validateDeviceOptions (context) {
-    if (!context.options.secret) throw new SdkError('secretMissing');
-  }
-
-  _validateConsumerAppOptions (context) {
-    if (!context.options.apiKey) throw new SdkError('apiKeyMissing');
-  }
 
   _abort (error) {
     this.stop();

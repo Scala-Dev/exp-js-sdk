@@ -1,40 +1,55 @@
 'use strict';
 
-const Interface = require('./Interface');
 const EventNode = require('./EventNode');
 
-class Channel extends Interface {
+class Channel {
 
-  constructor () {
-    super();
-    this._broadcastEvents = new EventNode();
+  constructor (gateway) {
+    this.gateway = gateway;
+    this.listenerNode = new EventNode();
   }
 
   receive (message) {
     if (message.type === 'broadcast') {
-      this._broadcastEvents.trigger(message.name, message.payload);
+      this.listenerNode.trigger(message.name, message.payload);
     }
   }
 
   broadcast (name, payload) {
-    this._events.trigger('broadcast', {
+    this.gateway.send({
       type: 'broadcast',
       name: name,
       payload: payload
     });
   }
 
-  get hasListeners () {
-    return this._broadcastEvents.hasListeners;
+  getProxy (context) {
+    return new Proxy(this, context);
+  }
+
+  listen (name, callback, context) {
+    return this.listenerNode.on(name, callback, context);
+  }
+
+  clear (context) {
+    return this.listenerNode.clear(context);
+  }
+
+}
+
+class Proxy {
+
+  constructor (channel, context) {
+    this.channel = channel;
+    this.context = context;
+  }
+
+  broadcast (name, payload) {
+    return this._channel.broadcast(name, payload);
   }
 
   listen (name, callback) {
-    return this._broadcastEvents.on(name, callback);
-  }
-
-  clear () {
-    this._broadcastEvents.clear();
-    super.clear();
+    return this._channel.listen(name, callback, this.context);
   }
 
 }

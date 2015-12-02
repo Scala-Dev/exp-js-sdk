@@ -1,30 +1,24 @@
 'use strict';
 
-const Interface = require('../lib/Interface');
+const EventInterface = require('../lib/EventInterface');
 
-const map = {};
+class Component extends EventInterface {
 
-class Base extends Interface {
-
-  constructor (context) {
-    if (!map[this.constructor.name]) {
-      map[this.constructor.name] = [];
-    }
-    map[this.constructor.name].push(this);
-    this._context = context;
+  constructor (Proxy) {
+    this.Proxy = Proxy;
+    this.proxies = {};
     super();
   }
 
-  static getAll () {
-    return map[this.name];
+  clear (context) {
+    super.clear(context);
   }
 
-  clear () {
-    const list = map[this.constructor.name];
-    list.splice(list.indexOf(this), 1);
-    super.clear();
+  getProxy (context) {
+    if (!this.proxies[context]) this.proxies[context] = new this.Proxy(this, context);
+    return this.proxies[context];
   }
 
 }
 
-module.exports = Base;
+module.exports = Component;
