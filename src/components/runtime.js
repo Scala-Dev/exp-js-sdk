@@ -7,23 +7,17 @@ const jwt = require('jsonwebtoken');
 require('isomorphic-fetch');
 
 const SdkError = require('../lib/SdkError');
-
 const Component = require('../lib/Component');
 const ComponentProxy = require('../lib/ComponentProxy');
 
-const runtimes = [];
+
+
+
+
 
 const defaultOptions = {
   authHost: 'https://api.exp.scala.com'
 };
-
-let sharedContext;
-let refreshInterval;
-
-let shared = {};
-
-const events = new EventNode();
-
 
 class Runtime extends Component {
 
@@ -45,7 +39,6 @@ class Runtime extends Component {
 
 
   static validate (options) {
-    if (!options) throw new SdkError('optionsInvalid');
     if (options.username) {
       if (!options.password) throw new SdkError('passwordMissing');
       if (!options.organization) throw new SdkError('organizationMissing');
@@ -58,18 +51,28 @@ class Runtime extends Component {
     } 
   }
 
+  update (auth) {
+    if (!this.auth) this.events.trigger('authenticated', this.auth);
+    this.events.trigger('update', this.auth);
+    this.auth = auth;
+    // TODO: Use given token expiry. Waiting on API.
+    this.tokenRefreshTimeout = setTimeout(() => this.refresh(), 3600);
+  }
+
   start (options) {
     this.stop();
     this.options = options;
+    this.events.trigger('start');
     if (this.options.token) return this.refresh();
     return this.login();
   }
 
-  stop () {
-    clearTimeout(this.tokenRefreshTimeout);
+  stop () {   
     this.id = Math.random();
     this.options = null;
     this.auth = null;
+    clearTimeout(this.tokenRefreshTimeout);
+    this.events.trigger('stop');
   }
 
 }
@@ -78,6 +81,7 @@ class Runtime extends Component {
 class Proxy extends ComponentProxy {
 
   start (options) {
+    options = _.merge({}, defaultOptions, options || {});
     return Promise.resolve()
       .then(() => Runtime.validate(options))
       .then(() => this._component.start(options));
@@ -96,50 +100,6 @@ module.exports = new Runtime(Proxy);
 
 
 class RuntimeProxy extends Component {
-
-  constructor (context) {
-    super(context);
-  }
-
-  start (options) {
-    Runtime.stop();
-    
-    shared = {};
-    shared.options = _.merge({}, defaultOptions, options || {});
-    return Promise.resolve()
-      .then(() => Runtime._validateOptions(options))
-      .then(() => {        
-        
-
-        if (shared.options.token) {
-          shared.token = options.token;
-          return this._refresh();
-        } else {
-          return this._login();
-        }
-      })
-      .then(() => {
-        clearInterval(refreshInterval);
-        refreshInterval = setInterval(() => {
-          if (!sharedContext) return;
-          this._refresh(sharedContext);
-        }, 5000);
-        this._trigger('start');
-      });
-  }
-
-  stop () {
-    clearInterval(refreshInterval);
-    if (!sharedContext) return;
-    sharedContext = null;
-    this._trigger('stop');
-  }
-
-
-  _abort (error) {
-    this.stop();
-    this._trigger('error', error);
-  }
 
   _trigger (name, payload) {
     runtimes.forEach(runtime => {
@@ -252,9 +212,7 @@ class RuntimeProxy extends Component {
   _sendLoginRequest (context) {
     return fetch(context.options.authHost + '/api/auth/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(this._getLoginPayload(context))
     });
   }
