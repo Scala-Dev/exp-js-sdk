@@ -167,8 +167,8 @@ exp.api.getThing('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(thing => {});
 Query for multiple things. Resolves to an object with a `results` array of [Thing Objects](#thing-object).
 ```javascript
 exp.api.findThing({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
+    limit: 20, // The number of things to retrieve at most
+    skip: 5, // The number of things to skip
     sort: 'name', // The field to sort by.
   }).then(things => {});
 ```
@@ -189,8 +189,8 @@ exp.api.getExperience('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(experience =>
 Query for multiple experiences. Resolves to an object with a `results` array of [Experience Objects](#experience-object).
 ```javascript
 exp.api.findExperiences({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
+    limit: 20, // The number of experiences to retrieve at most
+    skip: 5, // The number of experiences to skip
     sort: 'field1', // The field to sort by.
   }).then(experiences => {});
 ```
@@ -205,12 +205,11 @@ exp.api.getLocation('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(location => {})
 Query for multiple locations. Resolves to an object with a `results` array of [Location Objects](#location-object).
 ```javascript
 exp.api.findLocations({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
+    limit: 20, // The number of locations to retrieve at most
+    skip: 5, // The number of locations to skip
     sort: 'field1', // The field to sort by.
   }).then(locations => {});
 ```
-
 
 ### exp.api.identifyDevice(deviceUuid)
 Request a device to identify itself. Resolve to response from targeted device
@@ -231,6 +230,23 @@ exp.api.findData({
   group: 'cats'
 }).then(cats => {});
 ```
+
+### exp.api.getFeed(uuid)
+Get a single feed by UUID. Resolves to a [Feed Object](#feed-object).
+```javascript
+exp.api.getFeed('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(feed => {});
+```
+
+### exp.api.findFeeds(params)
+Query for multiple feeds. Resolves to an object with a `results` array of [Feed Objects](#feed-object).
+```javascript
+exp.api.findFeeds({
+    limit: 20, // The number of feeds to retrieve at most
+    skip: 5, // The number of feeds to skip
+    sort: 'field1', // The field to sort by.
+  }).then(results => {});
+```
+
 # Abstract API Objects
 
 
@@ -306,3 +322,14 @@ An arbitrary object that contains any data you want.
 
 #### data.group
 The data item's group.
+
+### Feed Object
+
+##### feed.uuid
+The feed's UUID
+
+##### feed.getData()
+Get the feed's data. Resolves to the output of the feed query.
+```javascript
+device.getData().then(data => {});
+```
