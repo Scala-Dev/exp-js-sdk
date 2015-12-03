@@ -5,9 +5,9 @@ const EventInterface = require('../lib/EventInterface');
 class Component extends EventInterface {
 
   constructor (Proxy) {
+    super();
     this.Proxy = Proxy;
     this.proxies = {};
-    super();
   }
 
   clear (context) {

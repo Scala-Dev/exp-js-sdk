@@ -1,7 +1,7 @@
 'use strict';
 
 class ComponentProxy {
-  
+
   constructor (component, context) {
     this._component = component;
     this._context = context;

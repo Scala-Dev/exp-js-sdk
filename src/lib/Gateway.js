@@ -9,6 +9,7 @@ const EventInterface = require('./EventInterface');
 class Gateway extends EventInterface {
 
   constructor (options) {
+    super();
     this.channels = [];
     this.host = options.host;
     this.token = options.token;

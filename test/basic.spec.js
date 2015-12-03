@@ -5,7 +5,7 @@ describe('pairing', () => {
 
   before(() => {
     return exp.runtime.start({
-      username: 'e2mail@email.com',
+      username: 'email@email.com',
       password: 'Password12321',
       organization: 'scala',
       host: 'http://localhost:9000'
