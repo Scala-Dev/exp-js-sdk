@@ -7,9 +7,9 @@ const network = require('./components/network');
 const context = {};
 
 const exp = {
-  runtime: runtime.getProxy(context),
-  api: api.getProxy(context),
-  network: network.getProxy(context),
+  runtime: runtime.getDelegate(context),
+  api: api.getDelegate(context),
+  network: network.getDelegate(context),
   lib: {
     components: {
       runtime: runtime,

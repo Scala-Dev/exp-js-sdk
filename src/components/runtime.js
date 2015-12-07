@@ -9,7 +9,7 @@ require('isomorphic-fetch');
 const SdkError = require('../lib/SdkError');
 const ApiError = require('../lib/ApiError');
 const Component = require('../lib/Component');
-const ComponentProxy = require('../lib/ComponentProxy');
+const ComponentDelegate = require('../lib/ComponentDelegate');
 
 const defaultOptions = {
   host: 'https://api.exp.scala.com'
@@ -17,8 +17,8 @@ const defaultOptions = {
 
 class Runtime extends Component {
 
-  constructor (Proxy) {
-    super(Proxy);
+  constructor (Delegate) {
+    super(Delegate);
     this.id = null;
     this.options = null;
     this.config = {};
@@ -192,7 +192,7 @@ class Runtime extends Component {
 }
 
 
-class Proxy extends ComponentProxy {
+class Delegate extends ComponentDelegate {
 
   start (options) {
     return this._component.start(options);
@@ -204,7 +204,7 @@ class Proxy extends ComponentProxy {
 
 }
 
-const runtime = new Runtime(Proxy);
+const runtime = new Runtime(Delegate);
 runtime.events.on('warning', warning => console.warn(warning), {});
 runtime.events.on('error', error => console.error(error), {});
 runtime.events.on('start', () => console.log('Runtime started.'));

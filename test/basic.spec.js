@@ -34,13 +34,9 @@ describe('pairing', () => {
     });
   });
 
-  it('test', () => {
-    exp.network.getChannel('f9ae9743-1fd9-45ac-aae0-5d40f425605e').broadcast('hello');
-  });
-
-  it.skip('should be able to send/receive a message on a built in channe', () => {
+  it('should be able to send/receive a message on a built in channel', () => {
     return new Promise(resolve => {
-      const channel = exp.network.getChannel('experience');
+      const channel = exp.network.getChannel('organization');
       channel.listen('test', resolve);
       channel.broadcast('test');
     });

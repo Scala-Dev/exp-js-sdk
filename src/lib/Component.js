@@ -4,19 +4,19 @@ const EventInterface = require('../lib/EventInterface');
 
 class Component extends EventInterface {
 
-  constructor (Proxy) {
+  constructor (Delegate) {
     super();
-    this.Proxy = Proxy;
-    this.proxies = {};
+    this.Delegate = Delegate;
+    this.delegates = {};
   }
 
   clear (context) {
     super.clear(context);
   }
 
-  getProxy (context) {
-    if (!this.proxies[context]) this.proxies[context] = new this.Proxy(this, context);
-    return this.proxies[context];
+  getDelegate (context) {
+    if (!this.delegates[context]) this.delegates[context] = new this.Delegate(this, context);
+    return this.delegates[context];
   }
 
 }

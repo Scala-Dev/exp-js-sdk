@@ -6,7 +6,7 @@ require('isomorphic-fetch');
 
 const ApiError = require('../lib/ApiError');
 const Component = require('../lib/Component');
-const ComponentProxy = require('../lib/ComponentProxy');
+const ComponentDelegate = require('../lib/ComponentDelegate');
 const runtime = require('../components/runtime');
 
 const Devices = require('../collections/Devices');
@@ -18,10 +18,6 @@ const Content = require('../collections/Content');
 
 
 class Api extends Component {
-
-  constructor (Proxy) {
-    super(Proxy);
-  }
 
   fetch (path, options) {
     const url = runtime.config.api.host + path;
@@ -83,7 +79,7 @@ class Api extends Component {
 }
 
 
-class Proxy extends ComponentProxy {
+class Delegate extends ComponentDelegate {
 
   constructor (context) {
     super(context);
@@ -123,7 +119,7 @@ class Proxy extends ComponentProxy {
 }
 
 
-const api = new Api(Proxy);
+const api = new Api(Delegate);
 
 
 module.exports = api;

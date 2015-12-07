@@ -1,6 +1,6 @@
 'use strict';
 
-class ComponentProxy {
+class ComponentDelegate {
 
   constructor (component, context) {
     this._component = component;
@@ -18,4 +18,4 @@ class ComponentProxy {
 }
 
 
-module.exports = ComponentProxy;
+module.exports = ComponentDelegate;

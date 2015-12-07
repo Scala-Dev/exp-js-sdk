@@ -1,15 +1,15 @@
 'use strict';
 
 const Component = require('../lib/Component');
-const ComponentProxy = require('../lib/ComponentProxy');
+const ComponentDelegate = require('../lib/ComponentDelegate');
 const Gateway = require('../lib/Gateway');
 
 const runtime = require('./runtime');
 
 class Network extends Component {
 
-  constructor (Proxy) {
-    super(Proxy);
+  constructor (Delegate) {
+    super(Delegate);
     this.auth = null;
     this.primary = new Gateway();
     this.primary.on('online', () => this.events.trigger('online'));
@@ -18,7 +18,6 @@ class Network extends Component {
   }
 
   refresh (config) {
-    console.log(config);
     this.primary.disconnect();
     this.primary.host = config.networks.primary.host;
     this.primary.token = config.token;
@@ -32,13 +31,13 @@ class Network extends Component {
 
 }
 
-class Proxy extends ComponentProxy {
+class Delegate extends ComponentDelegate {
 
   getChannel (name, options) {
     options = options || {};
-    return this._component.primary.getChannelProxy(name, options, this._context);
+    return this._component.primary.getChannelDelegate(name, options, this._context);
   }
 
 }
 
-module.exports = new Network(Proxy);
+module.exports = new Network(Delegate);

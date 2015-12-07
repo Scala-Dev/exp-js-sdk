@@ -15,9 +15,9 @@ class Gateway extends EventInterface {
     this.host = '';
   }
 
-  getChannelProxy (name, options, context) {
+  getChannelDelegate (name, options, context) {
     if (!this.channels[name]) this.channels[name] = new Channel(name, this);
-    return this.channels[name].getProxy(options, context);
+    return this.channels[name].getDelegate(options, context);
   }
 
   clear (context) {
@@ -56,16 +56,12 @@ class Gateway extends EventInterface {
   }
 
   receive (message) {
-    console.log('RECEIVED MESSAGE');
-    console.log(message);
     if (!message) return;
-    if (!this.channels[message.name]) return;
-    this.channels[message.name].receive(message);
+    if (!this.channels[message.channel]) return;
+    this.channels[message.channel].receive(message);
   }
 
   send (message) {
-    console.log('SENDING MESSAGE');
-    console.log(message);
     return this.socket.emit('message', message);
   }
 

@@ -2,7 +2,7 @@
 
 const EventNode = require('./EventNode');
 
-class Proxy {
+class Delegate {
 
   constructor (channel, options, context) {
     this._channel = channel;
@@ -49,8 +49,8 @@ class Channel {
     });
   }
 
-  getProxy (options, context) {
-    return new Proxy(this, options, context);
+  getDelegate (options, context) {
+    return new Delegate(this, options, context);
   }
 
   listen (name, callback, options, context) {
