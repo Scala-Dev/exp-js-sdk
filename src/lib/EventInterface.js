@@ -9,7 +9,7 @@ class EventInterface {
   }
 
   on (name, callback, context) {
-    this.events.on(name, callback, context);
+    return this.events.on(name, callback, context);
   }
 
   clear (context) {

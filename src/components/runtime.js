@@ -19,17 +19,18 @@ class Runtime extends Component {
 
   constructor (Proxy) {
     super(Proxy);
-    this.id = Math.random();
+    this.id = null;
     this.options = null;
-    this.auth = null;
+    this.config = {};
   }
 
   refresh (id) {
-    let payload = { token: this.auth.token };
     return fetch(this.options.host + '/api/auth/token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + this.config.token
+      }
     }).catch(error => {
       this.events.trigger('warning', error);
       return null;
@@ -67,11 +68,11 @@ class Runtime extends Component {
       payload.username = this.options.username;
       payload.password = this.options.password;
       payload.organization = this.options.organization;
-    } else if (this.options.deviceUuid) {
+    } else if (this.options.deviceUuid || this.options.allowPairing) {
       payload.token = jwt.sign({
-        deviceUuid: this.options.deviceUuid,
+        deviceUuid: this.options.deviceUuid || '',
         allowPairing: this.options.allowPairing
-      }, this.options.secret);
+      }, this.options.secret || 'secret');
     } else if (this.options.consumerAppUuid) {
       payload.token = jwt.sign({
         consumerAppUuid: this.options.consumerAppUuid
@@ -139,8 +140,8 @@ class Runtime extends Component {
     if (options.username) {
       if (!options.password) throw new SdkError('passwordMissing');
       if (!options.organization) throw new SdkError('organizationMissing');
-    } else if (options.deviceUuid) {
-      if (!options.secret) throw new SdkError('secretMissing');
+    } else if (options.deviceUuid || options.allowPairing) {
+      if (!options.secret && !options.allowPairing) throw new SdkError('secretMissing');
     } else if (options.consumerAppUuid) {
       if (!options.apiKey) throw new SdkError('apiKeyMissing');
     } else if (!options.token) {
@@ -148,28 +149,44 @@ class Runtime extends Component {
     }
   }
 
-  update (auth) {
-    // TODO: Use api response to set parameters.
-    this.auth = auth;
-    this.auth.apiHost = this.options.host; // TODO
-    this.events.trigger('auth', this.auth);
-    this.tokenRefreshTimeout = setTimeout(() => this.refresh(this.id), 3600); // TODO
+  update (config) {
+    this.clearTimeouts();
+    this.config = config;
+    this.config.api = { host: this.options.host };
+    this.config.networks = { primary: { host: this.options.host }};
+    this.refreshTimeout = setTimeout(() => this.refresh(this.id), (this.config.expires - Date.now()) / 2);
+    this.events.trigger('update', config);
   }
 
   start (options) {
-    this.stop();
-    this.options = options;
-    this.events.trigger('start');
-    if (this.options.token) return this.refresh(this.id);
-    return this.login(this.id);
+    options = _.merge({}, defaultOptions, options || {});
+    return Promise.resolve()
+      .then(() => this.constructor.validate(options))
+      .then(() => this.stop())
+      .then(() => {
+        this.id = Math.random();
+        this.options = options;
+        this.events.trigger('start');
+        if (this.options.token) return this.refresh(this.id);
+        return this.login(this.id);
+      });
+  }
+
+  clearTimeouts () {
+    clearTimeout(this.queueRefreshTimeout);
+    clearTimeout(this.queueLoginTimeout);
+    clearTimeout(this.refreshTimeout);
   }
 
   stop () {
-    if (!this.id) this.events.trigger('stop');
-    this.id = null;
-    this.options = null;
-    this.auth = null;
-    clearTimeout(this.tokenRefreshTimeout);
+    return Promise.resolve()
+      .then(() => {
+        if (this.id) this.events.trigger('stop');
+        this.clearTimeouts();
+        this.id = null;
+        this.options = null;
+        this.config = null;
+      });
   }
 
 }
@@ -178,15 +195,11 @@ class Runtime extends Component {
 class Proxy extends ComponentProxy {
 
   start (options) {
-    options = _.merge({}, defaultOptions, options || {});
-    return Promise.resolve()
-      .then(() => Runtime.validate(options))
-      .then(() => this._component.start(options));
+    return this._component.start(options);
   }
 
   stop () {
-    return Promise.resolve()
-      .then(() => this._component.stop());
+    return this._component.stop();
   }
 
 }

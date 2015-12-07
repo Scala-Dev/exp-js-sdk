@@ -2,56 +2,71 @@
 
 const EventNode = require('./EventNode');
 
+class Proxy {
+
+  constructor (channel, options, context) {
+    this._channel = channel;
+    this._options = options;
+    this._context = context;
+  }
+
+  broadcast (name, payload) {
+    return this._channel.broadcast(name, payload, this._options, this._context);
+  }
+
+  listen (name, callback) {
+    return this._channel.listen(name, callback, this._options, this._context);
+  }
+
+}
+
 class Channel {
 
-  constructor (gateway) {
+  constructor (name, gateway) {
+    this.name = name;
     this.gateway = gateway;
-    this.listenerNode = new EventNode();
+    this.systemListeners = new EventNode();
+    this.userListeners = new EventNode();
   }
 
   receive (message) {
     if (message.type === 'broadcast') {
-      this.listenerNode.trigger(message.name, message.payload);
+      if (message.system) {
+        this.systemListeners.trigger(message.name, message.payload);
+      } else {
+        this.userListeners.trigger(message.name, message.payload);
+      }
     }
   }
 
-  broadcast (name, payload) {
+  broadcast (name, payload, options) {
     this.gateway.send({
       type: 'broadcast',
+      channel: this.name,
       name: name,
-      payload: payload
+      payload: payload,
+      system: options.system
     });
   }
 
-  getProxy (context) {
-    return new Proxy(this, context);
+  getProxy (options, context) {
+    return new Proxy(this, options, context);
   }
 
-  listen (name, callback, context) {
-    return this.listenerNode.on(name, callback, context);
+  listen (name, callback, options, context) {
+    if (options.system) {
+      return this.systemListeners.on(name, callback, context);
+    } else {
+      return this.userListeners.on(name, callback, context);
+    }
   }
 
   clear (context) {
-    return this.listenerNode.clear(context);
+    this.userListeners.clear(context);
+    this.systemListeners.clear(context);
   }
 
 }
 
-class Proxy {
-
-  constructor (channel, context) {
-    this.channel = channel;
-    this.context = context;
-  }
-
-  broadcast (name, payload) {
-    return this._channel.broadcast(name, payload);
-  }
-
-  listen (name, callback) {
-    return this._channel.listen(name, callback, this.context);
-  }
-
-}
 
 module.exports = Channel;

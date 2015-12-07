@@ -26,7 +26,7 @@ gulp.task('default', ['build-webbrowser']);
 
 gulp.task('test', ['build-node'], function () {
   return gulp.src('./test/**/*.spec.js')
-    .pipe(mocha({ reporter: 'nyan' }))
+    .pipe(mocha({ reporter: 'nyan', timeout: 10000 }))
     .once('error', function () { process.exit.bind(process, 1); })
     .once('end', function () { process.exit(); });
 });

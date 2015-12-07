@@ -4,19 +4,49 @@ const exp = require('../');
 describe('pairing', () => {
 
   before(() => {
-    return exp.runtime.start({
-      username: 'email@email.com',
-      password: 'Password12321',
-      organization: 'scala',
-      host: 'http://localhost:9000'
+    return new Promise((resolve, reject) => {
+      exp.network.on('online', () => {
+        resolve();
+      });
+      return exp.runtime.start({
+        username: 'email@email.com',
+        password: 'Password12321',
+        organization: 'scala',
+        host: 'http://localhost:9000'
+      }).catch(error => {
+        reject(error);
+      });
     });
+
   });
 
   it('should respond with a device', () => {
-    return exp.api.getDevices().then(results => {
+    return exp.api.findDevices().then(results => {
       console.log(results);
     });
   });
+
+  it('should be able to send/receive a message on a custom channel', () => {
+    return new Promise(resolve => {
+      const channel = exp.network.getChannel('test');
+      channel.listen('test', resolve);
+      channel.broadcast('test');
+    });
+  });
+
+  it('test', () => {
+    exp.network.getChannel('f9ae9743-1fd9-45ac-aae0-5d40f425605e').broadcast('hello');
+  });
+
+  it.skip('should be able to send/receive a message on a built in channe', () => {
+    return new Promise(resolve => {
+      const channel = exp.network.getChannel('experience');
+      channel.listen('test', resolve);
+      channel.broadcast('test');
+    });
+  });
+
+
 
 });
 

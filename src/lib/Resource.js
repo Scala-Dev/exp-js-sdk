@@ -21,6 +21,10 @@ class Resource {
     });
   }
 
+  on (name, callback) {
+    return exp.network.getChannel(name, { system: true }).listen(name, callback);
+  }
+
 }
 
 module.exports = Resource;

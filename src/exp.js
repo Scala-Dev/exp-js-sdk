@@ -2,18 +2,23 @@
 
 const runtime = require('./components/runtime');
 const api = require('./components/api');
+const network = require('./components/network');
 
-const sdk = {
-  runtime: runtime.getProxy({}),
-  api: api.getProxy({}),
+const context = {};
+
+const exp = {
+  runtime: runtime.getProxy(context),
+  api: api.getProxy(context),
+  network: network.getProxy(context),
   lib: {
     components: {
       runtime: runtime,
-      api: api
+      api: api,
+      network: network
     }
   }
 };
 
-if (typeof window === 'object') window.exp =sdk;
+if (typeof window === 'object') window.exp = exp;
 
-module.exports = sdk;
+module.exports = exp;

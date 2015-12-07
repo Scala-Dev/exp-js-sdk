@@ -1,9 +1,9 @@
 'use strict';
 
 const Collection = require('../lib/Collection');
-const Resource = require('../resources/Device');
+const Resource = require('../lib/Resource');
 
-class Devices extends Collection {
+class Things extends Collection {
 
   constructor (context) {
     super(context);
@@ -13,4 +13,4 @@ class Devices extends Collection {
 
 }
 
-module.exports = Devices;
+module.exports = Things;

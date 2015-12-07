@@ -8,26 +8,30 @@ const EventInterface = require('./EventInterface');
 
 class Gateway extends EventInterface {
 
-  constructor (options) {
+  constructor () {
     super();
     this.channels = [];
-    this.host = options.host;
-    this.token = options.token;
-    this.connect();
+    this.token = '';
+    this.host = '';
   }
 
-  getChannelProxy (name, context) {
-    if (!this.channels[name]) this.channels[name] = new Channel(this);
-    return this.channels[name].getProxy(context);
+  getChannelProxy (name, options, context) {
+    if (!this.channels[name]) this.channels[name] = new Channel(name, this);
+    return this.channels[name].getProxy(options, context);
   }
 
   clear (context) {
+    this.disconnect();
     this.channels.forEach(channel => channel.clear(context));
-    this.socket.close();
+  }
+
+  disconnect () {
+    if (this.socket) this.socket.disconnect();
+    this.socket = null;
   }
 
   connect () {
-    if (this.socket) this.socket.diconnect();
+    this.disconnect();
     this.socket = io(this.host, {
       forceNew: true,
       query: 'token=' + (this.token || ''),
@@ -52,12 +56,16 @@ class Gateway extends EventInterface {
   }
 
   receive (message) {
+    console.log('RECEIVED MESSAGE');
+    console.log(message);
     if (!message) return;
     if (!this.channels[message.name]) return;
     this.channels[message.name].receive(message);
   }
 
   send (message) {
+    console.log('SENDING MESSAGE');
+    console.log(message);
     return this.socket.emit('message', message);
   }
 

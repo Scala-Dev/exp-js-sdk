@@ -1,16 +1,16 @@
 'use strict';
 
 const Collection = require('../lib/Collection');
-const Resource = require('../resources/Device');
+const Resource = require('../lib/Resource');
 
-class Devices extends Collection {
+class Content extends Collection {
 
   constructor (context) {
     super(context);
-    this.path = '/api/devices';
+    this.path = '/api/locations';
     this.Resource = Resource;
   }
 
 }
 
-module.exports = Devices;
+module.exports = Content;

@@ -8,7 +8,7 @@ class ComponentProxy {
   }
 
   on (name, callback) {
-    this._component.events.on(name, callback, this._context);
+    return this._component.events.on(name, callback, this._context);
   }
 
   clear () {

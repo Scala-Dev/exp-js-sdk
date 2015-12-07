@@ -2,7 +2,6 @@
 
 const _ = require('lodash');
 
-let defaultContext = {};
 
 class Listener {
 
@@ -29,7 +28,7 @@ class Context {
   }
 
   trigger (payload) {
-    this.listeners.map(listener => listener.trigger(payload));
+    return this.listeners.map(listener => listener.trigger(payload));
   }
 
   on (callback) {
@@ -48,7 +47,9 @@ class Namespace {
   }
 
   trigger (payload) {
-    _.forOwn(this.contexts, context => context.trigger(payload));
+    const promises = [];
+    _.forOwn(this.contexts, context => promises.push(context.trigger(payload)));
+    return Promise.all(promises);
   }
 
   on (callback, context) {
@@ -70,15 +71,13 @@ class EventNode {
   }
 
   on (name, callback, context) {
-    context = context || defaultContext;
     if (!this.namespaces[name]) this.namespaces[name] = new Namespace();
     return this.namespaces[name].on(callback, context);
   }
 
   trigger (name, payload) {
-    let namespace = this.namespaces[name];
-    if (!namespace) return;
-    namespace.trigger(payload);
+    if (!this.namespaces[name]) return Promise.resolve();
+    return this.namespaces[name].trigger(payload);
   }
 
   clear (context) {
