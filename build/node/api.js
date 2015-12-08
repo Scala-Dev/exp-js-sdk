@@ -170,6 +170,27 @@ var findData = function findData(params) {
   });
 };
 
+var getFeed = function getFeed(uuid) {
+  return Promise.resolve().then(function () {
+    if (!uuid) throw new Error('uuidRequired');
+    return get('/api/connectors/feeds/' + uuid);
+  }).then(function (feed) {
+    return new models.Feed({ feed: feed });
+  });
+};
+
+var findFeeds = function findFeeds(params) {
+  return Promise.resolve().then(function () {
+    return get('/api/connectors/feeds', params);
+  }).then(function (query) {
+    var feeds = [];
+    query.results.forEach(function (feed) {
+      feeds.push(new models.Feed({ feed: feed }));
+    });
+    return { total: query.total, results: feeds };
+  });
+};
+
 module.exports.identifyDevice = identifyDevice;
 
 module.exports.getContentNode = getContentNode;
@@ -195,6 +216,9 @@ module.exports.findThings = findThings;
 
 module.exports.getData = getData;
 module.exports.findData = findData;
+
+module.exports.getFeed = getFeed;
+module.exports.findFeeds = findFeeds;
 
 module.exports.get = get;
 module.exports.fetch = fetch_;

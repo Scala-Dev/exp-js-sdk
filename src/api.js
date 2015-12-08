@@ -206,6 +206,31 @@ const findData = params => {
     });
 };
 
+const getFeed = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/connectors/feeds/' + uuid);
+    })
+    .then(feed => {
+      return new models.Feed({ feed: feed });
+    });
+};
+
+const findFeeds = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/connectors/feeds', params);
+    })
+    .then(query => {
+      const feeds = [];
+      query.results.forEach(feed => {
+        feeds.push(new models.Feed({ feed: feed }));
+      });
+      return { total: query.total, results: feeds };
+    });
+};
+
 module.exports.identifyDevice = identifyDevice;
 
 module.exports.getContentNode = getContentNode;
@@ -231,6 +256,9 @@ module.exports.findThings = findThings;
 
 module.exports.getData = getData;
 module.exports.findData = findData;
+
+module.exports.getFeed = getFeed;
+module.exports.findFeeds = findFeeds;
 
 module.exports.get = get;
 module.exports.fetch = fetch_;
