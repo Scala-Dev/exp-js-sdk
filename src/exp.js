@@ -3,6 +3,7 @@
 const runtime = require('./components/runtime');
 const api = require('./components/api');
 const network = require('./components/network');
+const EventNode = require('./lib/EventNode');
 
 const context = {};
 
@@ -15,7 +16,8 @@ const exp = {
       runtime: runtime,
       api: api,
       network: network
-    }
+    },
+    EventNode: EventNode
   }
 };
 
