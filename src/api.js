@@ -181,6 +181,20 @@ const getContentNode = uuid => {
     });
 };
 
+const findContentNodes = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/content', params);
+    })
+    .then(query => {
+      const contentNodes = [];
+      query.results.forEach(content => {
+        contentNodes.push(new models.ContentNode({ content: content }));
+      });
+      return { total: query.total, results: contentNodes };
+    });
+};
+
 
 const getData = (key, group) => {
   return Promise.resolve()
@@ -235,6 +249,8 @@ module.exports.identifyDevice = identifyDevice;
 
 module.exports.getContentNode = getContentNode;
 module.exports.getContent = getContentNode;
+module.exports.findContentNodes = findContentNodes;
+module.exports.findContent = findContentNodes;
 
 module.exports.getCurrentDevice = getCurrentDevice;
 module.exports.getCurrentExperience = getCurrentExperience;
