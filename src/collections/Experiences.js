@@ -5,8 +5,8 @@ const Resource = require('../lib/Resource');
 
 class Experiences extends Collection {
 
-  constructor (context) {
-    super(context);
+  constructor (api, context) {
+    super(api, context);
     this.path = '/api/experiences';
     this.Resource = Resource;
   }

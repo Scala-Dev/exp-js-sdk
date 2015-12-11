@@ -4,8 +4,10 @@ const SdkError = require('../lib/SdkError');
 
 class Collection {
 
-  constructor (context) {
-    this.api = require('../components/api');
+  constructor (api, context) {
+    this.api = api;
+    this.network = require('../components/network').getDelegate(context);
+    this.runtime = require('../components/runtime').getDelegate(context);
     this.context = context;
   }
 

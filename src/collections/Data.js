@@ -5,8 +5,8 @@ const Resource = require('../lib/Resource');
 
 class Data extends Collection {
 
-  constructor (context) {
-    super(context);
+  constructor (api, context) {
+    super(api, context);
     this.path = '/api/data';
     this.Resource = Resource;
   }

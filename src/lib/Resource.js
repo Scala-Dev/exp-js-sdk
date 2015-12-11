@@ -22,7 +22,7 @@ class Resource {
   }
 
   on (name, callback) {
-    return exp.network.getChannel(name, { system: true }).listen(name, callback);
+    return this._collection.network.getChannel(this.uuid, { system: true }).listen(name, callback);
   }
 
 }

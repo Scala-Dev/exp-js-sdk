@@ -83,13 +83,18 @@ class Delegate extends ComponentDelegate {
 
   constructor (context) {
     super(context);
-    this._devices = new Devices(context);
-    this._things = new Things(context);
-    this._experiences = new Experiences(context);
-    this._locations = new Locations(context);
-    this._data = new Data(context);
-    this._content = new Content(context);
+    this._devices = new Devices(this, context);
+    this._things = new Things(this, context);
+    this._experiences = new Experiences(this, context);
+    this._locations = new Locations(this, context);
+    this._data = new Data(this, context);
+    this._content = new Content(this, context);
   }
+
+  get (path, params) { return this._component.get(path, params); }
+  post (path, params, body) { return this._component.post(path, params, body); }
+  put (path, params, body) { return this._component.put(path, params, body); }
+  delete (path, params) { return this._component.post(path, params); }
 
   getDevice (uuid) { return this._devices.get(uuid); }
   findDevices (params) { return this._devices.find(params); }
