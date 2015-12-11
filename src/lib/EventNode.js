@@ -28,7 +28,7 @@ class Context {
   }
 
   trigger (payload) {
-    return this.listeners.map(listener => listener.trigger(payload));
+    return Promise.all(this.listeners.map(listener => listener.trigger(payload)));
   }
 
   on (callback) {

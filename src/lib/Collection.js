@@ -18,12 +18,19 @@ class Collection {
     });
   }
 
-  create (document) {
-    return new this.Resource(document, this);
+  create (document, options) {
+    options = options || {};
+    const resource = new this.Resource(document, this);
+    if (options.save === false && options._sync === true) return resource;
+    if (options.save === false) return Promise.resolve(resource);
+    return this.api.post(this.path, null, resource.document).then(document => {
+      resource.document = document;
+      return resource;
+    });
   }
 
   save (resource) {
-    return this.api.post(this.path + '/' + resource.uuid, null, resource.document);
+    return this.api.patch(this.path + '/' + resource.uuid, null, resource.document);
   }
 
   find (params) {

@@ -3,7 +3,7 @@
 class Resource {
 
   constructor (document, collection) {
-    this.document = document;
+    this.document = document || {};
     this._collection = collection;
   }
 
@@ -12,7 +12,10 @@ class Resource {
   }
 
   save () {
-    this._collection.save(this);
+    return this._collection.save(this).then(document => {
+      this.document = document;
+      return this;
+    });
   }
 
   refresh () {
@@ -23,6 +26,14 @@ class Resource {
 
   on (name, callback) {
     return this._collection.network.getChannel(this.uuid, { system: true }).listen(name, callback);
+  }
+
+  fling (options) {
+    return this._collection.network.getChannel(this.uuid).broadcast('fling', options);
+  }
+
+  getChannel (options) {
+    return this._collection.network.getChannel(this.uuid, options);
   }
 
 }

@@ -56,6 +56,8 @@ class Gateway extends EventInterface {
   }
 
   receive (message) {
+    console.log('RECEIVED MESSAGE');
+    console.log(message);
     if (!message) return;
     if (!this.channels[message.channel]) return;
     this.channels[message.channel].receive(message);
