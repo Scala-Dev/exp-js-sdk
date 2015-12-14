@@ -1,17 +1,21 @@
 'use strict';
 
+const _ = require('lodash');
+
 const Resource = require('../lib/Resource');
 
 class Device extends Resource {
 
   getExperience () {
-    return Promise.resolve()
-      .then(() => this._collection.api.getExperience(this.document.experience.uuid));
+    return this._collection.api.getExperience(_.get(this, 'document.experience.uuid'));
   }
 
   getLocation () {
-    return Promise.resolve()
-      .then(() => this._collection.api.getLocation(this.document.location.uuid));
+    return this._collection.api.getLocation(_.get(this, 'document.location.uuid'));
+   }
+
+  identify () {
+    return this._collection.network.getChannel(this.uuid).broadcast('identify');
   }
 
 }

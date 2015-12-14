@@ -9,228 +9,178 @@ For use in a node.js application v0.12.7 and npm@2.14.0 are recommended - see th
 
 For use in a web app, browserify is recommended.
 
-# exp.runtime
+# Namespaces
+
+The following namespaces are available in the EXP javascript SDK:
+```exp.runtime``` starts and stops the SDK.
+```exp.network``` facilitates communication on the EXP network.
+```exp.api``` enables interaction with the API.
+
+
+# Runtime
 
 ## exp.runtime.start(options)
 Initialize the SDK and connect to EXP.
-To authenticate on a consumer network call start():
-```javascript
-exp.runtime.start({
-  networkUuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Network uuid
-  apiKey: 'abc123' // Network API Key
-}).then(() => {}); // sdk is initialized and connected to EXP
-```
 
-Device authentication is also supported:
-```javascript
-exp.runtime.start({
-  host: 'https://api.exp.scala.com',
-  deviceUuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Device uuid.
-  secret: 'mashed potatoes' // Device secret
-}).then(() => {}); // sdk is initialized and connected to EXP
-```
-
-User authentication is also supported:
+To start the sdk as a user:
 ```javascript
 exp.runtime.start({
   username: "joe@joerocks.com",
   password: "123456",
   organization: "joerocks"
 });
+
+To start the sdk as a device:
+```javascript
+exp.runtime.start({
+  deviceUuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', 
+  secret: 'mashed potatoes' 
+});
+```
+
+To start the sdk in a consumer app:
+```javascript
+exp.runtime.start({
+  consumerAppUuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', 
+  apiKey: 'abc123' 
+});
+```
+
+To start the sdk using a valid token:
+```javascript
+exp.runtime.start({
+  token: '6ed3...'
+})
+```
+
 ```
 ## exp.runtime.stop()
-Disconnect from EXP and clears your credentials.
-
-## exp.runtime.on(name, callback)
-Attaches a listener for runtime events. The possible events are `online` (when a connection is established to EXP) and `offline` (when the connection to EXP is lost).
-
-```javascript
-exp.runtime.on('online', () => {
-  // do something now that a connection has been established.
-});
-exp.runtime.on('offline', () => {
-  // do something now that there is no connection
-});
-```
-
-# exp.config
-
-Name | Description
---- | ---
-host | The host name of EXP.
+Disconnect and stop the SDK.
 
 
-# exp.channels
+# Network
 
-There are four channels available:
-- "system": Messages to/from the system.
-- "organization": Messages to/from devices across the organization.
-- "experience": Messages to/from devices in the current experience.
-- "location": Messages to/from devices in the current location.
+Each channel on the network is a named pathway for communication between devices. 
 
-### exp.channels.[channel].fling(uuid)
-Fling content on a channel. UUID is the UUID of the content object you are flinging.
 
-### exp.channels.[channel].listen(options, callback)
-Register a callback for a message on this channel.
+## channel = exp.network.getChannel(name)
+
+Returns a channel object. Channel names are strings. 
 
 ```javascript
-exp.channels.location.listen({ name: 'joke72' }, payload => {
-  // do something with payload.
-});
+const channel = exp.network.getChannel('myChannel');
 ```
 
-### exp.channels.[channel].broadcast(options)
-Broadcast a message out on this channel.
+## channel.broadcast(name, payload)
+
+Sends a broadcast message on the channel. Name is the name of the message and payload is any JSON serializable variable.
+
 ```javascript
-exp.channels.location.broadcast({
-  name: 'joke72',
-  payload: {
-    opening: 'knock knock?'
-  },
-});
+channel.broadcast('hi', { myNameIs: 'slimLady' });
 ```
-Broadcasts can be recieved by any device that is connected to the same organization/experience/location on the given channel.
 
-### exp.channels.[channel].request(options)
-Send a request to another device. Returns a promise.
+## listener = channel.listen(name, callback)
+
+Sets a callback for broadcasts received on this channel. Returns a listener object.
+
 ```javascript
-exp.channels.organization.request({
-  target: Device3,
-  name: 'joke',
-  payload: 'knock knock'
-}).then(response => {
-  console.log(response);
-}).catch(error => {
-  // I guess they didn't like the joke.
-});
-```
-For non-system channels, the target should be a [Device Object](#device-object). For the system channel, no target is necessary.
-
-Requests can only reach devices that share the same organization/experience/location for the given channel.
-
-
-### exp.channels.[channel].respond(options, callback)
-Respond to a request. The callback can throw an error to respond with an error. The callback can also return a promise.
-```javascript
-exp.channels.organization.respond({
-  name: 'joke'
-}, payload => {
-  if (payload === 'knock knock') {
-    return 'who\'s there?';
-  }
-  else {
-    throw new Error('no thanks');
-  }
-});
-```
-Response callbacks will only be triggered when the request was sent on the same channel.
-
-# exp.api
-
-### exp.api.getContentNode(uuid)
-Get a content object by UUID. Resolves to a [Content Object](#content-object). Note: The UUID value of 'root' will return the contents of the root folder of the current organization.
-```javascript
-exp.api.getContentNode('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(content => {});
+channel.listen('hi', payload => console.log(payload));
 ```
 
+## listener.cancel()
 
-### exp.api.getCurrentDevice()
-Get the current device. Resolves to a [Device Object](#device-object).
-```javascript
-exp.api.getCurrentDevice().then(device => {});
-```
+Cancels the callback attached to the channel.
+
+
+# API
+
+## Devices
 
 ### exp.api.getDevice(uuid)
-Get a single device by UUID. Resolves to a [Device Object](#device-object).
-```javascript
-exp.api.getDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(device => {});
-```
+Returns a promise that resolves to a device.
 
 ### exp.api.findDevices(params)
-Query for multiple devices. Resolves to an object with a `results` array of [Device Objects](#device-object).
-```javascript
-exp.api.findDevices({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
-    sort: 'field1', // The field to sort by.
-  }).then(devices => {});
-```
+Returns a query result based on given params.
 
-### exp.api.getThing(uuid)
-Get a single device by UUID. Resolves to a [Thing Object](#thing-object).
-```javascript
-exp.api.getThing('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(thing => {});
-```
+### exp.api.createDevice(document, options)
+Creates a new device given the specified document. Returns a promise that resolves to the new device. If options.save is false (default true), the device will not be saved.
 
-### exp.api.findThings(params)
-Query for multiple things. Resolves to an object with a `results` array of [Thing Objects](#thing-object).
-```javascript
-exp.api.findThing({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
-    sort: 'name', // The field to sort by.
-  }).then(things => {});
-```
+### device.uuid
+The uuid of the device.
 
-### exp.api.getCurrentExperience()
-Get the current experience. Resolves to an [Experience Object](#experience-object).
-```javascript
-exp.api.getCurrentExperience().then(experience => {});
-```
+### device.document
+The underlying document.
 
-### exp.api.getExperience(uuid)
-Get a single experience by UUID. Resolves to a [Experience Object](#experience-object).
-```javascript
-exp.api.getExperience('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(experience => {});
-```
+### device.save()
+Returns a promise that resolves when the device is saved.
 
-### exp.api.findExperiences(params)
-Query for multiple experiences. Resolves to an object with a `results` array of [Experience Objects](#experience-object).
-```javascript
-exp.api.findExperiences({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
-    sort: 'field1', // The field to sort by.
-  }).then(experiences => {});
-```
+### device.getExperience()
+Returns a promise that resolves to the devices experience.
 
-### exp.api.getLocation(uuid)
-Get a single location by UUID. Resolves to a [Location Object](#location-object).
-```javascript
-exp.api.getLocation('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(location => {});
-```
-
-### exp.api.findLocations(params)
-Query for multiple locations. Resolves to an object with a `results` array of [Location Objects](#location-object).
-```javascript
-exp.api.findLocations({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
-    sort: 'field1', // The field to sort by.
-  }).then(locations => {});
-```
+### device.getLocation()
+Returns a promise that resolves to the devices location.
 
 
-### exp.api.identifyDevice(deviceUuid)
-Request a device to identify itself. Resolve to response from targeted device
-```javascript
-exp.api.identifyDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(rsp => {});
-```
 
-### exp.api.getData(key, group)
-Get data by key and group. Resolves to a [Data Object](#data-object).
-```javascript
-exp.api.getData("fluffy", "cats").then(data => {});
-```
 
-### exp.api.findData(params)
-Query for multiple data objects. Resolve to an object with a `results` array of [Data Objects](#data-object).
-```javascript
-exp.api.findData({
-  group: 'cats'
-}).then(cats => {});
-```
+
+
+### exp.api.getDevice(uuid)
+Returns a promise that resolves to a device
+
+### resource.uuid
+The uuid of the resource.
+
+### resource.document
+The underlying document. See the API documentation.
+
+### resource.save()
+Save the resource. Returns a promise.
+
+## Getting Individual Resources
+
+The following methods are available to retrive resources from the API. Each of them returns a promise that resolves to a resource object.
+
+```exp.api.getDevice(uuid)```
+```exp.api.getThing(uuid)```
+```exp.api.getExperience(uuid)```
+```exp.api.getLocation(uuid)```
+```exp.api.getData(key)```
+```exp.api.getContent(uuid)```
+
+
+
+The params object are the query paramters passed to the HTTP request. See the API documentation for more details.
+
+```exp.api.findDevices(params)```
+```exp.api.findThings(params)```
+```exp.api.findExperiences(params)```
+```exp.api.findLocations(params)```
+```exp.api.findData(params)```
+
+
+## Creating Resources
+
+Resources can be created using the following methods by passing in a javascript object that contains the underlying document.
+
+```exp.api.createDevice(document)```
+```exp.api.createThing(document)```
+```exp.api.createExperience(document)```
+```exp.api.createLocation(document)```
+```exp.api.createData(key, value, document)```
+
+
+
+
+
+## Data Resource
+## Content Resource
+
+### ```content.getUrl()``` 
+Returns the absolute url to the content
+
+## Device Resource
+
 # Abstract API Objects
 
 
