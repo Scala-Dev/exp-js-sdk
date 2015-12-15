@@ -107,6 +107,8 @@ class Delegate extends ComponentDelegate {
   put (path, params, body) { return this._component.put(path, params, body); }
   delete (path, params) { return this._component.post(path, params); }
 
+  getCotentUrl (uuid) { return this._component.getContentUrl(uuid); }
+
   getDevice (uuid) { return this._devices.get(uuid); }
   findDevices (params) { return this._devices.find(params); }
   createDevice (document, options) { return this._devices.create(document, options); }
