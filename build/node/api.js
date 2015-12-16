@@ -150,6 +150,18 @@ var getContentNode = function getContentNode(uuid) {
   });
 };
 
+var findContentNodes = function findContentNodes(params) {
+  return Promise.resolve().then(function () {
+    return get('/api/content', params);
+  }).then(function (query) {
+    var contentNodes = [];
+    query.results.forEach(function (content) {
+      contentNodes.push(new models.ContentNode({ content: content }));
+    });
+    return { total: query.total, results: contentNodes };
+  });
+};
+
 var getData = function getData(key, group) {
   return Promise.resolve().then(function () {
     return get('/api/data/' + encodeURIComponent(group) + '/' + encodeURIComponent(key));
@@ -195,6 +207,8 @@ module.exports.identifyDevice = identifyDevice;
 
 module.exports.getContentNode = getContentNode;
 module.exports.getContent = getContentNode;
+module.exports.findContentNodes = findContentNodes;
+module.exports.findContent = findContentNodes;
 
 module.exports.getCurrentDevice = getCurrentDevice;
 module.exports.getCurrentExperience = getCurrentExperience;
