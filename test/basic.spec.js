@@ -14,7 +14,7 @@ describe('pairing', () => {
         username: 'email@email.com',
         password: 'Password12321',
         organization: 'scala',
-        host: 'http://localhost:9000'
+        host: 'https://api-develop.exp.scala.com'
       }).catch(error => {
         reject(error);
       });
