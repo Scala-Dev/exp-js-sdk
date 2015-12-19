@@ -3,7 +3,7 @@
 const assert = require('assert');
 const exp = require('../');
 
-describe('pairing', () => {
+describe('testing', () => {
 
   before(() => {
     return new Promise((resolve, reject) => {
@@ -14,7 +14,7 @@ describe('pairing', () => {
         username: 'email@email.com',
         password: 'Password12321',
         organization: 'scala',
-        host: 'https://api-develop.exp.scala.com'
+        host: 'http://localhost:9000'
       }).catch(error => {
         reject(error);
       });
