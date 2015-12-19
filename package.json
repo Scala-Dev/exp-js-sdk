@@ -6,7 +6,7 @@
   "scripts": {
     "install": "/bin/bash ./scripts/build.sh",
     "build": "/bin/bash ./scripts/build.sh",
-    "test": "echo"
+    "test": "/bin/bash ./scripts/test.sh"
   },
   "author": "James Dalessio <jrd261@gmail.com>",
   "license": "MIT",
