@@ -13,9 +13,7 @@ class Resource {
 
   static get (uuid, context) {
     if (!uuid) return Promise.reject(new Error('Document uuid is required.'));
-    return Api.get(this.path + '/' + uuid).then(document => {
-      return new this(document, context);
-    });
+    return Api.get(this.path + '/' + uuid).then(document => new this(document, context));
   }
 
   static create (document, options, context) {
@@ -35,9 +33,12 @@ class Resource {
     });
   }
 
+  get path () {
+    return this.constructor.path + '/' + this.uuid;
+  }
+
   save () {
-    return Api.patch(this.path + '/' + this.uuid, null, this.document)
-      .then(document => this.document = document);
+    return Api.patch(this.path, null, this.document).then(document => this.document = document);
   }
 
   get uuid () {
@@ -45,17 +46,15 @@ class Resource {
   }
 
   refresh () {
-    return Api.get(this.path + '/' + this.uuid).then(document => {
-      this.document = document;
-    });
+    return Api.get(this.path).then(document => this.document = document);
   }
 
   on (name, callback) {
-    return this._network.getChannel(this.uuid, { system: true }).listen(name, callback);
+    return this.getChannel({ system: true }).listen(name, callback);
   }
 
   fling (options) {
-    return this._network.getChannel(this.uuid).broadcast('fling', options);
+    return this.getChannel().broadcast('fling', options);
   }
 
   getChannel (options) {

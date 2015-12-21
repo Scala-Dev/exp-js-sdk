@@ -111,7 +111,12 @@ class Runtime  {
 
   static _onLoginResponse (id, response) {
     if (response.status === 401) return this._onAuthenticationFailure(id, response);
-    if (!response.ok) return this._queueLogin(id);
+    if (!response.ok) {
+      response.json().then(body => {
+        this._events.trigger('error', body);
+      });
+      return this._queueLogin(id);
+    }
     return this._onAuthResponse(id, response);
   }
 

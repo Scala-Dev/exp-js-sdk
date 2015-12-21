@@ -1,20 +1,14 @@
 'use strict';
 
-const Resource = require('../utils/Resource');
-const runtime = require('../Runtime');
+const Resource = require('./Resource');
+const runtime = require('../runtime');
 
 class Content extends Resource {
 
-  constructor (document, collection) {
-    super(document, collection);
-    this.children = [];
-    if (this.document.children && this.document.children.length === this.document.itemCount) {
-      this.document.children.forEach(child => {
-        this.children.push(new Content(child, collection));
-      });
-    }
+  constructor (document, context) {
+    super(document, context);
+    this._children = _.get(document, 'children', []).map(child => new this.constructor(child, context));
   }
-
 
   static encodePath (value) {
     return encodeURI(value)
@@ -37,23 +31,23 @@ class Content extends Resource {
     return this.document.subtype;
   }
 
+  static get path () { return '/1/devices'; }
 
   getChildren () {
     if (this.document.itemCount !== this.children.length) {
-      return this._collection.api.getContent(this.uuid)
-        .then(content => {
-          this.document = content.document;
-          this.children = content.children;
-          return this.children;
-        });
+      return this.get(this.uuid).then(content => {
+        this.document = content.document;
+        this._children = content._children;
+        return this._children;
+      });
     } else {
-      return Promise.resolve(this.children);
+      return Promise.resolve(this._children);
     }
   }
 
   getUrl () {
     if (this.subtype === 'scala:content:file') {
-      return runtime.config.api.host + '/api/delivery' + Content.encodePath(this.document.path);
+      return runtime.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path);
     } else if (this.subtype === 'scala:content:app') {
       return runtime.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html';
     } else if (this.subtype === 'scala:content:url') {
@@ -65,7 +59,7 @@ class Content extends Resource {
   getVariantUrl (name) {
     if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
       const query = '?variant=' + encodeURIComponent(name);
-      return runtime.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
+      return runtime.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
     }
     return null;
   }

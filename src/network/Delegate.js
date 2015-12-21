@@ -17,7 +17,7 @@ class Delegate {
   }
 
   getDelegate (context) {
-    return this.constructor(context);
+    return new this.constructor(context);
   }
 
   getChannel (name, options) {

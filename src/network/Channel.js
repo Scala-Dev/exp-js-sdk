@@ -15,9 +15,9 @@ class Channel {
   receive (message) {
     if (!message) return;
     if (message.system) {
-      this.systemListeners.trigger(message.name, message.payload);
+      this._systemListeners.trigger(message.name, message.payload);
     } else {
-      this.userListeners.trigger(message.name, message.payload);
+      this._userListeners.trigger(message.name, message.payload);
     }
   }
 

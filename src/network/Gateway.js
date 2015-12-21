@@ -17,11 +17,12 @@ class Gateway {
   getChannelDelegate (name, options, context) {
     if (!this._channels[name]) this._channels[name] = new Channel(name, this);
     const channel = this._channels[name];
-    return new ChannelDelegate(channel, options, context);
+    const delegate =  new ChannelDelegate(channel, options, context);
+    return delegate;
   }
 
   clear (context) {
-    this._disconnect();
+    this.disconnect();
     Object.keys(this._channels).forEach(name => this._channels[name].clear(context));
   }
 
@@ -34,7 +35,7 @@ class Gateway {
     return this._socket.emit('message', message);
   }
 
-  _disconnect () {
+  disconnect () {
     if (this._socket) this._socket.disconnect();
     this._socket = null;
   }
@@ -43,9 +44,9 @@ class Gateway {
     this._events = new EventNode();
   }
 
-  _connect (options) {
-    this._disconnect();
-    this._socket = io(options.url, {
+  connect (options) {
+    this.disconnect();
+    this._socket = io(options.host, {
       forceNew: true,
       query: `token=${ options.token || ''}&networkUuid=${ options.networkUuid }`,
       reconnection: true,

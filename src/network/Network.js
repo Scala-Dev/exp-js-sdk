@@ -7,7 +7,7 @@ const EventNode = require('../utils/EventNode');
 class Network {
 
   static getChannel (name, options, context) {
-    return this._gateways.primary.getChannel(name, options, context);
+    return this._gateways.primary.getChannelDelegate(name, options, context);
   }
 
   static on (name, callback, context) {
@@ -37,7 +37,7 @@ class Network {
     this._gateways.primary.connect({
       networkUuid: network.uuid,
       token: auth.token,
-      url: network.url
+      host: network.host
     });
   }
 

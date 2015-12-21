@@ -2,18 +2,22 @@
 
 const Api = require('./Api');
 const runtime = require('../runtime');
-const collections = require('./collections');
 
+const Device = require('./Device');
+const Thing = require('./Thing');
+const Experience = require('./Experience');
+const Location = require('./Location');
+const Data = require('./Data');
+const Content = require('./Content');
 
 class Delegate {
 
   constructor (context) {
-    this._devices = new collections.Devices(this, context);
-    this._things = new collections.Things(this, context);
-    this._experiences = new collections.Experiences(this, context);
-    this._locations = new collections.Locations(this, context);
-    this._data = new collections.Data(this, context);
-    this._content = new collections.Content(this, context);
+    this._context = context || Math.random();
+  }
+
+  getDelegate (context) {
+    return new this.constructor(context);
   }
 
   get (path, params) { return Api.get(path, params); }
@@ -22,30 +26,30 @@ class Delegate {
   put (path, params, body) { return Api.put(path, params, body); }
   delete (path, params) { return Api.post(path, params); }
 
-  getDevice (uuid) { return this._devices.get(uuid); }
-  findDevices (params) { return this._devices.find(params); }
-  createDevice (document, options) { return this._devices.create(document, options); }
-  getCurrentDevice () { { return this.getDevice(runtime.auth.deviceUuid); }}
+  getDevice (uuid) { return Device.get(uuid, this._context); }
+  findDevices (params) { return Device.find(params, this._context); }
+  createDevice (document, options) { return Device.create(document, options, this._context); }
+  getCurrentDevice () { return Device.get(runtime.auth.deviceUuid, this._context); }
 
-  getThing (uuid) { return this._things.get(uuid); }
-  findThings (params) { return this._things._find(params); }
-  createThing (document, options) { return this._things.create(document, options); }
+  getThing (uuid) { return Thing.get(uuid, this._context); }
+  findThings (params) { return Thing.find(params, this._context); }
+  createThing (document, options) { return Thing.create(document, options, this._context); }
 
-  getExperience (uuid) { return this._experiences.get(uuid); }
-  findExperiences (params) { return this._experiences.find(params); }
-  createExperience (document, options) { return this._experiences.create(document, options); }
+  getExperience (uuid) { return Experience.get(uuid, this._context); }
+  findExperiences (params) { return Experience.find(params, this._context); }
+  createExperience (document, options) { return Experience.create(document, options, this._context); }
 
-  getLocation (uuid) { return this._locations.get(uuid); }
-  findLocations (params) { return this._locations.find(params); }
-  createLocation (document, options) { return this._locations.create(document, options); }
+  getLocation (uuid) { return Location.get(uuid, this._context); }
+  findLocations (params) { return Location.find(params, this._context); }
+  createLocation (document, options) { Location.create(document, options, this._context); }
 
-  getData (uuid) { return this._data.get(uuid); }
-  findData (params) { return this._data.find(params); }
-  createDat (document, options) { return this._data.create(document, options); }
+  getData (key, group) { return Data.get(key, group, this._context); }
+  findData (params) { return Data.find(params, this._context); }
+  createData (document, options) { return Data.create(document, options, this._context); }
 
-  getContent (uuid) { return this._content.get(uuid); }
-  findContent (params) { return this._content.find(params); }
-  createContent (document, options) { return this._content.create(document, options); }
+  getContent (uuid) { return Content.get(uuid, this._context); }
+  findContent (params) { return Content.find(params, this._context); }
+  createContent (document, options) { return Content.create(document, options, this._context); }
 
 }
 

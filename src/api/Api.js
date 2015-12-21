@@ -7,25 +7,16 @@ require('isomorphic-fetch');
 
 const runtime = require('../runtime');
 
-const Devices = require('../collections/Devices');
-const Things = require('../collections/Things');
-const Experiences = require('../collections/Experiences');
-const Locations = require('../collections/Locations');
-const Data = require('../collections/Data');
-const Content = require('../collections/Content');
-
-
 class Api {
 
   static fetch (path, options) {
-    const url = runtime.auth.api.url + path;
+    const url = runtime.auth.api.host + path;
     options.headers = options.headers || {};
     options.headers.Authorization = 'Bearer ' + runtime.auth.token;
     options.headers.Accept = 'application/json';
     return fetch(url, options).then(response => {
       return response.json().then(body => {
         body = body || {};
-        console.log(body);
         if (!response.ok) throw new Error(body.code || 'unknownError');
         return body;
       });
@@ -85,10 +76,5 @@ class Api {
   }
 
 }
-
-
-
-
-Api.Delegate = Delegate;
 
 module.exports = Api;
