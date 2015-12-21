@@ -2,6 +2,7 @@
 /* jshint -W074 */
 
 const _ = require('lodash');
+
 const jwt = require('jsonwebtoken');
 const EventNode = require('../utils/EventNode');
 
@@ -12,22 +13,17 @@ class Runtime  {
 
   /* Public Methods */
 
-  static initialize (Delegate) {
-    this._Delegate = Delegate;
-    this._events = new EventNode();
-    this._events.on('error', error => console.error(error), {});
-    this._events.on('start', () => console.log('Runtime started.'));
-    this._events.on('stop', () => console.log('Runtime stopped.'));
-    this._events.on('update', () => console.log('Runtime authenticated.'));
-    this.defaults = { host: 'https://api.goexp.io' };
-  }
-
   static start (options) {
-    this.stop();
-    this._id = Math.random();
-    this._options = options;
-    this._events.trigger('start');
-    return this._login(this._id);
+    options = _.merge({}, this._defaults, options || {});
+    return Promise.resolve()
+      .then(() => Runtime.validate(options))
+      .then(() => {
+        if (this._id) this.stop();
+        this._id = Math.random();
+        this._options = options;
+        this._events.trigger('start');
+        return this._login(this._id);
+      });
   }
 
   static stop () {
@@ -42,12 +38,8 @@ class Runtime  {
     return this._events.on(name, callback, context);
   }
 
-  static getDelegate (context) {
-    return new this._Delegate(context || Math.random());
-  }
-
   static clear (context) {
-    this.events.clear(context);
+    this._events.clear(context);
   }
 
   static validate (options) {
@@ -64,6 +56,15 @@ class Runtime  {
   }
 
   /* Private Methods */
+
+  static _initialize () {
+    this._events = new EventNode();
+    this._events.on('error', error => console.error(error), {});
+    this._events.on('start', () => console.log('Runtime started.'));
+    this._events.on('stop', () => console.log('Runtime stopped.'));
+    this._events.on('update', () => console.log('Runtime authenticated.'));
+    this._defaults = { host: 'https://api.goexp.io' };
+  }
 
   static _clearTimeouts () {
     clearTimeout(this._queueRefreshTimeout);
@@ -185,35 +186,6 @@ class Runtime  {
 
 }
 
-
-class Delegate {
-
-  constructor (context) {
-    this._context = context;
-  }
-
-  start (options) {
-    options = _.merge({}, Runtime.defaults, options || {});
-    return Promise.resolve()
-      .then(() => Runtime.validate(options))
-      .then(() => Runtime.start(options));
-  }
-
-  on (name, callback) {
-    return Runtime.on(name, callback, this._context);
-  }
-
-  stop () {
-    return Runtime.stop();
-  }
-
-  get auth () {
-    return Runtime.auth;
-  }
-
-}
-
-Runtime.initialize(Delegate);
-
+Runtime._initialize();
 
 module.exports = Runtime;
