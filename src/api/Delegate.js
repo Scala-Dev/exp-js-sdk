@@ -29,7 +29,7 @@ class Delegate {
   getDevice (uuid) { return Device.get(uuid, this._context); }
   findDevices (params) { return Device.find(params, this._context); }
   createDevice (document, options) { return Device.create(document, options, this._context); }
-  getCurrentDevice () { return Device.get(runtime.auth.deviceUuid, this._context); }
+  getCurrentDevice () { return Device.get(runtime.auth.identity.uuid, this._context); }
 
   getThing (uuid) { return Thing.get(uuid, this._context); }
   findThings (params) { return Thing.find(params, this._context); }

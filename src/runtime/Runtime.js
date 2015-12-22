@@ -95,16 +95,18 @@ class Runtime  {
       };
     } else if (this._options.deviceUuid || this._options.allowPairing) {
       return {
-        type: 'device',
-        uuid: this._options.deviceUuid,
-        allowPairing: this._options._allowPairing,
-        token: jwt.sign({}, this._options.secret || 'secret')
+        token: jwt.sign({
+          type: 'device',
+          uuid: this._options.deviceUuid,
+          allowPairing: this._options._allowPairing,
+        }, this._options.secret || 'secret')
       };
     } else if (this._options.consumerAppUuid) {
       return {
-        type: 'consumerApp',
-        uuid: this._options.consumerAppUuid,
-        token : jwt.sign({}, this._options.apiKey)
+        token : jwt.sign({
+          type: 'consumerApp',
+          uuid: this._options.consumerAppUuid,
+        }, this._options.apiKey)
       };
     }
   }
