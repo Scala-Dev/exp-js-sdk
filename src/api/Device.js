@@ -17,7 +17,7 @@ class Device extends Resource {
   }
 
   static get path () {
-    return '/1/devices';
+    return '/api/devices';
   }
 
   identify () {

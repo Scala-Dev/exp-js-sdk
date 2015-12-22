@@ -31,7 +31,7 @@ class Content extends Resource {
     return this.document.subtype;
   }
 
-  static get path () { return '/1/devices'; }
+  static get path () { return '/api/content'; }
 
   getChildren () {
     if (this.document.itemCount !== this.children.length) {

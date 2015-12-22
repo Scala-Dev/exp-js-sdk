@@ -17,7 +17,7 @@ class Thing extends Resource {
   }
 
   static get path () {
-    return '/1/things';
+    return '/api/things';
   }
 
 }

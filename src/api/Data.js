@@ -6,7 +6,7 @@ const Api = require('./Api');
 class Data extends Resource {
 
   static get path () {
-    return '/1/data';
+    return '/api/data';
   }
 
   get path () {

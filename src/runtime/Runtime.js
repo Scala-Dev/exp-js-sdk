@@ -187,7 +187,7 @@ class Runtime  {
     this._check(id);
     this._clearTimeouts();
     this.auth = auth;
-    this._refreshTimeout = setTimeout(() => this._refresh(this.id), (this.auth.expiration * 1000 - Date.now()) / 2);
+    this._refreshTimeout = setTimeout(() => this._refresh(this.id), (this.auth.expiration - Date.now()) / 2);
     this._events.trigger('update', auth);
   }
 
