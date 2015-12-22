@@ -98,7 +98,7 @@ class Runtime  {
         token: jwt.sign({
           type: 'device',
           uuid: this._options.deviceUuid,
-          allowPairing: this._options._allowPairing,
+          allowPairing: this._options.allowPairing,
         }, this._options.secret || 'secret')
       };
     } else if (this._options.consumerAppUuid) {
