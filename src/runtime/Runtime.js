@@ -78,7 +78,7 @@ class Runtime  {
   }
 
   static _sendLoginRequest () {
-    return fetch(this._options.host + '/1/auth/login', {
+    return fetch(this._options.host + '/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(this._generateLoginPayload())
@@ -153,7 +153,7 @@ class Runtime  {
   }
 
   static _sendRefreshRequest () {
-    return fetch(this._options.host + '/1/auth/token', {
+    return fetch(this._options.host + '/api/auth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
