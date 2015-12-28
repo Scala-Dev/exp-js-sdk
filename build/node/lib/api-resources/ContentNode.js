@@ -8,8 +8,8 @@ var ContentNode = function ContentNode(context) {
   };
 
   var self = this;
-  var api = require('../api');
-  var config = require('../config');
+  var api = require('../../api');
+  var config = require('../../config');
 
   this.uuid = context.content.uuid;
   this.document = context.content;

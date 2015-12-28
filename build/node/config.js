@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = {
-  host: 'http://api-develop.exp.scala.com'
+  host: 'https://api.exp.scala.com'
 };

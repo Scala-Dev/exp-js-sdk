@@ -1,18 +1,31 @@
 # Getting Started
 
-Add the JavaScript SDK to your node.js project as an NPM dependency, by adding the following to the `dependencies` section of your `package.json`
+If you are using NPM add the JavaScript SDK to your node.js project as an NPM dependency, by adding the following to the `dependencies` section of your `package.json`
 ```
 "exp-js-sdk": "git+https://github.com/scalainc/exp-js-sdk.git#develop",
 ```
 
+For use in a node.js application v0.12.7 and npm@2.14.0 are recommended - see the [embedded boilerplate](https://github.com/ScalaInc/exp-embedded-boilerplate) project.
+
+For use in a web app, browserify is recommended.
+
 # exp.runtime
 
-## exp.runtime.start(options) 
+## exp.runtime.start(options)
 Initialize the SDK and connect to EXP.
+To authenticate on a consumer network call start():
 ```javascript
 exp.runtime.start({
-  host: 'http://exp.scala.com',
-  uuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Device uuid.
+  networkUuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Network uuid
+  apiKey: 'abc123' // Network API Key
+}).then(() => {}); // sdk is initialized and connected to EXP
+```
+
+Device authentication is also supported:
+```javascript
+exp.runtime.start({
+  host: 'https://api.exp.scala.com',
+  deviceUuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Device uuid.
   secret: 'mashed potatoes' // Device secret
 }).then(() => {}); // sdk is initialized and connected to EXP
 ```
@@ -54,6 +67,9 @@ There are four channels available:
 - "organization": Messages to/from devices across the organization.
 - "experience": Messages to/from devices in the current experience.
 - "location": Messages to/from devices in the current location.
+
+### exp.channels.[channel].fling(uuid)
+Fling content on a channel. UUID is the UUID of the content object you are flinging.
 
 ### exp.channels.[channel].listen(options, callback)
 Register a callback for a message on this channel.
@@ -112,10 +128,20 @@ Response callbacks will only be triggered when the request was sent on the same 
 
 # exp.api
 
-### exp.api.getContentNode(uuid)
-Get a content node by UUID. Resolves to a [ContentNode Object](#content-object). Note: The UUID value of 'root' will return the contents of the root folder of the current organization.
+### exp.api.getContent(uuid)
+Get a content object by UUID. Resolves to a [Content Object](#content-object). Note: The UUID value of 'root' will return the contents of the root folder of the current organization.
 ```javascript
-exp.api.getContentNode('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(content => {});
+exp.api.getContent('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(content => {});
+```
+
+### exp.api.findContent(uuid)
+Query for multiple content nodes. Resolves to an object with a `results` array of [Content Objects](#content-object).
+```javascript
+exp.api.findContent({
+    limit: 20, // The number of devices to retrieve at most
+    skip: 5, // The number of devices to skip
+    sort: 'field1', // The field to sort by.
+  }).then(results => {});
 ```
 
 
@@ -131,14 +157,30 @@ Get a single device by UUID. Resolves to a [Device Object](#device-object).
 exp.api.getDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(device => {});
 ```
 
-### exp.api.getDevices(params)
-Query for multiple devices. Resolves to an array of [Device Objects](#device-object).
+### exp.api.findDevices(params)
+Query for multiple devices. Resolves to an object with a `results` array of [Device Objects](#device-object).
 ```javascript
-exp.api.getDevices({
+exp.api.findDevices({
     limit: 20, // The number of devices to retrieve at most
     skip: 5, // The number of devices to skip
     sort: 'field1', // The field to sort by.
   }).then(devices => {});
+```
+
+### exp.api.getThing(uuid)
+Get a single device by UUID. Resolves to a [Thing Object](#thing-object).
+```javascript
+exp.api.getThing('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(thing => {});
+```
+
+### exp.api.findThings(params)
+Query for multiple things. Resolves to an object with a `results` array of [Thing Objects](#thing-object).
+```javascript
+exp.api.findThing({
+    limit: 20, // The number of things to retrieve at most
+    skip: 5, // The number of things to skip
+    sort: 'name', // The field to sort by.
+  }).then(things => {});
 ```
 
 ### exp.api.getCurrentExperience()
@@ -153,12 +195,12 @@ Get a single experience by UUID. Resolves to a [Experience Object](#experience-o
 exp.api.getExperience('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(experience => {});
 ```
 
-### exp.api.getExperiences(params)
-Query for multiple experiences. Resolves to an array of [Experience Objects](#experience-object).
+### exp.api.findExperiences(params)
+Query for multiple experiences. Resolves to an object with a `results` array of [Experience Objects](#experience-object).
 ```javascript
-exp.api.getExperiences({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
+exp.api.findExperiences({
+    limit: 20, // The number of experiences to retrieve at most
+    skip: 5, // The number of experiences to skip
     sort: 'field1', // The field to sort by.
   }).then(experiences => {});
 ```
@@ -169,36 +211,50 @@ Get a single location by UUID. Resolves to a [Location Object](#location-object)
 exp.api.getLocation('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(location => {});
 ```
 
-### exp.api.getLocations(params)
-Query for multiple locations. Resolves to an array of [Location Objects](#location-object).
+### exp.api.findLocations(params)
+Query for multiple locations. Resolves to an object with a `results` array of [Location Objects](#location-object).
 ```javascript
-exp.api.getLocations({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
+exp.api.findLocations({
+    limit: 20, // The number of locations to retrieve at most
+    skip: 5, // The number of locations to skip
     sort: 'field1', // The field to sort by.
   }).then(locations => {});
-```
-
-### exp.api.getZone(uuid)
-Get a single zone by UUID. Resolves to a [Zone Object](#zone-object).
-```javascript
-exp.api.getZone('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(zone => {});
-```
-
-### exp.api.getZones(params)
-Query for multiple zones. Resolves to an array of [Zone Objects](#zone-object).
-```javascript
-exp.api.getZones({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
-    sort: 'field1', // The field to sort by.
-  }).then(zones => {});
 ```
 
 ### exp.api.identifyDevice(deviceUuid)
 Request a device to identify itself. Resolve to response from targeted device
 ```javascript
 exp.api.identifyDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(rsp => {});
+```
+
+### exp.api.getData(key, group)
+Get data by key and group. Resolves to a [Data Object](#data-object).
+```javascript
+exp.api.getData("fluffy", "cats").then(data => {});
+```
+
+### exp.api.findData(params)
+Query for multiple data objects. Resolve to an object with a `results` array of [Data Objects](#data-object).
+```javascript
+exp.api.findData({
+  group: 'cats'
+}).then(cats => {});
+```
+
+### exp.api.getFeed(uuid)
+Get a single feed by UUID. Resolves to a [Feed Object](#feed-object).
+```javascript
+exp.api.getFeed('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(feed => {});
+```
+
+### exp.api.findFeeds(params)
+Query for multiple feeds. Resolves to an object with a `results` array of [Feed Objects](#feed-object).
+```javascript
+exp.api.findFeeds({
+    limit: 20, // The number of feeds to retrieve at most
+    skip: 5, // The number of feeds to skip
+    sort: 'field1', // The field to sort by.
+  }).then(results => {});
 ```
 
 # Abstract API Objects
@@ -221,11 +277,17 @@ Get the absolute url to the content node data. Useful for image/video tags or to
 const url = content.getUrl();
 ```
 
+##### content.getVariantUrl(variantName)
+Get the url to the content nodes variant data.
+```javascript
+const url = content.getVariantUrl('320.png');
+```
+
 
 ### Device Object
 
 ##### device.uuid
-The devices UUID
+The device's UUID
 
 ##### device.getExperience()
 Get the device's experience. Resolves to an [Experience Object](#experience-object).
@@ -233,17 +295,17 @@ Get the device's experience. Resolves to an [Experience Object](#experience-obje
 device.getExperience().then(experience => {});
 ```
 
-##### device.getZone()
-Get the device's zone. Resolves to a [Zone Object](#zone-object)
-```javascript
-device.getZone().then(zone => {});
-```
-
 ##### device.identify()
 Request the device to identify itself. Resolve to the response from targeted device.
 ```javascript
 device.identify().then(rsp => {});
 ```
+
+
+### Thing Object
+
+##### thing.uuid
+The thing's UUID
 
 
 ### Experience Object
@@ -260,27 +322,24 @@ Temporary. The raw experience object.
 ##### location.uuid
 The location's UUID.
 
-##### location.getZones()
-Get all of the zones in this location. Resolves to an array of [Zone Objects](#zone-object).
+
+### Data Object
+#### data.key
+The data item's key.
+
+#### data.value
+An arbitrary object that contains any data you want.
+
+#### data.group
+The data item's group.
+
+### Feed Object
+
+##### feed.uuid
+The feed's UUID
+
+##### feed.getData()
+Get the feed's data. Resolves to the output of the feed query.
 ```javascript
-location.getZones().then(zones => {});
-```
-
-
-### Zone Object
-##### zone.uuid
-The zone's UUID.
-
-##### zone.getDevices()
-Get the zone's devices. Resolves to an array of [Device Objects](#device-object)
-
-```javascript
-zone.getDevices().then(devices => {});
-```
-
-##### zone.getLocation()
-Get the zone's location. Resolves to a [Location Object](#location-object)
-
-```javascript
-zone.getLocation().then(location => {});
+device.getData().then(data => {});
 ```

@@ -6,15 +6,11 @@ var sdk = {
   api: require('./api'),
   connection: require('./connection'),
   channels: require('./channels'),
-  utilities: require('./utilities'),
+  utilities: require('./utilities'), // Deprecate for lib
+  lib: require('./utilities'),
   runtime: require('./runtime')
 };
 
 if (typeof window === 'object') window.exp = sdk;
 
 module.exports = sdk;
-
-
-
-
-

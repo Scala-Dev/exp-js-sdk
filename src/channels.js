@@ -101,6 +101,10 @@ const Interface = function (channel) {
       });
   };
 
+  this.fling = (uuid, options) => {
+    return self.broadcast({ name: 'fling', payload: { uuid: uuid, options: options }});
+  };
+
   /* Message Routing */
   socket.events.on('message', message => {
     if (message.type === 'response') return self.onResponse(message);

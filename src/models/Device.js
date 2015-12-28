@@ -16,13 +16,7 @@ module.exports = function (context) {
     }
   };
 
-  this.getZone = () => {
-    return api.getZone(context.device.zoneUuid);
-  };
-
   this.identify = () => {
     return api.identifyDevice(context.device.uuid);
   };
 };
-
-

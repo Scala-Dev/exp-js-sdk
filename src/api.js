@@ -57,8 +57,8 @@ const getCurrentExperience = () => {
     .then(() => {
       return channels.system.request({ name: 'getCurrentExperience' });
     })
-    .then(experience => {
-      return new models.Experience({ experience: experience });
+    .then(document => {
+      return new models.Experience(document);
     });
 };
 
@@ -84,9 +84,36 @@ const getDevices = params => {
       query.results.forEach(device => {
         devices.push(new models.Device({ device: device }));
       });
-      return devices;
+      return { total: query.total, results: devices };
     });
 };
+
+
+const getThing = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/things/' + uuid);
+    })
+    .then(thing => {
+      return new models.Device({ thing: thing });
+    });
+};
+
+const findThings = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/things', params);
+    })
+    .then(query => {
+      const things = [];
+      query.results.forEach(thing => {
+        things.push(new models.Thing({ thing: thing }));
+      });
+      return { total: query.total, results: things };
+    });
+};
+
 
 const getExperience = uuid => {
   return Promise.resolve()
@@ -94,8 +121,8 @@ const getExperience = uuid => {
       if (!uuid) throw new Error('uuidRequired');
       return get('/api/experiences/' + uuid);
     })
-    .then(experience => {
-      return new models.Experience({ experience: experience });
+    .then(document => {
+      return new models.Experience(document);
     });
 };
 
@@ -106,10 +133,10 @@ const getExperiences = params => {
     })
     .then(query => {
       const experiences = [];
-      query.results.forEach(experience => {
-        experiences.push(new models.Experience({ experience: experience }));
+      query.results.forEach(document => {
+        experiences.push(new models.Experience(document));
       });
-      return experiences;
+      return { total: query.total, results: experiences };
     });
 };
 
@@ -135,33 +162,7 @@ const getLocations = params => {
       query.results.forEach(location => {
         locations.push(new models.Location({ location: location }));
       });
-      return locations;
-    });
-};
-
-
-const getZone = uuid => {
-  return Promise.resolve()
-    .then(() => {
-      if (!uuid) throw new Error('uuidRequired');
-      return get('/api/zones/' + uuid);
-    })
-    .then(zone => {
-      return new models.Zone({ zone: zone });
-    });
-};
-
-const getZones = params => {
-  return Promise.resolve()
-    .then(() => {
-      return get('/api/zones', params);
-    })
-    .then(query => {
-      const zones = [];
-      query.results.forEach(zone => {
-        zones.push(new models.Zone({ zone: zone }));
-      });
-      return zones;
+      return { total: query.total, results: locations };
     });
 };
 
@@ -180,28 +181,100 @@ const getContentNode = uuid => {
     });
 };
 
-const getContentNodes = params => {
-  return Promise.reject();
+const findContentNodes = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/content', params);
+    })
+    .then(query => {
+      const contentNodes = [];
+      query.results.forEach(content => {
+        contentNodes.push(new models.ContentNode({ content: content }));
+      });
+      return { total: query.total, results: contentNodes };
+    });
+};
+
+
+const getData = (key, group) => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/data/' + encodeURIComponent(group) + '/' + encodeURIComponent(key));
+    })
+    .then(data => {
+      return new models.Data({ data: data });
+    });
+};
+
+const findData = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/data', params);
+    })
+    .then(query => {
+      const results = [];
+      query.results.forEach(data => {
+        results.push(new models.Data({ data: data }));
+      });
+      return { total: query.total, results: results };
+    });
+};
+
+const getFeed = uuid => {
+  return Promise.resolve()
+    .then(() => {
+      if (!uuid) throw new Error('uuidRequired');
+      return get('/api/connectors/feeds/' + uuid);
+    })
+    .then(feed => {
+      return new models.Feed({ feed: feed });
+    });
+};
+
+const findFeeds = params => {
+  return Promise.resolve()
+    .then(() => {
+      return get('/api/connectors/feeds', params);
+    })
+    .then(query => {
+      const feeds = [];
+      query.results.forEach(feed => {
+        feeds.push(new models.Feed({ feed: feed }));
+      });
+      return { total: query.total, results: feeds };
+    });
 };
 
 module.exports.identifyDevice = identifyDevice;
 
 module.exports.getContentNode = getContentNode;
+module.exports.getContent = getContentNode;
+module.exports.findContentNodes = findContentNodes;
+module.exports.findContent = findContentNodes;
 
 module.exports.getCurrentDevice = getCurrentDevice;
 module.exports.getCurrentExperience = getCurrentExperience;
 
 module.exports.getExperience = getExperience;
 module.exports.getExperiences = getExperiences;
+module.exports.findExperiences = getExperiences;
 
 module.exports.getDevice = getDevice;
 module.exports.getDevices = getDevices;
+module.exports.findDevices = getDevices;
 
 module.exports.getLocation = getLocation;
 module.exports.getLocations = getLocations;
+module.exports.findLocations = getLocations;
 
-module.exports.getZone = getZone;
-module.exports.getZones = getZones;
+module.exports.getThing = getThing;
+module.exports.findThings = findThings;
+
+module.exports.getData = getData;
+module.exports.findData = findData;
+
+module.exports.getFeed = getFeed;
+module.exports.findFeeds = findFeeds;
 
 module.exports.get = get;
 module.exports.fetch = fetch_;
