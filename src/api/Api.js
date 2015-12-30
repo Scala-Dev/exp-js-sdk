@@ -11,6 +11,7 @@ class Api {
 
   static fetch (path, options) {
     const url = runtime.auth.api.host + path;
+    options.cors = true;
     options.credentials = 'include';
     options.headers = options.headers || {};
     options.headers.Authorization = 'Bearer ' + runtime.auth.token;
