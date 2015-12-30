@@ -2,7 +2,7 @@
 /* jshint -W074 */
 
 const _ = require('lodash');
-//require('isomorphic-fetch');
+require('isomorphic-fetch');
 
 
 const runtime = require('../runtime');

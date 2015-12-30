@@ -143,7 +143,7 @@ class Runtime  {
           .then(() => this._check(id))
           .then(() => this._login(id))
           .then(resolve, reject);
-      }, 5000);
+      }, 2000);
     });
   }
 
@@ -175,7 +175,7 @@ class Runtime  {
           .then(() => this._check(id))
           .then(() => this._refresh(id))
           .then(resolve, reject);
-      }, 5000);
+      }, 2000);
     });
   }
 
@@ -187,7 +187,7 @@ class Runtime  {
     this._check(id);
     this._clearTimeouts();
     this.auth = auth;
-    this._refreshTimeout = setTimeout(() => this._refresh(this.id), (this.auth.expiration - Date.now()) / 2);
+    this._refreshTimeout = setTimeout(() => this._refresh(id), (this.auth.expiration - Date.now()) / 2);
     this._events.trigger('update', auth);
   }
 
