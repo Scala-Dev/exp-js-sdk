@@ -11,6 +11,7 @@ class Api {
 
   static fetch (path, options) {
     const url = runtime.auth.api.host + path;
+    options.credentials = 'same-origin';
     options.headers = options.headers || {};
     options.headers.Authorization = 'Bearer ' + runtime.auth.token;
     options.headers.Accept = 'application/json';
