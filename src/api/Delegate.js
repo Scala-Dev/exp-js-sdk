@@ -20,6 +20,8 @@ class Delegate {
     return new this.constructor(context);
   }
 
+  clear () {}
+
   get (path, params) { return Api.get(path, params); }
   post (path, params, body) { return Api.post(path, params, body); }
   patch(path, params, body) { return Api.patch(path, params, body); }

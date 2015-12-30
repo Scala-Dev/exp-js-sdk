@@ -74,7 +74,7 @@ class Runtime  {
 
   static _login (id) {
     return this._sendLoginRequest()
-      .then(response => this._onLoginResponse(id, response), this._queueLogin(id));
+      .then(response => this._onLoginResponse(id, response), () => this._queueLogin(id));
   }
 
   static _sendLoginRequest () {
