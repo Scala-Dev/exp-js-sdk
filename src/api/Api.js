@@ -2,7 +2,7 @@
 /* jshint -W074 */
 
 const _ = require('lodash');
-require('isomorphic-fetch');
+//require('isomorphic-fetch');
 
 
 const runtime = require('../runtime');
@@ -11,7 +11,7 @@ class Api {
 
   static fetch (path, options) {
     const url = runtime.auth.api.host + path;
-    options.credentials = 'same-origin';
+    options.credentials = 'include';
     options.headers = options.headers || {};
     options.headers.Authorization = 'Bearer ' + runtime.auth.token;
     options.headers.Accept = 'application/json';
