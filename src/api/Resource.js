@@ -19,7 +19,7 @@ class Resource {
   static create (document, options, context) {
     options = options || {};
     const resource = new this(document, context);
-    if (options.save === false) return resource;
+    if (options.save === false) return Promise.resolve(resource);
     return Api.post(this.path, null, resource.document).then(document => {
       resource.document = document;
       return resource;

@@ -43,7 +43,7 @@ class Delegate {
 
   getLocation (uuid) { return Location.get(uuid, this._context); }
   findLocations (params) { return Location.find(params, this._context); }
-  createLocation (document, options) { Location.create(document, options, this._context); }
+  createLocation (document, options) { return Location.create(document, options, this._context); }
 
   getData (key, group) { return Data.get(key, group, this._context); }
   findData (params) { return Data.find(params, this._context); }

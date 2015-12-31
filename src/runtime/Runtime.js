@@ -149,7 +149,8 @@ class Runtime  {
 
   static _refresh (id) {
     return this._sendRefreshRequest()
-      .then(response => this._onRefreshResponse(id, response), this._queueRefresh(id));
+      .then(response => this._onRefreshResponse(id, response))
+      .catch(() => this._queueRefresh(id));
   }
 
   static _sendRefreshRequest () {
