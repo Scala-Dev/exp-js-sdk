@@ -1,7 +1,7 @@
 'use strict';
 
 const Resource = require('./Resource');
-const Api = require('./Api');
+const Api = require('../Api');
 
 class Data extends Resource {
 

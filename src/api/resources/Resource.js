@@ -1,7 +1,7 @@
 'use strict';
 
-const Api = require('./Api');
-const network = require('../network');
+const Api = require('../Api');
+const network = require('../../network');
 
 class Resource {
 

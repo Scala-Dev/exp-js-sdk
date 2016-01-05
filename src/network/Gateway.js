@@ -30,9 +30,9 @@ class Gateway {
     this.constructor._events.on(name, callback, context);
   }
 
-  send (message) {
+  send (event) {
     if (!this._socket) return;
-    return this._socket.emit('event', message);
+    return this._socket.emit('event', event);
   }
 
   disconnect () {

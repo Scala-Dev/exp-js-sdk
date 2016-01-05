@@ -1,7 +1,7 @@
 'use strict';
 
 const Resource = require('./Resource');
-const runtime = require('../runtime');
+const runtime = require('../../runtime');
 
 class Content extends Resource {
 
