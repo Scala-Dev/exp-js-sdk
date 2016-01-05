@@ -327,6 +327,12 @@ Temporary. The raw experience object.
 ##### location.uuid
 The location's UUID.
 
+##### location.getLayoutUrl()
+Get the absolute url to the layout image for this location. Useful for image tags or to download a layout image.
+```javascript
+const url = location.getLayoutUrl();
+```
+
 
 ### Data Object
 #### data.key
