@@ -1,68 +1,36 @@
 'use strict';
 
-const _ = require('lodash');
-
-
 class Listener {
 
-  constructor (context, callback) {
-    this.context = context;
+  constructor (callback, context) {
     this.callback = callback;
-  }
-
-  trigger (payload) {
-    return this.callback(payload);
-  }
-
-  cancel () {
-    this.context.listeners.splice(this.context.listeners.indexOf(this), 1);
+    this.context = context;
   }
 
 }
 
-
-class Context {
+class Namespace {
 
   constructor () {
     this.listeners = [];
   }
 
   trigger (payload) {
-    return Promise.all(this.listeners.map(listener => listener.trigger(payload)));
-  }
-
-  on (callback) {
-    const listener = new Listener(this, callback);
-    this.listeners.push(listener);
-    return listener;
-  }
-
-}
-
-
-class Namespace {
-
-  constructor () {
-    this.contexts = {};
-  }
-
-  trigger (payload) {
-    const promises = [];
-    _.forOwn(this.contexts, context => promises.push(context.trigger(payload)));
-    return Promise.all(promises);
+    return Promise.all(this.listeners.map(listener => listener.callback(payload)));
   }
 
   on (callback, context) {
-    if (!this.contexts[context]) this.contexts[context] = new Context();
-    return this.contexts[context].on(callback);
+    const listener = new Listener(callback, context);
+    this.listeners.push(listener);
+    return () => this.listeners.splice(this.listeners.indexOf(listener), 1);
   }
 
   clear (context) {
-    delete this.contexts[context];
+    if (!context) this.listeners = [];
+    this.listeners = this.listeners.filter(listener => listener.context !== context);
   }
 
 }
-
 
 class EventNode {
 
@@ -76,14 +44,14 @@ class EventNode {
   }
 
   trigger (name, payload) {
-    if (!this.namespaces[name]) return Promise.resolve();
     return new Promise((resolve, reject) => {
-      setTimeout(() => this.namespaces[name].trigger(payload).then(() => resolve()).catch(error => reject(error)), 0);
+      if (!this.namespaces[name]) resolve();
+      setTimeout(() => this.namespaces[name].trigger(payload).then(resolve).catch(reject), 0);
     });
   }
 
   clear (context) {
-    _.forOwn(this.namespaces, namespace => namespace.clear(context));
+    Object.keys(this.namespaces).forEach(namespace => namespace.clear(context));
   }
 
 }

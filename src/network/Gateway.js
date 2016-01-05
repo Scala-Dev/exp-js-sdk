@@ -32,7 +32,7 @@ class Gateway {
 
   send (message) {
     if (!this._socket) return;
-    return this._socket.emit('message', message);
+    return this._socket.emit('event', message);
   }
 
   disconnect () {
@@ -55,8 +55,8 @@ class Gateway {
       timeout: 20000,
       reconnectionAttempts: Infinity
     });
-    this._socket.on('message', message => {
-      this._receive(message);
+    this._socket.on('event', event => {
+      this._receive(event);
     });
     this._socket.on('connect', () => {
       this.constructor._events.trigger('online');
@@ -69,11 +69,11 @@ class Gateway {
     });
   }
 
-  _receive (message) {
-    if (!message) return;
-    message.channels.forEach(name => {
+  _receive (event) {
+    if (!event) return;
+    event.channels.forEach(name => {
       if (!this._channels[name]) return;
-      this._channels[name].receive(message);
+      this._channels[name].receive(event);
     });
   }
 

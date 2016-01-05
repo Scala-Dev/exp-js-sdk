@@ -21,17 +21,23 @@ class Channel {
     }
   }
 
-  broadcast (name, payload, options) {
-    this.send(name, payload, options);
+  trigger (name, payload) {
+    this.send(name, payload);
   }
 
-  send (name, payload, options) {
-    options = options || {};
+  broadcast (name, payload) {
+    this.send(name, payload);
+  }
+
+  on (name, callback, options, context) {
+    this.listen(name, callback, options, context);
+  }
+
+  send (name, payload) {
     this._gateway.send({
       channels: [this._name],
       name: name,
-      payload: payload,
-      system: options.system || false,
+      payload: payload
     });
   }
 
