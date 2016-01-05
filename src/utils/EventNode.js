@@ -45,7 +45,7 @@ class EventNode {
 
   trigger (name, payload) {
     return new Promise((resolve, reject) => {
-      if (!this.namespaces[name]) resolve();
+      if (!this.namespaces[name]) return resolve();
       setTimeout(() => this.namespaces[name].trigger(payload).then(resolve).catch(reject), 0);
     });
   }

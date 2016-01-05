@@ -24,6 +24,10 @@ class Delegate {
     return Network.getChannel(name, options, this._context);
   }
 
+  get isPrimaryConnected () {
+    return Network.isPrimaryConnected;
+  }
+
 }
 
 module.exports = Delegate;

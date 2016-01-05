@@ -22,11 +22,18 @@ class Network {
   }
 
   static _initialize () {
+    this.isPrimaryConnected = false;
     this._events = new EventNode();
     this._gateways = {};
     this._gateways.primary = new Gateway();
-    this._gateways.primary.on('online', () => this._events.trigger('online'));
-    this._gateways.primary.on('offline', () => this._events.trigger('offline'));
+    this._gateways.primary.on('online', () => {
+      this.isPrimaryConnected = true;
+      this._events.trigger('online');
+    });
+    this._gateways.primary.on('offline', () => {
+      this.isPrimaryConnected = false;
+      this._events.trigger('offline');
+    });
     runtime.on('update', auth => this._refresh(auth));
   }
 
