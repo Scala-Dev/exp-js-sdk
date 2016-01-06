@@ -19,7 +19,10 @@ class Resource {
   static create (document, options, context) {
     options = options || {};
     const resource = new this(document, context);
-    if (options.save === false) return Promise.resolve(resource);
+    if (options.save === false) {
+      if (options.sync === true) return resource;
+      return Promise.resolve(resource);
+    }
     return Api.post(this.path, null, resource.document).then(document => {
       resource.document = document;
       return resource;
@@ -50,11 +53,11 @@ class Resource {
   }
 
   on (name, callback) {
-    return this.getChannel({ system: true }).listen(name, callback);
+    return this.getChannel({ system: true }).on(name, callback);
   }
 
   fling (options) {
-    return this.getChannel().broadcast('fling', options);
+    return this.getChannel().trigger('fling', options);
   }
 
   getChannel (options) {

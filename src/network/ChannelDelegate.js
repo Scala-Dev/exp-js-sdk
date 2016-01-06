@@ -2,18 +2,17 @@
 
 class ChannelDelegate {
 
-  constructor (channel, options, context) {
+  constructor (channel, context) {
     this._channel = channel;
-    this._options = options;
     this._context = context;
   }
 
-  broadcast (name, payload) {
-    return this._channel.broadcast(name, payload, this._options, this._conext);
+  trigger (name, payload) {
+    return this._channel.trigger(name, payload);
   }
 
-  listen (name, callback) {
-    return this._channel.listen(name, callback, this._options, this._context);
+  on (name, options, callback) {
+    return this._channel.on(name, options, callback, this._context);
   }
 
 }

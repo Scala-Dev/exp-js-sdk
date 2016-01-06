@@ -13,16 +13,16 @@ describe('basic', () => {
   it('should be able to send/receive a message on a custom channel', () => {
     return new Promise(resolve => {
       const channel = exp.network.getChannel('test');
-      channel.listen('test', resolve);
-      channel.broadcast('test');
+      channel.on('test', resolve);
+      channel.trigger('test');
     });
   });
 
   it('should be able to send/receive a message on a built in channel', () => {
     return new Promise(resolve => {
       const channel = exp.network.getChannel('organization');
-      channel.listen('test', resolve);
-      channel.broadcast('test');
+      channel.on('test', resolve);
+      channel.trigger('test');
     });
   });
 
@@ -30,7 +30,7 @@ describe('basic', () => {
     return exp.api.createExperience({}).then(experience => {
       let resolve; let reject;
       const promise = new Promise((a, b) => { resolve = a; reject = b; });
-      experience.on('update', resolve);
+      experience.on('update', { system: true }, resolve);
       experience.document.name = 'Test' + Math.random();
       experience.save().catch(reject);
       return promise;
@@ -49,7 +49,7 @@ describe('basic', () => {
   });
 
   it('should fling', () => {
-    return exp.network.getChannel('experience').broadcast('fling', { uuid: 'b472652b-6692-4567-a211-53586cb5179c' });
+    return exp.network.getChannel('experience').trigger('fling', { uuid: 'b472652b-6692-4567-a211-53586cb5179c' });
   });
 
 

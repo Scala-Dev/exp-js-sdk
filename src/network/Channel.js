@@ -21,33 +21,25 @@ class Channel {
     }
   }
 
-  trigger (name, payload) {
-    this.send(name, payload);
-  }
-
-  broadcast (name, payload) {
-    this.send(name, payload);
-  }
-
-  on (name, callback, options, context) {
-    this.listen(name, callback, options, context);
-  }
-
-  send (name, payload) {
-    this._gateway.send({
-      channels: [this._name],
-      name: name,
-      payload: payload
-    });
-  }
-
-  listen (name, callback, options, context) {
+  on (name, options, callback, context) {
+    if (!callback) {
+      callback = options;
+      options = {};
+    }
     options = options || {};
     if (options.system) {
       return this._systemListeners.on(name, callback, context);
     } else {
       return this._userListeners.on(name, callback, context);
     }
+  }
+
+  trigger (name, payload) {
+    this._gateway.send({
+      channels: [this._name],
+      name: name,
+      payload: payload
+    });
   }
 
   clear (context) {
