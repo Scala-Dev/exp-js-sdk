@@ -15,8 +15,8 @@ class Namespace {
     this.listeners = [];
   }
 
-  trigger (payload) {
-    return Promise.all(this.listeners.map(listener => listener.callback(payload)));
+  trigger (args) {
+    return Promise.all(this.listeners.map(listener => listener.callback.apply(null, args)));
   }
 
   on (callback, context) {
@@ -32,26 +32,38 @@ class Namespace {
 
 }
 
+const nodes = {};
+
 class EventNode {
 
   constructor () {
+    this.id = Math.random();
     this.namespaces = {};
   }
 
-  on (name, callback, context) {
-    if (!this.namespaces[name]) this.namespaces[name] = new Namespace();
-    return this.namespaces[name].on(callback, context);
+  static clear (context) {
+    Object.keys(nodes).forEach(id => nodes[id].clear(context));
   }
 
-  trigger (name, payload) {
+  on (name, callback, context) {
+    if (!nodes[this.id]) nodes[this.id] = this;
+    if (!this.namespaces[name]) this.namespaces[name] = new Namespace();
+    return this.namespaces[name].on(callback, context || Math.random());
+  }
+
+  trigger () {
     return new Promise((resolve, reject) => {
-      if (!this.namespaces[name]) return resolve();
-      setTimeout(() => this.namespaces[name].trigger(payload).then(resolve).catch(reject), 0);
+      if (!this.namespaces[arguments[0]]) return resolve();
+      setTimeout(() => this.namespaces[arguments[0]].trigger([].splice.call(arguments, 1)).then(resolve).catch(reject), 0);
     });
   }
 
   clear (context) {
-    Object.keys(this.namespaces).forEach(namespace => namespace.clear(context));
+    Object.keys(this.namespaces).forEach(name => {
+      this.namespaces[name].clear(context);
+      if (this.namespaces[name].listeners.length === 0) delete this.namespaces[name];
+    });
+    if (Object.keys(this.namespaces).length === 0) delete nodes[this.id];
   }
 
 }

@@ -6,50 +6,33 @@ const EventNode = require('../utils/EventNode');
 
 class Network {
 
-  static getChannel (name, options, context) {
-    return this._gateways.primary.getChannelDelegate(name, options, context);
+  constructor () {
+    this.events = new EventNode();
+    this.primary = new Gateway();
+    this.primary.on('online', () => this.events.trigger('online'));
+    this.primary.on('offline', () => this.events.trigger('offline'));
+    runtime.on('update', auth => this.refresh(auth));
   }
 
-  static on (name, callback, context) {
-    return this._events.on(name, callback, context);
-  }
-
-  static clear (context) {
-    this._events.clear(context);
-    Object.keys(this._gateways).forEach(key => {
-      this._gateways[key].clear(context);
-    });
-  }
-
-  static _initialize () {
-    this.isPrimaryConnected = false;
-    this._events = new EventNode();
-    this._gateways = {};
-    this._gateways.primary = new Gateway();
-    this._gateways.primary.on('online', () => {
-      this.isPrimaryConnected = true;
-      this._events.trigger('online');
-    });
-    this._gateways.primary.on('offline', () => {
-      this.isPrimaryConnected = false;
-      this._events.trigger('offline');
-    });
-    runtime.on('update', auth => this._refresh(auth));
-  }
-
-  static _refresh (auth) {
-    this._gateways.primary.disconnect();
-    const network = auth.networks.find(network => network.isPrimary);
-    if (!network) return;
-    this._gateways.primary.connect({
-      networkUuid: network.uuid,
+  refresh (auth) {
+    this.primary.disconnect();
+    const config = auth.networks.find(network => network.isPrimary);
+    if (!config) return;
+    this.primary.connect({
+      networkUuid: config.uuid,
       token: auth.token,
-      host: network.host
+      host: config.host
     });
+  }
+
+  getChannel (name, context) {
+    return this.primary.getChannel(name, context);
+  }
+
+  on (name, callback, context) {
+    return this.events.on(name, callback, context);
   }
 
 }
-
-Network._initialize();
 
 module.exports = Network;

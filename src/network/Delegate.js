@@ -1,31 +1,22 @@
 'use strict';
 
-const Network = require('./Network');
-
 class Delegate {
 
-  constructor (context) {
-    this._context = context || Math.random();
+  constructor (network, context) {
+    this.network = network;
+    this.context = context;
   }
 
   on (name, callback) {
-    return Network.on(name, callback, this._context);
-  }
-
-  clear (context) {
-    return Network.clear(context || this._context);
-  }
-
-  getDelegate (context) {
-    return new this.constructor(context);
+    return this.network.on(name, callback, this.context);
   }
 
   getChannel (name, options) {
-    return Network.getChannel(name, options, this._context);
+    return this.network.getChannel(name, options || {}, this.context);
   }
 
-  get isPrimaryConnected () {
-    return Network.isPrimaryConnected;
+  getDelegate (context) {
+    return new this.constructor(this.network, context);
   }
 
 }

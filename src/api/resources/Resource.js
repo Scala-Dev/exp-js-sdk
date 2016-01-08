@@ -7,8 +7,8 @@ class Resource {
 
   constructor (document, context) {
     this.document = document || {};
-    this._network = network.getDelegate(context);
-    this._context = context;
+    this.network = network.getDelegate(context);
+    this.context = context;
   }
 
   static get (uuid, context) {
@@ -52,17 +52,30 @@ class Resource {
     return Api.get(this.path).then(document => this.document = document);
   }
 
-  on (name, callback) {
-    return this.getChannel({ system: true }).on(name, callback);
+  listen (name, callback, system) {
+    return this.getChannel().listen(name, callback, system);
+  }
+
+  broadcast (name, payload, system) {
+    return this.getChannel().broadcast(name, payload, system);
+  }
+
+  request (target, name, payload, system) {
+    return this.getChannel().request(target, name, payload, system);
+  }
+
+  respond (name, options, callback, system) {
+    return this.getChannel().respond(name, callback, system);
+  }
+
+  getChannel () {
+    return this.network.getChannel(this.uuid);
   }
 
   fling (options) {
-    return this.getChannel().trigger('fling', options);
+    return this.getChannel().broadcast('fling', options);
   }
 
-  getChannel (options) {
-    return this._network.getChannel(this.uuid, options);
-  }
 
 }
 

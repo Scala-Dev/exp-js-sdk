@@ -7,12 +7,20 @@ class ChannelDelegate {
     this._context = context;
   }
 
-  trigger (name, payload) {
-    return this._channel.trigger(name, payload);
+  broadcast (name, payload, system) {
+    this._channel.broadcast(name, payload, system);
   }
 
-  on (name, options, callback) {
-    return this._channel.on(name, options, callback, this._context);
+  listen (name, callback, system) {
+    this._channel.listen(name, callback, system, this._context);
+  }
+
+  request (target, name, payload, system) {
+    this._channel.request(target, name, payload, system);
+  }
+
+  respond (name, callback, system) {
+    this._channel.respond(name, callback, system, this._context);
   }
 
 }
