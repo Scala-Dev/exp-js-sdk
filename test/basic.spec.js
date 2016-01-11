@@ -27,10 +27,10 @@ describe('basic', () => {
   });
 
   it('should receive experience update event', () => {
-    return exp.api.createExperience({}, { save: false }).then(experience => {
+    return exp.api.createExperience({}).then(experience => {
       let resolve; let reject;
       const promise = new Promise((a, b) => { resolve = a; reject = b; });
-      experience.listen('update', () => { console.log('HIT'); resolve(); }, true);
+      experience.listen('update', () => resolve(), true);
       experience.document.name = 'Test' + Math.random();
       experience.save().catch(reject);
       return promise;
@@ -39,12 +39,37 @@ describe('basic', () => {
 
   it('should receive device update event', () => {
     return exp.api.createDevice({}).then(device => {
-      /*let resolve; let reject;
+      let resolve; let reject;
       const promise = new Promise((a, b) => { resolve = a; reject = b; });
       device.listen('update', resolve, true);
       device.document.name = 'Test' + Math.random();
       device.save().catch(reject);
-      return promise;*/
+      return promise;
+    });
+  });
+
+  it('should be able to send and receive requests', () => {
+    const channel = exp.network.getChannel('test');
+    return new Promise((resolve, reject) => {
+      channel.listen('echo', (payload, message) => {
+        channel.respond('hi', () => { return { b: 1 }});
+        channel.request(message.source, 'hi', { a: 1 }).then(response => {
+          if (response.b === 1) return resolve();
+          reject();
+        });
+      });
+      channel.broadcast('echo');
+    });
+  });
+
+  it('should get an error for failed requests', () => {
+    const channel = exp.network.getChannel('test');
+    return new Promise((resolve, reject) => {
+      channel.listen('echo', (payload, message) => {
+        channel.respond('hi', () => { throw new Error(); });
+        channel.request(message.source, 'hi', { a: 1 }).then(reject).catch(resolve);
+      });
+      channel.broadcast('echo');
     });
   });
 

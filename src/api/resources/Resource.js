@@ -2,8 +2,9 @@
 
 const Api = require('../Api');
 const network = require('../../network');
+const ChannelMixin = require('./ChannelMixin');
 
-class Resource {
+class Resource extends ChannelMixin {
 
   constructor (document, context) {
     this.document = document || {};
@@ -52,29 +53,7 @@ class Resource {
     return Api.get(this.path).then(document => this.document = document);
   }
 
-  listen (name, callback, system) {
-    return this.getChannel().listen(name, callback, system);
-  }
 
-  broadcast (name, payload, system) {
-    return this.getChannel().broadcast(name, payload, system);
-  }
-
-  request (target, name, payload, system) {
-    return this.getChannel().request(target, name, payload, system);
-  }
-
-  respond (name, options, callback, system) {
-    return this.getChannel().respond(name, callback, system);
-  }
-
-  getChannel () {
-    return this.network.getChannel(this.uuid);
-  }
-
-  fling (options) {
-    return this.getChannel().broadcast('fling', options);
-  }
 
 
 }

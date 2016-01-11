@@ -8,55 +8,49 @@ class Channel {
   constructor (name, gateway) {
     this.name = name;
     this.gateway = gateway;
-    this.system = {};
-    this.system.listeners = new EventNode();
-    this.system.responders = new EventNode();
-    this.system.requests = {};
-    this.user = {};
-    this.user.listeners = new EventNode();
-    this.user.responders = new EventNode();
-    this.user.requests = {};
+    this.listeners = {};
+    this.listeners.system = new EventNode();
+    this.listeners.user = new EventNode();
+    this.responders = new EventNode();
+    this.requests = {};
   }
 
-  broadcast (name, payload, system) {
+  broadcast (name, payload) {
     const message = {};
     message.name = name;
     message.type = 'broadcast';
     message.channel = this.name;
-    if (system) message.system = true;
-    if (payload) message.payload = payload;
+    message.payload = payload;
     this.gateway.send(message);
   }
 
   listen (name, callback, system, context) {
-    return (system ? this.system.listeners : this.user.listeners).on(name, callback, context);
+    return (system ? this.listeners.system : this.listeners.user).on(name, callback, context);
   }
 
-  request (target, name, payload, system) {
+  request (target, name, payload) {
     const message = {};
     message.name = name;
     message.type = 'request';
     message.channel = this.name;
     message.target = target;
     message.id = Math.random();
-    if (payload) message.payload = payload;
-    if (system) message.system = true;
-    const request_ = {};
-    setTimeout(() => this.onRequestTimeout(system, message.id), 3000);
-    (system ? this.system.requests : this.user.requests)[message.id] = request_;
-    this.gateway.send(message);
-    return new Promise((a, b) => { request_.resolve = a; request_.reject = b; });
+    message.payload = payload;
+    return new Promise((resolve, reject) => {
+      this.requests[message.id] = { resolve: resolve, reject: reject };
+      setTimeout(() => this.onRequestTimeout(message.id), 3000);
+      this.gateway.send(message);
+    });
   }
 
-  onRequestTimeout (system, id) {
-    const requests = (system ? this.system.requests : this.user.requests);
-    if (!requests[id]) return;
-    requests[id].reject('The request timed out.');
-    delete requests[id];
+  onRequestTimeout (id) {
+    if (!this.requests[id]) return;
+    this.requests[id].reject('The request timed out.');
+    delete this.requests[id];
   }
 
-  respond (name, callback, system, context) {
-    return (system ? this.system.responders : this.user.responders).on(name, callback, context);
+  respond (name, callback, context) {
+    return this.responders.on(name, callback, context);
   }
 
   receive (message) {
@@ -71,33 +65,31 @@ class Channel {
   }
 
   receiveBroadcast (message) {
-    console.log(message.name);
-    console.log(message.channel);
-    (message.system ? this.system.listeners : this.user.listeners).trigger(message.name, message.payload, message);
+    const listeners = message.system ? this.listeners.system : this.listeners.user;
+    listeners.trigger(message.name, message.payload, message);
   }
 
-  receiveRequest (request) {
-    let promise;
-    if (request.system) promise = this._systemResponders.trigger(request.name, request);
-    else promise = this._userResponders.trigger(request.name, request);
+  receiveRequest (message) {
+    const promise = this.responders.trigger(message.name, message.payload, message);
     const response = {};
-    response.id = request.id;
-    response.target = request.source;
-    response.name = request.name;
+    response.id = message.id;
+    response.target = message.source;
+    response.name = message.name;
     response.type = 'response';
+    response.channel = this.name;
     return promise.then(values => {
       if (values.length === 0) throw new Error('Unhandled');
       response.payload = values[0];
     }).catch(error => {
       response.error = error.message || error;
-    }).then(() => this._send(response));
+    }).then(() => this.gateway.send(response));
   }
 
   receiveResponse (response) {
-    if (!this._requests[response.id]) return undefined;
-    if (response.error) this._requests[response.id].reject(new Error(response.error));
-    else this._requests[response.id].resolve(response.payload);
-    delete this._requests[response.id];
+    if (!this.requests[response.id]) return undefined;
+    if (response.error) this.requests[response.id].reject(new Error(response.error));
+    else this.requests[response.id].resolve(response.payload);
+    delete this.requests[response.id];
    }
 
 }

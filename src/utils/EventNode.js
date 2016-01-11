@@ -16,7 +16,9 @@ class Namespace {
   }
 
   trigger (args) {
-    return Promise.all(this.listeners.map(listener => listener.callback.apply(null, args)));
+    return Promise.all(this.listeners.map(listener => {
+      return Promise.resolve().then(() => listener.callback.apply(null, args));
+    }));
   }
 
   on (callback, context) {

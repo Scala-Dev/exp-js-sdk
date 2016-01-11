@@ -7,20 +7,20 @@ class ChannelDelegate {
     this._context = context;
   }
 
-  broadcast (name, payload, system) {
-    this._channel.broadcast(name, payload, system);
+  broadcast (name, payload) {
+    this._channel.broadcast(name, payload);
   }
 
   listen (name, callback, system) {
-    this._channel.listen(name, callback, system, this._context);
+    return this._channel.listen(name, callback, system, this._context);
   }
 
-  request (target, name, payload, system) {
-    this._channel.request(target, name, payload, system);
+  request (target, name, payload) {
+    return this._channel.request(target, name, payload);
   }
 
-  respond (name, callback, system) {
-    this._channel.respond(name, callback, system, this._context);
+  respond (name, callback) {
+    return this._channel.respond(name, callback, this._context);
   }
 
 }
