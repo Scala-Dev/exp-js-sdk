@@ -1,5 +1,5 @@
 'use strict';
 
-const Resource = require('./resource');
+const Resource = require('./Resource');
 
 module.exports = class Experience extends Resource {};
