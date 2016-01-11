@@ -6,6 +6,7 @@ const ChannelMixin = require('./ChannelMixin');
 class Zone extends ChannelMixin {
 
   constructor (document, location, context) {
+    super();
     this.document = document;
     this.location = location;
     this.network = exp.network.getDelegate(context);
