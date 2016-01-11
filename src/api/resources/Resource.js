@@ -7,6 +7,7 @@ const ChannelMixin = require('./ChannelMixin');
 class Resource extends ChannelMixin {
 
   constructor (document, context) {
+    super();
     this.document = document || {};
     this.network = network.getDelegate(context);
     this.context = context;
