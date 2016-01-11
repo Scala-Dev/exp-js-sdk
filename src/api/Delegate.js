@@ -43,7 +43,13 @@ class Delegate {
 
   getContent (uuid) { return resources.Content.get(uuid, this._context); }
   findContent (params) { return resources.Content.find(params, this._context); }
+  getContentNode (uuid) { return resources.Content.get(uuid, this._context); }
+  findContentNodes (params) { return resources.Content.find(params, this._context); }
   createContent (document, options) { return resources.Content.create(document, options, this._context); }
+
+  getFeed (uuid) { return resources.Feed.get(uuid, this._context); }
+  findFeeds (params) { return resources.Feed.find(params, this._context); }
+  createFeed (document, options) { return resources.Feed.create(document, options, this._context); }
 
 }
 
