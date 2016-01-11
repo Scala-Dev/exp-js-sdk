@@ -16,6 +16,7 @@ class Network {
 
   refresh (auth) {
     this.primary.disconnect();
+    if (!auth || !auth.network) return;
     const config = auth.networks.find(network => network.isPrimary);
     if (!config) return;
     this.primary.connect({
