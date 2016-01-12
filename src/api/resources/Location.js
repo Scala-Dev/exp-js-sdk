@@ -26,7 +26,7 @@ class Location extends Resource {
   }
 
   getLayoutUrl () {
-    return runtime.auth.api.host  + '/api/locations/' + this.document.uuid + '/layout?_rt' + runtime.auth.readToken;
+    return runtime.auth.api.host  + '/api/locations/' + this.document.uuid + '/layout?_rt=' + runtime.auth.readToken;
   }
 
 }
