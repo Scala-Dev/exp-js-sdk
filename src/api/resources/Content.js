@@ -49,9 +49,9 @@ class Content extends Resource {
 
   getUrl () {
     if (this.subtype === 'scala:content:file') {
-      return runtime.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path);
+      return runtime.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '?_rt' + runtime.auth.readToken;
     } else if (this.subtype === 'scala:content:app') {
-      return runtime.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html';
+      return runtime.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html?_rt' + runtime.auth.readToken;
     } else if (this.subtype === 'scala:content:url') {
       return this.document.url;
     }
@@ -60,7 +60,7 @@ class Content extends Resource {
 
   getVariantUrl (name) {
     if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
-      const query = '?variant=' + encodeURIComponent(name);
+      const query = '?variant=' + encodeURIComponent(name) + '&_rt' + runtime.auth.readToken;
       return runtime.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
     }
     return null;
