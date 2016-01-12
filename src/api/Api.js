@@ -73,10 +73,6 @@ class Api {
     return '?' + parts.join('&');
   }
 
-  static getDelegate (context) {
-    return new this.Delegate(context || Math.random());
-  }
-
 }
 
 module.exports = Api;
