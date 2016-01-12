@@ -13,7 +13,7 @@ class Runtime  {
 
   /* Public Methods */
 
-  get enableEvents () {
+  static get enableEvents () {
     return this._options ? this._options.enableEvents !== false : true;
   }
 
