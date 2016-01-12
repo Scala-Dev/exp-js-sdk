@@ -13,10 +13,6 @@ class Runtime  {
 
   /* Public Methods */
 
-  static get enableEvents () {
-    return this._options ? this._options.enableEvents !== false : true;
-  }
-
   static start (options) {
     options = _.merge({}, this._defaults, options || {});
     return Promise.resolve()
