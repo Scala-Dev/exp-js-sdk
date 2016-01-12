@@ -32,7 +32,7 @@ class Delegate {
     return Runtime.auth;
   }
 
-  get enableEvents {
+  get enableEvents () {
     return Runtime._options ? Runtime._options !== false : true;
   }
 
