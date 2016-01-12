@@ -11,13 +11,12 @@ class Network {
     this.primary = new Gateway();
     this.primary.on('online', () => this.events.trigger('online'));
     this.primary.on('offline', () => this.events.trigger('offline'));
-    runtime.on('update', auth => {
-      if (runtime.enableEvents) return this.refresh(auth);
-    });
+    runtime.on('authenticated', auth => this.refresh(auth));
   }
 
   refresh (auth) {
     this.primary.disconnect();
+    if (!runtime.enableEvents) return;
     if (!auth || !auth.network) return;
     const config = auth.networks.find(network => network.isPrimary);
     if (!config) return;

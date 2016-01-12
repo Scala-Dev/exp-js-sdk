@@ -19,19 +19,19 @@ class Runtime  {
       .then(() => Runtime.validate(options))
       .then(() => {
         if (this._id) this.stop();
+        console.log('Runtime started.');
         this._id = Math.random();
         this._options = options;
-        this._events.trigger('start');
         return this._login(this._id);
       });
   }
 
   static stop () {
+    console.log('Runtime stopped.');
     this._id = null;
     this._options = null;
     this._auth = null;
     this._clearTimeouts();
-    this._events.trigger('stop');
   }
 
   static on (name, callback, context) {
@@ -59,10 +59,8 @@ class Runtime  {
 
   static _initialize () {
     this._events = new EventNode();
-    this._events.on('error', error => console.error(error), {});
-    this._events.on('start', () => console.log('Runtime started.'));
-    this._events.on('stop', () => console.log('Runtime stopped.'));
-    this._events.on('update', () => console.log('Runtime authenticated.'));
+    this._events.on('error', error => console.error('Runtime error.', error));
+    this._events.on('authenticated', () => console.log('Runtime authenticated.'));
     this._defaults = { host: 'https://api.goexp.io', enableEvents: true };
   }
 
@@ -112,17 +110,12 @@ class Runtime  {
   }
 
   static _onLoginResponse (id, response) {
-    if (response.status === 401) return this._onAuthenticationFailure(id, response);
-    if (!response.ok) {
-      response.json().then(body => {
-        this._events.trigger('error', body);
-      });
-      return this._queueLogin(id);
-    }
+    if (response.status === 401) return this._onAuthFailure(id, response);
+    if (!response.ok) return this._queueLogin(id);
     return this._onAuthResponse(id, response);
   }
 
-  static _onAuthenticationFailure (id, response) {
+  static _onAuthFailure (id, response) {
     return response.json().then(body => {
       this._check(id);
       let error = new Error(body);
