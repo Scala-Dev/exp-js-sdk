@@ -63,7 +63,7 @@ class Runtime  {
     this._events.on('start', () => console.log('Runtime started.'));
     this._events.on('stop', () => console.log('Runtime stopped.'));
     this._events.on('update', () => console.log('Runtime authenticated.'));
-    this._defaults = { host: 'https://api.goexp.io' };
+    this._defaults = { host: 'https://api.goexp.io', enableEvents: true };
   }
 
   static _clearTimeouts () {
@@ -190,6 +190,7 @@ class Runtime  {
     this.auth = auth;
     this._refreshTimeout = setTimeout(() => this._refresh(id), (this.auth.expiration - Date.now()) / 2);
     this._events.trigger('update', auth);
+    this._events.trigger('authenticated', auth);
   }
 
 }
