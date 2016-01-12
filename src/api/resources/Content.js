@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const Resource = require('./Resource');
 const runtime = require('../../runtime');
 
