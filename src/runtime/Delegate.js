@@ -33,7 +33,7 @@ class Delegate {
   }
 
   get enableEvents () {
-    return Runtime._options ? Runtime._options !== false : true;
+    return Runtime._options ? Runtime._options.enableEvents !== false : true;
   }
 
 }
