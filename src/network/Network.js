@@ -11,7 +11,9 @@ class Network {
     this.primary = new Gateway();
     this.primary.on('online', () => this.events.trigger('online'));
     this.primary.on('offline', () => this.events.trigger('offline'));
-    runtime.on('update', auth => this.refresh(auth));
+    runtime.on('update', auth => {
+      if (runtime.enableEvents) return this.refresh(auth);
+    });
   }
 
   refresh (auth) {
