@@ -1,11 +1,11 @@
 'use strict';
 
-const runtime = require('./runtime');
-const api = require('./api');
-const network = require('./network');
-const utils = require('./utils');
+const Sdk = require('./Sdk');
+const sdk = new Sdk();
 
-const exp = { runtime: runtime, api: api, network: network, utils: utils };
-if (typeof window === 'object') window.exp = exp;
+const Delegate = require('./Delegate');
+const delegate = new Delegate(sdk);
 
-module.exports = exp;
+if (typeof window === 'object') window.exp = delegate;
+
+module.exports = delegate;
