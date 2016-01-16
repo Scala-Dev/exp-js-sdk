@@ -1,7 +1,7 @@
 'use strict';
 
 const Resource = require('./Resource');
-const Api = require('../Api');
+const api = require('../api');
 
 class Feed extends Resource {
 
@@ -10,7 +10,7 @@ class Feed extends Resource {
   }
 
   getData () {
-    return Api.get(this.path + '/' + this.document.uuid + '/data');
+    return this.api.get(this.path + '/' + this.document.uuid + '/data');
   }
 
 }

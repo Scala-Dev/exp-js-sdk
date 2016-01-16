@@ -1,43 +1,39 @@
 'use strict';
 
-const io = require('socket.io-client');
+const Channel = require('./Channel');
+const Connection = require('./Connection');
 
 class Network {
 
   constructor (sdk) {
     this.sdk = sdk;
+    this.connection = null;
     this.channels = {};
-    this.socket = null;
+  }
+
+  get isConnected () {
+    return  this.connection ? this.connection.isConnected : false;
+  }
+
+  receive (message) {
+    if (this.channels[message.channel]) this.channels[message.channel].receive(message);
+  }
+
+  getChannel (name) {
+    if (!this.channels[name]) this.channels[name] = new Channel(name, this.sdk);
+    return this.channels[name];
   }
 
   disconnect () {
-    if (this.socket) this.socket.disconnect();
-    this.sdk.events.trigger('offline');
-    this.status = false;
-    this.socket = null;
+    if (!this.connection) return;
+    this.connection.stop();
+    this.connection = null;
   }
 
   connect (options) {
     this.disconnect();
-    this.socket = io(options.host, {
-      forceNew: true,
-      query: `token=${ options.token }`,
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 20000,
-      timeout: 20000,
-      reconnectionAttempts: Infinity
-    });
-    this.socket.on('message', message => this.sdk.messages.trigger(message.channel, message));
-    this.socket.on('connect', () => {
-      this.status = true;
-      this.sdk.events.trigger('online');
-    });
-    this.socket.on('connect_error', () => {
-      this.sdk.events.trigger('offline');
-      this.status = false;
-    });
-    this.socket.on('error', error => this.sdk.events.trigger('error', { error: error }));
+    this.connection = new Connection(this, this.sdk.events);
+    return this.connection.start(options);
   }
 
 }

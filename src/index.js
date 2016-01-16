@@ -1,11 +1,10 @@
 'use strict';
 
-const Sdk = require('./Sdk');
-const sdk = new Sdk();
-
+const Sdk = require('./sdk');
 const Delegate = require('./Delegate');
-const delegate = new Delegate(sdk);
 
-if (typeof window === 'object') window.exp = delegate;
+const exp = new Delegate(new Sdk());
 
-module.exports = delegate;
+if (typeof window === 'object') window.exp = exp;
+
+module.exports = exp;

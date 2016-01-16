@@ -1,17 +1,12 @@
 'use strict';
 
-const exp = require('exp-js-sdk');
-const ChannelMixin = require('./ChannelMixin');
+const Resource = require('./Resource');
 
-class Zone extends ChannelMixin {
+class Zone extends Resource {
 
   constructor (document, location, context) {
-    super();
-    this.document = document;
+    super(document, context);
     this.location = location;
-    this.network = exp.network.getDelegate(context);
-    this.api = exp.api.getDelegate(context);
-    this.context = context;
   }
 
   get name () {
@@ -42,8 +37,8 @@ class Zone extends ChannelMixin {
     return Promise.resolve(this.location);
   }
 
-  getChannel () {
-    return this.network.getChannel(this.location.uuid + ':zone:' + this.key);
+  getChannelName () {
+    return this.location.uuid + ':zone:' + this.key;
   }
 
 }

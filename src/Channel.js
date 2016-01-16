@@ -1,37 +1,63 @@
 'use strict';
 
-const EventNode = require('../utils/EventNode');
-const ChannelDelegate = require('./ChannelDelegate');
+const EventNode = require('./EventNode');
+
+const api = require('./api');
+
+class Delegate {
+
+  constructor (channel, context) {
+    this.channel = channel;
+    this.context = context;
+  }
+
+  broadcast (name, payload) {
+    this.channel.broadcast(name, payload);
+  }
+
+  listen (name, options, callback) {
+    return this.channel.listen(name, options, callback, this.context);
+  }
+
+  request (target, name, payload) {
+    return this.channel.request(target, name, payload);
+  }
+
+  respond (name, options, callback) {
+    return this.channel.respond(name, options, callback, this.context);
+  }
+
+}
 
 class Channel {
 
-  constructor (name, gateway) {
+  constructor (name) {
     this.name = name;
-    this.gateway = gateway;
-    this.listeners = {};
-    this.listeners.system = new EventNode();
-    this.listeners.user = new EventNode();
+    this.listeners = new EventNode();
     this.responders = new EventNode();
     this.requests = {};
   }
 
-  broadcast (name, payload) {
-    const message = {};
-    message.name = name;
-    message.type = 'broadcast';
-    message.channel = this.name;
-    message.payload = payload;
-    this.gateway.send(message);
+  getDelegate (context) {
+    return new Delegate(this, context);
   }
 
-  listen (name, callback, system, context) {
-    return (system ? this.listeners.system : this.listeners.user).on(name, callback, context);
+  broadcast (name, payload) {
+    return api.post('/api/network/broadcast', null, { name: name, payload: payload, channel: this.name });
+  }
+
+  listen (name, options, callback, context) {
+    if (!callback) { callback = options; options = {}; }
+    options = options || {};
+    return this.listeners.on(name, (payload, message) => {
+      if (options.system && !message.system) return;
+      callback(payload, message);
+    }, context);
   }
 
   request (target, name, payload) {
     const message = {};
     message.name = name;
-    message.type = 'request';
     message.channel = this.name;
     message.target = target;
     message.id = Math.random();
@@ -39,7 +65,7 @@ class Channel {
     return new Promise((resolve, reject) => {
       this.requests[message.id] = { resolve: resolve, reject: reject };
       setTimeout(() => this.onRequestTimeout(message.id), 3000);
-      this.gateway.send(message);
+      api.post('/api/network/request', null, message);
     });
   }
 
@@ -49,7 +75,9 @@ class Channel {
     delete this.requests[id];
   }
 
-  respond (name, callback, context) {
+  respond (name, options, callback, context) {
+    if (!callback) { callback = options; options = {}; }
+    options = options || {};
     return this.responders.on(name, callback, context);
   }
 
@@ -60,13 +88,8 @@ class Channel {
     else if (message.type === 'response') this.receiveResponse(message);
   }
 
-  getDelegate (context) {
-    return new ChannelDelegate(this, context);
-  }
-
   receiveBroadcast (message) {
-    const listeners = message.system ? this.listeners.system : this.listeners.user;
-    listeners.trigger(message.name, message.payload, message);
+    this.listeners.trigger(message.name, message.payload, message);
   }
 
   receiveRequest (message) {
@@ -82,7 +105,9 @@ class Channel {
       response.payload = values[0];
     }).catch(error => {
       response.error = error.message || error;
-    }).then(() => this.gateway.send(response));
+    }).then(() => {
+      api.post('/api/network/response', null, response);
+    });
   }
 
   receiveResponse (response) {

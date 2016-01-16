@@ -4,67 +4,71 @@
 const _ = require('lodash');
 
 const jwt = require('jsonwebtoken');
-const EventNode = require('../utils/EventNode');
+
+const events = require('./events');
+const api = require('./api');
+const network = require('./network');
 
 require('isomorphic-fetch');
 
-const defaults = {};
-    this._defaults = { host: 'https://api.goexp.io' };
+const defaults = {
+  host: 'https://api.goexp.io',
+  enableEvents: true
+};
 
 
-<<<<<<< HEAD:src/Runtime.js
-class RuntimeContext {
+
+class Runtime {
 
   constructor (sdk) {
     this.sdk = sdk;
-=======
-  /* Public Methods */
-
-  static start (options) {
-    options = _.merge({}, this._defaults, options || {});
-    return Promise.resolve()
-      .then(() => Runtime.validate(options))
-      .then(() => {
-        if (this._id) this.stop();
-        console.log('Runtime started.');
-        this._id = Math.random();
-        this._options = options;
-        return this._login(this._id);
-      });
-  }
-
-  static stop () {
-    console.log('Runtime stopped.');
-    this._id = null;
-    this._options = null;
-    this._auth = null;
-    this._clearTimeouts();
->>>>>>> feature/sdk-context:src/runtime/Runtime.js
+    this.options = null;
+    this.auth = null;
   }
 
   start (options) {
-    this.status = true;
-    let resolve, reject;
-    this.promise = new Promise((a, b) => { resolve = a; reject = b });
-    this.promise.resolve = resolve;
-    this.promise.reject = reject;
-    this.options = _.merge({}, defaults, options);
-    Promise.resolve()
-      .then(() => this.validate())
-      .then(() => this.login())
-      .catch(error => this.stop(error));
+    this.active = true;
+    this.options = _.merge(_.merge({}, defaults), options);
+    this.sdk.events.trigger('start');
+    this.promise = new Promise((a, b) => { this.resolve = a; this.reject = b });
+    try { this.validate() }
+    catch (error) { this.abort(error); }
+    this.login();
     return this.promise;
   }
 
-  stop (error) {
-    this.status = false;
-    this.promise.reject(error || new Error('Runtime stopped.'));
-    if (error) this.sdk.events.trigger('error', error);
+  abort (error) {
+    this.sdk.events.trigger('error', error);
+    this.reject(error);
+    this.stop();
+  }
+
+  stop () {
+    this.active = false;
+    this.options = null;
+    this.auth = null;
+    this.reject(new Error('Runtime stopped.'));
     this.sdk.events.trigger('stop');
   }
 
+  validate () {
+    if (this.options.type === 'user') {
+      if (!this.options.username) throw new Error('Please specify the username.');
+      if (!this.options.password) throw new Error('Please specify the password.');
+      if (!this.options.organization) throw new Error('Please specify the organization.');
+    } else if (this.options.type === 'device') {
+      if (!this.options.uuid) throw new Error('Please specify the uuid.');
+      if (!this.options.secret && !this.options.allowPairing) throw new Error('Please specify the device secret.');
+    } else if (this.options.type === 'consumerApp') {
+      if (!this.options.uuid) throw new Error('Please specify the uuid.');
+      if (!this.options.apiKey) throw new Error('Please specify the apiKey');
+    } else {
+      throw new Error('Please specify authentication type.');
+    }
+  }
+
   login () {
-    if (!this.status) return;
+    if (!this.active) return;
     let payload;
     if (this.options.type === 'user') {
       payload = {
@@ -89,156 +93,47 @@ class RuntimeContext {
         }, this.options.apiKey)
       };
     }
-    return fetch(this.options.host + '/api/auth/login', {
+    fetch(this.options.host + '/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(this.generateLoginPayload())
-    }).then(response => this.onLoginResponse(response), () => this.queueLogin());
+      body: JSON.stringify(payload)
+    }).then(response => {
+      if (!this.active) return;
+      else if (response.status === 401) this.abort(new Error('Authentication failed. Please check your credentials.'));
+      else if (!response.ok) throw new Error();
+      else return response.json(auth => this.onSuccess(auth));
+    }).catch(() => setTimeout(() => this.login(), 5000));
   }
 
-  validate () {
-    if (this.options.type === 'user') {
-      if (!this.options.usename) throw new Error('Please specify the username.');
-      if (!this.options.password) throw new Error('Please specify the password.');
-      if (!this.options.organization) throw new Error('Please specify the organization.');
-    } else if (this.options.type === 'device') {
-      if (!this.options.uuid) throw new Error('Please specify the uuid.');
-      if (!this.options.secret && !this.options.allowPairing) throw new Error('Please specify the device secret.');
-    } else if (this.options.type === 'consumerApp') {
-      if (!this.options.uuid) throw new Error('Please specify the uuid.');
-      if (!this.options.apiKey) throw new Error('Please specify the apiKey');
-    } else {
-      throw new Error('Please specify authentication type (user/device/consumerApp).');
-    }
-  }
-
-  generateLoginPayload () {
-    
-  }
-
-<<<<<<< HEAD:src/Runtime.js
-}
-
-
-class Runtime  {
-
-  constructor (sdk) {
-    this.sdk = sdk;
-  }
-
-  start (options) {
-    if (this.context) this.context.stop();
-    this.context = new RuntimeContext(this.sdk);
-    this.context.start(options);
-    return this.context.promise;
-=======
-  static _initialize () {
-    this._events = new EventNode();
-    this._events.on('error', error => console.error('Runtime error.', error));
-    this._events.on('authenticated', () => console.log('Runtime authenticated.'));
-    this._defaults = { host: 'https://api.goexp.io', enableEvents: true };
->>>>>>> feature/sdk-context:src/runtime/Runtime.js
-  }
-
-  stop () {
-    if (this.context) this.context.stop();
-  }
-
-  static clear () {
-    clearTimeout(this.timeouts.queue);
-    clearTimeout(this._queueLoginTimeout);
-    clearTimeout(this._refreshTimeout);
-  }
-
-  login (promise) {
-   
-  }
-
-  static _sendLoginRequest () {
-   
-  }
-
-  
-
-  static _onLoginResponse (id, response) {
-    if (response.status === 401) return this._onAuthFailure(id, response);
-    if (!response.ok) return this._queueLogin(id);
-    return this._onAuthResponse(id, response);
-  }
-
-  static _onAuthFailure (id, response) {
-    return response.json().then(body => {
-      this._check(id);
-      let error = new Error(body);
-      this._events.trigger('error', error);
-      this.stop();
-      throw error;
-    });
-  }
-
-  static _onAuthResponse (id, response) {
-    return response.json().then(auth => this._update(id, auth));
-  }
-
-  static _queueLogin (id) {
-    return new Promise((resolve, reject) => {
-      this._queueLoginTimout = setTimeout(() => {
-        Promise.resolve()
-          .then(() => this._check(id))
-          .then(() => this._login(id))
-          .then(resolve, reject);
-      }, 2000);
-    });
-  }
-
-  static _refresh (id) {
-    return this._sendRefreshRequest()
-      .then(response => this._onRefreshResponse(id, response))
-      .catch(() => this._queueRefresh(id));
-  }
-
-  static _sendRefreshRequest () {
-    return fetch(this._options.host + '/api/auth/token', {
+  refresh () {
+    if (!this.active) return;
+    fetch(this.options.host + '/api/auth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + this.auth.token
+        'Authorization': 'Bearer ' + this.authentication.token
       }
-    });
+    }).then(response => {
+      if (!this.status) return;
+      else if (response.status === 401) this.login();
+      else if (!response.ok) throw new Error();
+      else return response.json().then(auth => this.onSuccess(auth));
+    }).catch(() => setTimeout(() => this.refresh(), 5000));
   }
 
-  static _onRefreshResponse (id, response) {
-    if (response.status === 401) return this._queueLogin(id);
-    if (!response.ok) return this._queueRefresh(id);
-    return this._onAuthResponse(id, response);
-  }
-
-  static _queueRefresh (id) {
-    return new Promise((resolve, reject) => {
-      this._queueRefreshTimeout = setTimeout(() => {
-        Promise.resolve()
-          .then(() => this._check(id))
-          .then(() => this._refresh(id))
-          .then(resolve, reject);
-      }, 2000);
-    });
-  }
-
-  static _check (id) {
-    if (id !== this._id) throw new Error('Startup was interrupted.');
-  }
-
-  static _update (id, auth) {
-    this._check(id);
-    this._clearTimeouts();
+  onSuccess (auth) {
+    if (!this.active) return;
     this.auth = auth;
-    this._refreshTimeout = setTimeout(() => this._refresh(id), (this.auth.expiration - Date.now()) / 2);
-    this._events.trigger('update', auth);
-    this._events.trigger('authenticated', auth);
+    setTimeout(() => this.refresh(), (auth.expiration - Date.now()) / 2);
+    if (this.options.enableEvents) network.connect({
+      host: auth.network.host,
+      token: auth.network.token,
+    }).then(() => this.resolve(), error => this.abort(error));
+    else this.resolve();
   }
+
 
 }
 
-Runtime._initialize();
 
 module.exports = Runtime;

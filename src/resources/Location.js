@@ -2,14 +2,13 @@
 
 const Resource = require('./Resource');
 const Zone = require('./Zone');
-const runtime = require('../../runtime');
+
 
 class Location extends Resource {
 
   static get path () {
     return '/api/locations';
   }
-
 
   getZones () {
     if (!this.document.zones) return Promise.resolve([]);
@@ -26,7 +25,7 @@ class Location extends Resource {
   }
 
   getLayoutUrl () {
-    return runtime.auth.api.host  + '/api/locations/' + this.document.uuid + '/layout?_rt=' + runtime.auth.readToken;
+    return this.api.auth.api.host  + '/api/locations/' + this.document.uuid + '/layout?_rt=' + this.api.auth.readToken;
   }
 
 }

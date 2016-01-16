@@ -7,5 +7,5 @@ module.exports = {
   Feed: require('./Feed'),
   Experience: require('./Experience'),
   Location: require('./Location'),
-  Thing: require('./Thing')
+  Thing: require('./Thing'),
 };

@@ -5,16 +5,20 @@ const _ = require('lodash');
 require('isomorphic-fetch');
 
 
-const runtime = require('../runtime');
 
 class Api {
 
+  static setAuth (auth) {
+    this.auth = auth;
+  }
+
+
   static fetch (path, options) {
-    const url = runtime.auth.api.host + path;
+    const url = this.auth.api.host + path;
     options.cors = true;
     options.credentials = 'include';
     options.headers = options.headers || {};
-    options.headers.Authorization = 'Bearer ' + runtime.auth.token;
+    options.headers.Authorization = 'Bearer ' + this.auth.token;
     options.headers.Accept = 'application/json';
     return fetch(url, options).then(response => {
       return response.json().then(body => {

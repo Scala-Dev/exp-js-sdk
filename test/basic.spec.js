@@ -5,14 +5,14 @@ const exp = require('../');
 describe('basic', () => {
 
   it('should respond with a device', () => {
-    return exp.api.findDevices().then(query => {
+    return exp.findDevices().then(query => {
       if (!query.results) throw Error();
     });
   });
 
   it('should be able to send/receive a message on a custom channel', () => {
     return new Promise(resolve => {
-      const channel = exp.network.getChannel('test');
+      const channel = exp.getChannel('test');
       channel.listen('test', resolve);
       channel.broadcast('test');
     });
@@ -20,14 +20,14 @@ describe('basic', () => {
 
   it('should be able to send/receive a message on a built in channel', () => {
     return new Promise(resolve => {
-      const channel = exp.network.getChannel('organization');
+      const channel = exp.getChannel('organization');
       channel.listen('test', resolve);
       channel.broadcast('test');
     });
   });
 
   it('should receive experience update event', () => {
-    return exp.api.createExperience({}).then(experience => {
+    return exp.createExperience({}).then(experience => {
       let resolve; let reject;
       const promise = new Promise((a, b) => { resolve = a; reject = b; });
       experience.listen('update', () => resolve(), true);
@@ -38,7 +38,7 @@ describe('basic', () => {
   });
 
   it('should receive device update event', () => {
-    return exp.api.createDevice({}).then(device => {
+    return exp.createDevice({}).then(device => {
       let resolve; let reject;
       const promise = new Promise((a, b) => { resolve = a; reject = b; });
       device.listen('update', resolve, true);
@@ -49,7 +49,7 @@ describe('basic', () => {
   });
 
   it('should be able to send and receive requests', () => {
-    const channel = exp.network.getChannel('test');
+    const channel = exp.getChannel('test');
     return new Promise((resolve, reject) => {
       channel.listen('echo', (payload, message) => {
         channel.respond('hi', () => { return { b: 1 }});
@@ -63,7 +63,7 @@ describe('basic', () => {
   });
 
   it('should get an error for failed requests', () => {
-    const channel = exp.network.getChannel('test');
+    const channel = exp.getChannel('test');
     return new Promise((resolve, reject) => {
       channel.listen('echo', (payload, message) => {
         channel.respond('hi', () => { throw new Error(); });
@@ -74,7 +74,7 @@ describe('basic', () => {
   });
 
   it('should fling', () => {
-    return exp.network.getChannel('experience').broadcast('fling', { uuid: 'b472652b-6692-4567-a211-53586cb5179c' });
+    return exp.getChannel('experience').broadcast('fling', { uuid: 'b472652b-6692-4567-a211-53586cb5179c' });
   });
 
 

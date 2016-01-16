@@ -1,7 +1,6 @@
 'use strict';
 
 const Resource = require('./Resource');
-const Api = require('../Api');
 
 class Data extends Resource {
 
@@ -27,7 +26,7 @@ class Data extends Resource {
 
   static get (key, group, context) {
     if (!key || !group) return Promise.reject(new Error('Key and group are required.'));
-    return Api.get(this.path + '/' + key + '/' + group).then(document => {
+    return this.api.get(this.path + '/' + key + '/' + group).then(document => {
       return new this(document, context);
     });
   }
@@ -36,7 +35,7 @@ class Data extends Resource {
     options = options || {};
     const resource = new this(document, context);
     if (options.save === false) return resource;
-    return Api.post(this.path + '/' + document.key + '/' + document.group, null, resource.document).then(document => {
+    return this.api.post(this.path + '/' + document.key + '/' + document.group, null, resource.document).then(document => {
       resource.document = document;
       return resource;
     });

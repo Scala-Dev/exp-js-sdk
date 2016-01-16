@@ -1,19 +1,28 @@
 'use strict';
 
-const Network = require('./Network');
-//const Api = require('./Api');
-const Runtime = require('./Runtime');
 const EventNode = require('./EventNode');
+const Network = require('./Network');
+const Runtime = require('./Runtime');
+const Api = require('Api');
+
 
 class Sdk {
 
   constructor () {
-    //this.api = new Api(this);
-    this.runtime = new Runtime(this);
     this.network = new Network(this);
+    this.runtime = null;
     this.events = new EventNode();
-    this.messages = new EventNode();
-    this.EventNode = EventNode;
+    this.api = new Api(this);
+  }
+
+  start (options) {
+    if (this.runtime) this.runtime.stop();
+    this.runtime = new Runtime(this);
+    return this.runtime.start(options);
+  }
+
+  stop () {
+    if (this.runtime) this.runtime.stop();
   }
 
 }
