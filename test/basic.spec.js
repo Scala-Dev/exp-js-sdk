@@ -10,19 +10,17 @@ describe('basic', () => {
     });
   });
 
-  it('should be able to send/receive a message on a custom channel', () => {
+  it('should be able to send/receive a message without a channel', () => {
     return new Promise(resolve => {
-      const channel = exp.getChannel('test');
-      channel.listen('test', resolve);
-      channel.broadcast('test');
+      exp.listen('hi', resolve);
+      exp.broadcast('hi');
     });
   });
 
-  it('should be able to send/receive a message on a built in channel', () => {
+  it('should be able to send/receive a message without a channel', () => {
     return new Promise(resolve => {
-      const channel = exp.getChannel('organization');
-      channel.listen('test', resolve);
-      channel.broadcast('test');
+      exp.listen('hi', resolve);
+      exp.broadcast('hi');
     });
   });
 

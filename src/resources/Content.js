@@ -1,15 +1,13 @@
 'use strict';
 
 const _ = require('lodash');
-
 const Resource = require('./Resource');
-const runtime = require('../runtime');
 
 class Content extends Resource {
 
-  constructor (document, context) {
-    super(document, context);
-    this._children = _.get(document, 'children', []).map(child => new this.constructor(child, context));
+  constructor (document, sdk, context) {
+    super(document, sdk, context);
+    this._children = _.get(document, 'children', []).map(child => new this.constructor(child, this.sdk, context));
   }
 
   static encodePath (value) {
@@ -33,7 +31,9 @@ class Content extends Resource {
     return this.document.subtype;
   }
 
-  static get path () { return '/api/content'; }
+  static get path () {
+    return '/api/content';
+  }
 
   getChildren () {
     if (this.document.itemCount !== this.children.length) {
@@ -49,9 +49,9 @@ class Content extends Resource {
 
   getUrl () {
     if (this.subtype === 'scala:content:file') {
-      return runtime.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '?_rt=' + runtime.auth.readToken;
+      return this.sdk.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '?_rt=' + this.sdk.auth.readToken;
     } else if (this.subtype === 'scala:content:app') {
-      return runtime.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html?_rt=' + runtime.auth.readToken;
+      return this.sdk.auth.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html?_rt=' + this.sdk.auth.readToken;
     } else if (this.subtype === 'scala:content:url') {
       return this.document.url;
     }
@@ -60,8 +60,8 @@ class Content extends Resource {
 
   getVariantUrl (name) {
     if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
-      const query = '?variant=' + encodeURIComponent(name) + '&_rt=' + runtime.auth.readToken;
-      return runtime.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
+      const query = '?variant=' + encodeURIComponent(name) + '&_rt=' + this.sdk.auth.readToken;
+      return this.sdk.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
     }
     return null;
   }

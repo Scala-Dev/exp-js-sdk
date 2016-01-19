@@ -8,17 +8,17 @@ require('isomorphic-fetch');
 
 class Api {
 
-  static setAuth (auth) {
-    this.auth = auth;
+  constructor (sdk) {
+    this.sdk = sdk;
   }
 
-
-  static fetch (path, options) {
-    const url = this.auth.api.host + path;
+  fetch (path, options) {
+    console.log(options);
+    const url = this.sdk.auth.api.host + path;
     options.cors = true;
     options.credentials = 'include';
     options.headers = options.headers || {};
-    options.headers.Authorization = 'Bearer ' + this.auth.token;
+    options.headers.Authorization = 'Bearer ' + this.sdk.auth.token;
     options.headers.Accept = 'application/json';
     return fetch(url, options).then(response => {
       return response.json().then(body => {
@@ -29,47 +29,56 @@ class Api {
     });
   }
 
-  static get (path, params) {
+  get (path, params) {
     if (params) path += this.encodeQueryString(params);
     return this.fetch(path, { method: 'get' });
   }
 
-  static post (path, params, body) {
+  post (path, params, body) {
     const options = {
       method: 'post',
       headers:  { 'Content-Type': 'application/json' }
     };
     if (params) path += this.encodeQueryString(params);
     if (body) options.body = body;
+    if (typeof options.body === 'object') {
+      options.body = JSON.stringify(options.body);
+    }
     return this.fetch(path, options);
   }
 
-  static put (path, params, body) {
+  put (path, params, body) {
     const options = {
       method: 'put',
       headers:  { 'Content-Type': 'application/json' }
     };
     if (params) path += this.encodeQueryString(params);
     if (body) options.body = body;
+    if (typeof options.body === 'object') {
+      options.body = JSON.stringify(options.body);
+    }
     return this.fetch(path, options);
   }
 
-  static patch (path, params, body) {
+  patch (path, params, body) {
     const options = {
       method: 'patch',
       headers:  { 'Content-Type': 'application/json' }
     };
     if (params) path += this.encodeQueryString(params);
     if (body) options.body = body;
+    if (typeof options.body === 'object') {
+      options.body = JSON.stringify(options.body);
+    }
     return this.fetch(path, options);
   }
 
-  static delete (path, params) {
+  delete (path, params) {
     if (params) path += this.encodeQueryString(params);
     return this.fetch(path, { method: 'delete' });
   }
 
-  static encodeQueryString (params) {
+  encodeQueryString (params) {
     let parts = [];
     _.forOwn(params, (value, name) => {
       parts.push(encodeURIComponent(name) + '=' + encodeURIComponent(value));

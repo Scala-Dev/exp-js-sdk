@@ -1,6 +1,6 @@
 'use strict';
 
-const Sdk = require('./sdk');
+const Sdk = require('./Sdk');
 const Delegate = require('./Delegate');
 
 const exp = new Delegate(new Sdk());

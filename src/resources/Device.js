@@ -9,11 +9,11 @@ const Location = require('./Location');
 class Device extends Resource {
 
   getExperience () {
-    return Experience.get(_.get(this, 'document.experience.uuid'), this._context);
+    return Experience.get(_.get(this, 'document.experience.uuid'), this.sdk, this.context);
   }
 
   getLocation () {
-    return Location.get(_.get(this, 'document.location.uuid'), this._context);
+    return Location.get(_.get(this, 'document.location.uuid'), this.sdk, this.context);
   }
 
   static get path () {
@@ -21,7 +21,7 @@ class Device extends Resource {
   }
 
   identify () {
-    return this.getChannel().broadcast('identify');
+    return this.broadcast('identify');
   }
 
 }

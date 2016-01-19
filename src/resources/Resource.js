@@ -1,38 +1,40 @@
 'use strict';
 
-const api = require('../api');
-const network = require('../network');
+const Channel = require('./Channel');
 
 class Resource {
 
-  constructor (document, context) {
+  constructor (document, sdk, context) {
     this.document = document || {};
-    this.api = api;
-    this.network = network;
+    this.sdk = sdk;
     this.context = context;
   }
 
-  static get (uuid, context) {
-    if (!uuid) return Promise.reject(new Error('Document uuid is required.'));
-    return api.get(this.path + '/' + uuid).then(document => new this(document, context));
+  static get path () {
+    throw new Error('Not implemented.');
   }
 
-  static create (document, options, context) {
+  static get (uuid, sdk, context) {
+    if (!uuid) return Promise.reject(new Error('Document uuid is required.'));
+    return sdk.api.get(this.path + '/' + uuid).then(document => new this(document, sdk, context));
+  }
+
+  static create (document, options, sdk, context) {
     options = options || {};
-    const resource = new this(document, context);
+    const resource = new this(document, sdk, context);
     if (options.save === false) {
       if (options.sync === true) return resource;
       return Promise.resolve(resource);
     }
-    return api.post(this.path, null, resource.document).then(document => {
+    return sdk.api.post(this.path, null, resource.document).then(document => {
       resource.document = document;
       return resource;
     });
   }
 
-  static find (params, context) {
-    return api.get(this.path, params).then(query => {
-      const results = query.results.map(document => new this(document, context));
+  static find (params, sdk, context) {
+    return sdk.api.get(this.path, params).then(query => {
+      const results = query.results.map(document => new this(document, sdk, context));
       return { total: query.total, results: results };
     });
   }
@@ -42,7 +44,7 @@ class Resource {
   }
 
   save () {
-    return api.patch(this.path, null, this.document).then(document => this.document = document);
+    return this.sdk.api.patch(this.path, null, this.document).then(document => this.document = document);
   }
 
   get uuid () {
@@ -50,39 +52,36 @@ class Resource {
   }
 
   refresh () {
-    return api.get(this.path).then(document => this.document = document);
-  }
-
-
- listen (name, callback, options) {
-    return this.getChannel().listen(name, callback, options);
+    return this.sdk.api.get(this.path).then(document => this.document = document);
   }
 
   broadcast (name, payload) {
     return this.getChannel().broadcast(name, payload);
   }
 
+  listen (name, callback) {
+    return this.getChannel().listen(name, callback);
+  }
+
   request (target, name, payload) {
     return this.getChannel().request(target, name, payload);
   }
 
-  respond (name, options, callback) {
-    return this.getChannel().respond(name, options, callback);
+  respond (name, callback) {
+    return this.getChannel().respond(name, callback);
   }
 
   getChannel () {
-    return this.network.getChannel(this.getChannelName()).getDelgate(this.context);
+    return new Channel(this.getChannelName(), this.sdk, this.context);
   }
 
   getChannelName () {
     return this.uuid;
   }
 
-  fling (options) {
-    return this.getChannel().broadcast('fling', options);
+  fling (payload) {
+    return this.getChannel().broadcast('fling', payload);
   }
-
-
 
 }
 

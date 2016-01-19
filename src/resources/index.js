@@ -8,4 +8,5 @@ module.exports = {
   Experience: require('./Experience'),
   Location: require('./Location'),
   Thing: require('./Thing'),
+  Channel: require('./Channel')
 };

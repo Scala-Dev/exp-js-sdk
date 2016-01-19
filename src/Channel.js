@@ -2,111 +2,82 @@
 
 const EventNode = require('./EventNode');
 
-const api = require('./api');
-
-class Delegate {
-
-  constructor (channel, context) {
-    this.channel = channel;
-    this.context = context;
-  }
-
-  broadcast (name, payload) {
-    this.channel.broadcast(name, payload);
-  }
-
-  listen (name, options, callback) {
-    return this.channel.listen(name, options, callback, this.context);
-  }
-
-  request (target, name, payload) {
-    return this.channel.request(target, name, payload);
-  }
-
-  respond (name, options, callback) {
-    return this.channel.respond(name, options, callback, this.context);
-  }
-
-}
-
 class Channel {
 
-  constructor (name) {
+  constructor (name, sdk) {
     this.name = name;
+    this.sdk = sdk;
     this.listeners = new EventNode();
     this.responders = new EventNode();
     this.requests = {};
   }
 
-  getDelegate (context) {
-    return new Delegate(this, context);
+  broadcast (name, payload, options) {
+    const message = { name: name, channel: this.name };
+    if (payload) message.payload = payload;
+    if (options.targetConsumerAppUuid) message.targetConsumerAppUuid = options.targetConsumerAppUuid;
+    return this.sdk.api.post('/api/networks/current/broadcasts', null, message);
   }
 
-  broadcast (name, payload) {
-    return api.post('/api/network/broadcast', null, { name: name, payload: payload, channel: this.name });
-  }
-
-  listen (name, options, callback, context) {
-    if (!callback) { callback = options; options = {}; }
-    options = options || {};
+  listen (name, callback, options) {
     return this.listeners.on(name, (payload, message) => {
       if (options.system && !message.system) return;
-      callback(payload, message);
-    }, context);
+      if (message.sourceConsumerAppUuid && options.sourceConsumerAppUuid !== message.sourceConsumerAppUuid) return;
+      return options.callback(payload, message);
+    }, options.context);
   }
 
-  request (target, name, payload) {
-    const message = {};
-    message.name = name;
-    message.channel = this.name;
-    message.target = target;
+  request (target, name, payload, options) {
+    const message = { target: target, channel: this.name, name: name };
+    if (payload) message.payload = payload;
+    if (options.targetConsumerAppUuid) message.targetConsumerAppUuid = options.targetConsumerAppUuid;
     message.id = Math.random();
-    message.payload = payload;
     return new Promise((resolve, reject) => {
       this.requests[message.id] = { resolve: resolve, reject: reject };
       setTimeout(() => this.onRequestTimeout(message.id), 3000);
-      api.post('/api/network/request', null, message);
+      return this.sdk.api.post('/api/networks/current/requests', null, message);
     });
   }
 
   onRequestTimeout (id) {
     if (!this.requests[id]) return;
-    this.requests[id].reject('The request timed out.');
+    this.requests[id].reject(new Error('The request timed out.'));
     delete this.requests[id];
   }
 
-  respond (name, options, callback, context) {
-    if (!callback) { callback = options; options = {}; }
-    options = options || {};
-    return this.responders.on(name, callback, context);
+  respond (name, callback, options) {
+    return this.responders.on(options.name, (payload, message) => {
+      if (options.system && !message.system) return null;
+      if (message.sourceConsumerAppUuid && options.sourceConsumerAppUuid !== message.sourceConsumerAppUuid) return null;
+      return callback(payload, message);
+    }, options.context);
   }
 
   receive (message) {
-    if (typeof message !== 'object') return;
-    else if (message.type === 'broadcast') this.receiveBroadcast(message);
-    else if (message.type === 'request') this.receiveRequest(message);
-    else if (message.type === 'response') this.receiveResponse(message);
+    if (message.type === 'broadcast') return this.receiveBroadcast(message);
+    else if (message.type === 'request') return this.receiveRequest(message);
+    else if (message.type === 'response') return this.receiveResponse(message);
   }
 
   receiveBroadcast (message) {
-    this.listeners.trigger(message.name, message.payload, message);
+    return this.listeners.trigger(message.name, message.payload, message);
   }
 
-  receiveRequest (message) {
-    const promise = this.responders.trigger(message.name, message.payload, message);
-    const response = {};
-    response.id = message.id;
-    response.target = message.source;
-    response.name = message.name;
-    response.type = 'response';
-    response.channel = this.name;
+  receiveRequest (request) {
+    const promise = this.responders.trigger(request.name, request.payload, request);
+    const response = {
+      target: request.source,
+      id: request.id,
+      channel: this.name
+    };
     return promise.then(values => {
-      if (values.length === 0) throw new Error('Unhandled');
-      response.payload = values[0];
+      const value = values.find(value => !!value);
+      if (!value) throw new Error('Unhandled');
+      response.payload = value;
     }).catch(error => {
       response.error = error.message || error;
     }).then(() => {
-      api.post('/api/network/response', null, response);
+      this.sdk.api.post('/api/networks/current/responses', null, response);
     });
   }
 

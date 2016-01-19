@@ -4,8 +4,8 @@ const Resource = require('./Resource');
 
 class Zone extends Resource {
 
-  constructor (document, location, context) {
-    super(document, context);
+  constructor (document, location, sdk, context) {
+    super(document, sdk, context);
     this.location = location;
   }
 
@@ -30,7 +30,7 @@ class Zone extends Resource {
   }
 
   getDevices () {
-    return this.api.getDevices({ 'location.uuid' : this.location.uuid, 'location.zones.key': this.key });
+    return this.sdk.api.getDevices({ 'location.uuid' : this.location.uuid, 'location.zones.key': this.key });
   }
 
   getLocation () {

@@ -2,12 +2,7 @@
 /* jshint -W074 */
 
 const _ = require('lodash');
-
 const jwt = require('jsonwebtoken');
-
-const events = require('./events');
-const api = require('./api');
-const network = require('./network');
 
 require('isomorphic-fetch');
 
@@ -16,19 +11,20 @@ const defaults = {
   enableEvents: true
 };
 
-
+let pid = Math.random();
 
 class Runtime {
 
   constructor (sdk) {
     this.sdk = sdk;
-    this.options = null;
-    this.auth = null;
   }
 
   start (options) {
-    this.active = true;
-    this.options = _.merge(_.merge({}, defaults), options);
+    pid = Math.random();
+    this.stop();
+    this.pid = pid;
+    this.sdk.options = _.merge(_.merge({}, defaults), options);
+    this.sdk.network.disconnect();
     this.sdk.events.trigger('start');
     this.promise = new Promise((a, b) => { this.resolve = a; this.reject = b });
     try { this.validate() }
@@ -44,74 +40,74 @@ class Runtime {
   }
 
   stop () {
-    this.active = false;
-    this.options = null;
-    this.auth = null;
-    this.reject(new Error('Runtime stopped.'));
+    this.sdk.options = null;
+    this.sdk.auth = null;
+    if (!this.pid) return;
     this.sdk.events.trigger('stop');
+    this.reject(new Error('Runtime stopped.'));
   }
 
   validate () {
-    if (this.options.type === 'user') {
-      if (!this.options.username) throw new Error('Please specify the username.');
-      if (!this.options.password) throw new Error('Please specify the password.');
-      if (!this.options.organization) throw new Error('Please specify the organization.');
-    } else if (this.options.type === 'device') {
-      if (!this.options.uuid) throw new Error('Please specify the uuid.');
-      if (!this.options.secret && !this.options.allowPairing) throw new Error('Please specify the device secret.');
-    } else if (this.options.type === 'consumerApp') {
-      if (!this.options.uuid) throw new Error('Please specify the uuid.');
-      if (!this.options.apiKey) throw new Error('Please specify the apiKey');
+    if (this.sdk.options.type === 'user') {
+      if (!this.sdk.options.username) throw new Error('Please specify the username.');
+      if (!this.sdk.options.password) throw new Error('Please specify the password.');
+      if (!this.sdk.options.organization) throw new Error('Please specify the organization.');
+    } else if (this.sdk.options.type === 'device') {
+      if (!this.sdk.options.uuid) throw new Error('Please specify the uuid.');
+      if (!this.sdk.options.secret && !this.sdk.options.allowPairing) throw new Error('Please specify the device secret.');
+    } else if (this.sdk.options.type === 'consumerApp') {
+      if (!this.sdk.options.uuid) throw new Error('Please specify the uuid.');
+      if (!this.sdk.options.apiKey) throw new Error('Please specify the apiKey');
     } else {
       throw new Error('Please specify authentication type.');
     }
   }
 
   login () {
-    if (!this.active) return;
+    if (this.pid !== pid) return;
     let payload;
-    if (this.options.type === 'user') {
+    if (this.sdk.options.type === 'user') {
       payload = {
         type: 'user',
-        username: this.options.username,
-        password: this.options.password,
-        organization: this.options.organization
+        username: this.sdk.options.username,
+        password: this.sdk.options.password,
+        organization: this.sdk.options.organization
       };
-    } else if (this.options.type === 'device') {
+    } else if (this.sdk.options.type === 'device') {
       payload = {
         token: jwt.sign({
           type: 'device',
-          uuid: this.options.uuid,
-          allowPairing: this.options.allowPairing,
-        }, this.options.secret || '_')
+          uuid: this.sdk.options.uuid,
+          allowPairing: this.sdk.options.allowPairing,
+        }, this.sdk.options.secret || '_')
       };
-    } else if (this.options.type === 'consumerApp') {
+    } else if (this.sdk.options.type === 'consumerApp') {
       payload = {
           token : jwt.sign({
           type: 'consumerApp',
-          uuid: this.options.uuid,
-        }, this.options.apiKey)
+          uuid: this.sdk.options.uuid,
+        }, this.sdk.options.apiKey)
       };
     }
-    fetch(this.options.host + '/api/auth/login', {
+    fetch(this.sdk.options.host + '/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).then(response => {
-      if (!this.active) return;
-      else if (response.status === 401) this.abort(new Error('Authentication failed. Please check your credentials.'));
+      if (this.pid !== pid) return;
+      else if (response.status === 401) return this.abort(new Error('Authentication failed. Please check your credentials.'));
       else if (!response.ok) throw new Error();
-      else return response.json(auth => this.onSuccess(auth));
+      return response.json().then(auth => this.onSuccess(auth));
     }).catch(() => setTimeout(() => this.login(), 5000));
   }
 
   refresh () {
-    if (!this.active) return;
-    fetch(this.options.host + '/api/auth/token', {
+    if (this.pid !== pid) return;
+    fetch(this.sdk.options.host + '/api/auth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + this.authentication.token
+        'Authorization': 'Bearer ' + this.auth.token
       }
     }).then(response => {
       if (!this.status) return;
@@ -122,13 +118,11 @@ class Runtime {
   }
 
   onSuccess (auth) {
-    if (!this.active) return;
-    this.auth = auth;
+    if (this.pid !== pid) return;
+    this.sdk.events.trigger('authenticated', auth);
+    this.sdk.auth = auth;
     setTimeout(() => this.refresh(), (auth.expiration - Date.now()) / 2);
-    if (this.options.enableEvents) network.connect({
-      host: auth.network.host,
-      token: auth.network.token,
-    }).then(() => this.resolve(), error => this.abort(error));
+    if (this.sdk.options.enableEvents) this.sdk.network.connect(auth.network.host, auth.token, {}).then(() => this.resolve(), error => this.abort(error));
     else this.resolve();
   }
 

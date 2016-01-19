@@ -24,16 +24,20 @@ class Data extends Resource {
     return this.document.value;
   }
 
-  static get (key, group, context) {
+  set value (value) {
+    this.document.value = value;
+  }
+
+  static get (key, group, sdk, context) {
     if (!key || !group) return Promise.reject(new Error('Key and group are required.'));
     return this.api.get(this.path + '/' + key + '/' + group).then(document => {
-      return new this(document, context);
+      return new this(document, sdk, context);
     });
   }
 
-  static create (document, options, context) {
+  static create (document, options, sdk, context) {
     options = options || {};
-    const resource = new this(document, context);
+    const resource = new this(document, sdk, context);
     if (options.save === false) return resource;
     return this.api.post(this.path + '/' + document.key + '/' + document.group, null, resource.document).then(document => {
       resource.document = document;
@@ -41,7 +45,7 @@ class Data extends Resource {
     });
   }
 
-  get uuid () {
+  getChannel () {
     return 'data' + ':' + this.key + ':' + this.group;
   }
 

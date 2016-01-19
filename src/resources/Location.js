@@ -13,7 +13,7 @@ class Location extends Resource {
   getZones () {
     if (!this.document.zones) return Promise.resolve([]);
     return Promise.resolve(this.document.zones.map(zone => {
-      return new Zone(zone, this, this.context);
+      return new Zone(zone, this, this.sdk, this.context);
     }));
   }
 
@@ -21,11 +21,11 @@ class Location extends Resource {
     if (!this.document.zones) return Promise.reject(new Error('Zone not found.'));
     const document = this.document.zones.find(zone => zone.key === key);
     if (!document) return Promise.reject(new Error('Zone not found'));
-    return Promise.resolve(new Zone(document, this, this.context));
+    return Promise.resolve(new Zone(document, this, this.sdk, this.context));
   }
 
   getLayoutUrl () {
-    return this.api.auth.api.host  + '/api/locations/' + this.document.uuid + '/layout?_rt=' + this.api.auth.readToken;
+    return this.sdk.auth.api.host  + '/api/locations/' + this.document.uuid + '/layout?_rt=' + this.sdk.auth.readToken;
   }
 
 }
