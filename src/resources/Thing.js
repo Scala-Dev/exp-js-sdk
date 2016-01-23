@@ -9,11 +9,11 @@ const Location = require('./Location');
 class Thing extends Resource {
 
   getExperience () {
-    return Experience.get(_.get(this, 'document.experience.uuid'), this.sdk, this.context);
+    return Experience.get(_.get(this, 'document.experience.uuid'), this.context);
   }
 
   getLocation () {
-    return Location.get(_.get(this, 'document.location.uuid'), this.sdk, this.context);
+    return Location.get(_.get(this, 'document.location.uuid'), this.context);
   }
 
   static get path () {

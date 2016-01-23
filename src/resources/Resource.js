@@ -1,12 +1,12 @@
 'use strict';
 
-const Channel = require('./Channel');
+const api = require('../api');
+const ChannelDelegate = require('../ChannelDelegate');
 
 class Resource {
 
-  constructor (document, sdk, context) {
+  constructor (document, context) {
     this.document = document || {};
-    this.sdk = sdk;
     this.context = context;
   }
 
@@ -14,27 +14,27 @@ class Resource {
     throw new Error('Not implemented.');
   }
 
-  static get (uuid, sdk, context) {
+  static get (uuid, context) {
     if (!uuid) return Promise.reject(new Error('Document uuid is required.'));
-    return sdk.api.get(this.path + '/' + uuid).then(document => new this(document, sdk, context));
+    return api.get(this.path + '/' + uuid).then(document => new this(document, context));
   }
 
-  static create (document, options, sdk, context) {
+  static create (document, options, context) {
     options = options || {};
-    const resource = new this(document, sdk, context);
+    const resource = new this(document, context);
     if (options.save === false) {
       if (options.sync === true) return resource;
       return Promise.resolve(resource);
     }
-    return sdk.api.post(this.path, null, resource.document).then(document => {
+    return api.post(this.path, null, resource.document).then(document => {
       resource.document = document;
       return resource;
     });
   }
 
-  static find (params, sdk, context) {
-    return sdk.api.get(this.path, params).then(query => {
-      const results = query.results.map(document => new this(document, sdk, context));
+  static find (params, context) {
+    return api.get(this.path, params).then(query => {
+      const results = query.results.map(document => new this(document, context));
       return { total: query.total, results: results };
     });
   }
@@ -44,7 +44,7 @@ class Resource {
   }
 
   save () {
-    return this.sdk.api.patch(this.path, null, this.document).then(document => this.document = document);
+    return api.patch(this.path, null, this.document).then(document => this.document = document);
   }
 
   get uuid () {
@@ -52,35 +52,19 @@ class Resource {
   }
 
   refresh () {
-    return this.sdk.api.get(this.path).then(document => this.document = document);
+    return api.get(this.path).then(document => this.document = document);
   }
 
-  broadcast (name, payload) {
-    return this.getChannel().broadcast(name, payload);
-  }
-
-  listen (name, callback) {
-    return this.getChannel().listen(name, callback);
-  }
-
-  request (target, name, payload) {
-    return this.getChannel().request(target, name, payload);
-  }
-
-  respond (name, callback) {
-    return this.getChannel().respond(name, callback);
-  }
-
-  getChannel () {
-    return new Channel(this.getChannelName(), this.sdk, this.context);
+  getChannel (options) {
+    return new ChannelDelegate(this.getChannelName(), options);
   }
 
   getChannelName () {
     return this.uuid;
   }
 
-  fling (payload) {
-    return this.getChannel().broadcast('fling', payload);
+  fling (payload, options) {
+    return this.getChannel(options).broadcast('fling', payload);
   }
 
 }

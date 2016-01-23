@@ -4,21 +4,18 @@
 const _ = require('lodash');
 require('isomorphic-fetch');
 
+const config = require('./config');
+
 
 
 class Api {
 
-  constructor (sdk) {
-    this.sdk = sdk;
-  }
-
   fetch (path, options) {
-    console.log(options);
-    const url = this.sdk.auth.api.host + path;
+    const url = config.auth.api.host + path;
     options.cors = true;
     options.credentials = 'include';
     options.headers = options.headers || {};
-    options.headers.Authorization = 'Bearer ' + this.sdk.auth.token;
+    options.headers.Authorization = 'Bearer ' + config.auth.token;
     options.headers.Accept = 'application/json';
     return fetch(url, options).then(response => {
       return response.json().then(body => {
@@ -88,4 +85,4 @@ class Api {
 
 }
 
-module.exports = Api;
+module.exports = new Api();

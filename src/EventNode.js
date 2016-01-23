@@ -47,6 +47,10 @@ class EventNode {
     Object.keys(nodes).forEach(id => nodes[id].clear(context));
   }
 
+  get hasListeners () {
+    return Object.keys(this.namespaces).length > 0;
+  }
+
   on (name, callback, context) {
     if (!nodes[this.id]) nodes[this.id] = this;
     if (!this.namespaces[name]) this.namespaces[name] = new Namespace();
