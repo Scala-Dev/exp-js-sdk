@@ -1,6 +1,6 @@
 'use strict';
 
-require('isomorphic-fetch');
+const fetch = require('isomorphic-fetch');
 
 const authManager = require('./authManager');
 
