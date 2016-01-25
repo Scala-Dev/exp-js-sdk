@@ -67,6 +67,10 @@ class Resource {
     return this.getChannel(options).broadcast('fling', payload);
   }
 
+  clone (context) {
+    return new this.constructor(this.document, context);
+  }
+
 }
 
 module.exports = Resource;

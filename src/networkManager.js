@@ -77,8 +77,8 @@ class NetworkManager extends EventNode {
   listen (name, channel, callback, context) {
     if (!this.subscriptions[channel]) this.subscribe([channel]);
     if (!this.channels[channel]) this.channels[channel] = new Channel(channel, this);
-    this.channels[channel].listen(name, callback, context);
-    return this.subscriptions[channel].promise;
+    const listener = this.channels[channel].listen(name, callback, context);
+    return this.subscriptions[channel].promise.then(() => listener);
   }
 
   respond (id, payload) {

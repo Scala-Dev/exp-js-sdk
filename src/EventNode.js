@@ -24,7 +24,8 @@ class Namespace {
   on (callback, context) {
     const listener = new Listener(callback, context);
     this.listeners.push(listener);
-    return () => this.listeners.splice(this.listeners.indexOf(listener), 1);
+    listener.cancel = () => this.listeners.splice(this.listeners.indexOf(listener), 1);
+    return listener;
   }
 
   clear (context) {

@@ -1,7 +1,7 @@
 'use strict';
 
 const Resource = require('./Resource');
-const api = require('../api');
+const Device = require('./Device');
 
 class Zone extends Resource {
 
@@ -31,7 +31,7 @@ class Zone extends Resource {
   }
 
   getDevices () {
-    return api.getDevices({ 'location.uuid' : this.location.uuid, 'location.zones.key': this.key });
+    return Device.find({ 'location.uuid' : this.location.uuid, 'location.zones.key': this.key }, this.context);
   }
 
   getLocation () {
@@ -40,6 +40,10 @@ class Zone extends Resource {
 
   getChannelName () {
     return this.location.uuid + ':zone:' + this.key;
+  }
+
+  clone (context) {
+    return new this.constructor(this.document, this.location, context);
   }
 
 }

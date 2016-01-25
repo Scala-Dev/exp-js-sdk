@@ -2,12 +2,13 @@
 
 const _ = require('lodash');
 const Resource = require('./Resource');
+const authManager = require('../authManager');
 
 class Content extends Resource {
 
-  constructor (document, sdk, context) {
-    super(document, sdk, context);
-    this._children = _.get(document, 'children', []).map(child => new this.constructor(child, this.sdk, context));
+  constructor (document, context) {
+    super(document, context);
+    this._children = _.get(document, 'children', []).map(child => new this.constructor(child, context));
   }
 
   static encodePath (value) {
@@ -48,22 +49,26 @@ class Content extends Resource {
   }
 
   getUrl () {
-    if (this.subtype === 'scala:content:file') {
-      return this.sdk.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '?_rt=' + this.sdk.auth.readToken;
-    } else if (this.subtype === 'scala:content:app') {
-      return this.sdk.auth.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html?_rt=' + this.sdk.auth.readToken;
-    } else if (this.subtype === 'scala:content:url') {
-      return this.document.url;
-    }
-    return null;
+    return authManager.get().then(auth => {
+      if (this.subtype === 'scala:content:file') {
+        return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '?_rt=' + auth.readToken;
+      } else if (this.subtype === 'scala:content:app') {
+        return auth.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html?_rt=' + auth.readToken;
+      } else if (this.subtype === 'scala:content:url') {
+        return this.document.url;
+      }
+      throw new Error('Content item does not have a url.');
+    });
   }
 
   getVariantUrl (name) {
-    if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
-      const query = '?variant=' + encodeURIComponent(name) + '&_rt=' + this.sdk.auth.readToken;
-      return this.sdk.auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
-    }
-    return null;
+    return authManager.get().then(auth => {
+      if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
+        const query = '?variant=' + encodeURIComponent(name) + '&_rt=' + auth.readToken;
+        return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
+      }
+      throw new Error('Variant does not exist.');
+    });
   }
 
   hasVariant (name) {

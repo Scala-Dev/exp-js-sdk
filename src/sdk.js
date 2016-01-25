@@ -71,6 +71,7 @@ class Sdk {
   findFeeds (params) { return resources.Feed.find(params, this.context); }
   createFeed (document, options) { return resources.Feed.create(document, options, this.context); }
 
+
   get EventNode () { return EventNode; }
 
 

@@ -19,7 +19,7 @@ class ChannelDelegate {
 
   listen (name, callback) {
     return this.generateId().then(id => {
-      return networkManager.listen(name, id, callback, this.context).then(() => this);
+      return networkManager.listen(name, id, callback, this.context);
     });
   }
 
