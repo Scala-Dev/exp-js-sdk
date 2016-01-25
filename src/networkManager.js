@@ -1,50 +1,68 @@
 'use strict';
 
 const io = require('socket.io-client');
-const _ = require('lodash');
 const Channel = require('./Channel');
 const events = require('./events');
 const api = require('./api');
 
-const defaults = {
-  forceNew: true,
-  reconnection: true,
-  reconnectionDelay: 1000,
-  reconnectionDelayMax: 20000,
-  timeout: 20000,
-  reconnectionAttempts: Infinity
-};
+const EventNode = require('./EventNode');
+
+const authManager = require('./authManager');
 
 
-class Network {
+class NetworkManager extends EventNode {
 
   constructor () {
+    super();
+    this.started = false;
     this.socket = null;
     this.channels = {};
     this.subscriptions = {};
     setInterval(() => this.sync(), 10000);
   }
 
-  connect (host, token, options) {
+  start () {
+    if (this.started) throw new Error('Network manager already started.');
+    this.started = true;
+    this.trigger('start');
+    this.listener = authManager.on('update', () => this.refresh());
+    this.refresh();
+  }
+
+  stop () {
+    if (!this.started) return;
+    this.trigger('stop');
+    this.listener.cancel();
     this.disconnect();
-    options = _.merge(_.merge({}, defaults), options);
-    options.query = `token=${ token }`;
-    this.promise = new Promise((a, b) => { this.resolve = a; this.reject = b; });
-    this.socket = io(host, options);
+  }
+
+  refresh () {
+    authManager.get().then(auth => this.connect(auth));
+  }
+
+  connect (auth) {
+    this.disconnect();
+    this.socket = io(auth.network.host, {
+      forceNew: true,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 20000,
+      timeout: 20000,
+      reconnectionAttempts: Infinity,
+      query: `token=${ auth.token }`
+    });
     this.socket.on('broadcast', message => this.onBroadcast(message));
     this.socket.on('channels', ids => this.onChannels(ids));
     this.socket.on('connect', () => this.onOnline());
     this.socket.on('subscribed', ids => this.onSubscribed(ids));
     this.socket.on('connect_error', () => this.onOffline());
     this.socket.on('error', error => this.onError(error));
-    return this.promise;
   }
 
   disconnect () {
     if (!this.socket) return;
     this.socket.disconnect();
     this.socket = null;
-    this.onOffline();
   }
 
   get isConnected () {
@@ -99,13 +117,12 @@ class Network {
   }
 
   onOnline () {
-    events.trigger('online');
+    this.trigger('online');
     this.socket.emit('subscriptions');
-    this.resolve();
   }
 
   onOffline () {
-    events.trigger('offline');
+    this.trigger('offline');
   }
 
   onError (error) {
@@ -130,5 +147,5 @@ class Network {
 
 }
 
-module.exports = new Network();
+module.exports = new NetworkManager();
 

@@ -3,12 +3,26 @@
 const resources = require('./resources');
 
 const runtime = require('./runtime');
-const network = require('./network');
+const networkManager = require('./networkManager');
+const authManager = require('./authManager');
 const api = require('./api');
-const config = require('./config');
-const events = require('./events');
-const Channel = require('./Channel');
 const ChannelDelegate = require('./ChannelDelegate');
+
+const EventNode = require('./EventNode');
+
+class SdkEvents extends EventNode {
+
+  constructor () {
+    super();
+    authManager.on('update', auth => this.trigger('authenticated', auth));
+    authManager.on('error', error => this.trigger('error', error));
+    networkManager.on('online', () => this.trigger('online'));
+    networkManager.on('offline', () => this.trigger('offline'));
+  }
+
+}
+
+const events = new SdkEvents();
 
 class Sdk {
 
@@ -18,6 +32,8 @@ class Sdk {
 
   start (options) { return runtime.start(options); }
   stop () { return runtime.stop(); }
+
+
   on (name, callback) { return events.on(name, callback, this.context); }
   getDelegate (context) { return new Sdk(context); }
 
@@ -55,9 +71,11 @@ class Sdk {
   findFeeds (params) { return resources.Feed.find(params, this.context); }
   createFeed (document, options) { return resources.Feed.create(document, options, this.context); }
 
+  get EventNode () { return EventNode; }
 
-  get isConnected () { return network.isConnected; }
-  get auth () { return config.auth; }
+
+  get isConnected () { return networkManager.isConnected; }
+  getAuth () { return authManager.get(); }
 
   getChannel (name, options) { return new ChannelDelegate(name, options, this.context); }
 

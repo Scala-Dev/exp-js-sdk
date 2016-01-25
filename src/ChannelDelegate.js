@@ -1,28 +1,35 @@
 'use strict';
 
-const network = require('./network');
-const config = require('./config');
+const networkManager = require('./networkManager');
+const authManager = require('./authManager');
 
 class ChannelDelegate {
 
   constructor (name, options, context) {
-    options = options || {};
-    this.id = this.encode(name, options.system, options.consumer);
+    this.name = name;
+    this.options = options || {};
     this.context = context;
   }
 
   broadcast (name, payload, timeout) {
-    return network.broadcast(name, this.id, payload, timeout);
+    return this.generateId().then(id => {
+      return networkManager.broadcast(name, id, payload, timeout);
+    });
   }
 
   listen (name, callback) {
-    return network.listen(name, this.id, callback, this.context).then(() => this);
+    return this.generateId().then(id => {
+      return networkManager.listen(name, id, callback, this.context).then(() => this);
+    });
   }
 
-  encode (name, system, consumer) {
-    const s = JSON.stringify([config.auth.identity.organization, name, system ? 1 : 0, consumer ? 1 : 0]);
-    if (typeof window === 'undefined') return(new Buffer(s)).toString('base64');
-    else return btoa(s);
+  generateId () {
+    return authManager.get().then(auth => {
+      const array = [auth.identity.organization, this.name, this.options.system ? 1 : 0, this.options.consumer ? 1: 0];
+      const string = JSON.stringify(array);
+      if (typeof window === 'undefined') return (new Buffer(string)).toString('base64');
+      else return btoa(string);
+    });
   }
 
 }

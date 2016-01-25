@@ -1,27 +1,27 @@
 'use strict';
-/* jshint -W074 */
 
-const _ = require('lodash');
 require('isomorphic-fetch');
 
-const config = require('./config');
+const authManager = require('./authManager');
 
 
 
 class Api {
 
   fetch (path, options) {
-    const url = config.auth.api.host + path;
-    options.cors = true;
-    options.credentials = 'include';
-    options.headers = options.headers || {};
-    options.headers.Authorization = 'Bearer ' + config.auth.token;
-    options.headers.Accept = 'application/json';
-    return fetch(url, options).then(response => {
-      return response.json().then(body => {
-        body = body || {};
-        if (!response.ok) throw new Error(body.code || 'unknownError');
-        return body;
+    return authManager.get().then(auth => {
+      const url = auth.api.host + path;
+      options.cors = true;
+      options.credentials = 'include';
+      options.headers = options.headers || {};
+      options.headers.Authorization = 'Bearer ' + auth.token;
+      options.headers.Accept = 'application/json';
+      return fetch(url, options).then(response => {
+        return response.json().then(body => {
+          body = body || {};
+          if (!response.ok) throw new Error(body.code || 'unknownError');
+          return body;
+        });
       });
     });
   }
@@ -77,8 +77,8 @@ class Api {
 
   encodeQueryString (params) {
     let parts = [];
-    _.forOwn(params, (value, name) => {
-      parts.push(encodeURIComponent(name) + '=' + encodeURIComponent(value));
+    Object.keys(params).forEach(name => {
+      parts.push(encodeURIComponent(name) + '=' + encodeURIComponent(params[name]));
     });
     return '?' + parts.join('&');
   }
