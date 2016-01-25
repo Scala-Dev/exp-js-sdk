@@ -46,7 +46,7 @@ class Data extends Resource {
     });
   }
 
-  getChannel () {
+  getChannelName () {
     return 'data' + ':' + this.key + ':' + this.group;
   }
 
