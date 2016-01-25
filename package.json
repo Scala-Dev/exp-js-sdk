@@ -4,7 +4,7 @@
   "description": "Scala EXP Javascript SDK",
   "main": "./index.js",
   "scripts": {
-    "install": "/bin/bash ./scripts/build.sh",
+    "postinstall": "/bin/bash ./scripts/build.sh",
     "build": "/bin/bash ./scripts/build.sh",
     "test": "/bin/bash ./scripts/test.sh"
   },
