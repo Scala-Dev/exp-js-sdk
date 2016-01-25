@@ -33,10 +33,8 @@ class Sdk {
   start (options) { return runtime.start(options); }
   stop () { return runtime.stop(); }
 
-
   on (name, callback) { return events.on(name, callback, this.context); }
   getDelegate (context) { return new Sdk(context); }
-
 
   get (path, params) { return api.get(path, params); }
   post (path, params, body) { return api.post(path, params, body); }

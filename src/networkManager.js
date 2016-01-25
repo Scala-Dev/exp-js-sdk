@@ -2,7 +2,6 @@
 
 const io = require('socket.io-client');
 const Channel = require('./Channel');
-const events = require('./events');
 const api = require('./api');
 
 const EventNode = require('./EventNode');
