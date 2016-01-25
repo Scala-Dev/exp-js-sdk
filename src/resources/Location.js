@@ -2,8 +2,7 @@
 
 const Resource = require('./Resource');
 const Zone = require('./Zone');
-const config = require('../config');
-
+const authManager = require('../authManager');
 
 class Location extends Resource {
 
@@ -26,7 +25,9 @@ class Location extends Resource {
   }
 
   getLayoutUrl () {
-    return config.auth.api.host  + '/api/locations/' + this.document.uuid + '/layout?_rt=' + config.auth.readToken;
+    return authManager.get().then(auth => {
+      return auth.api.host  + '/api/locations/' + this.document.uuid + '/layout?_rt=' + auth.readToken;
+    });
   }
 
 }
