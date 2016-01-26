@@ -15,6 +15,7 @@ class AuthManager extends EventNode {
 
   start (options) {
     if (this.started) throw new Error('Manager already started.');
+    setTimeout(() => this.load(), 2000);
     this.started = true;
     this.running = true;
     this.options = options;
@@ -95,12 +96,28 @@ class AuthManager extends EventNode {
   }
 
   onSuccess (auth) {
+    console.log('AUTH_UPDATED!!!!!!');
     if (!this.running) return;
     setTimeout(() => this.refresh(), (auth.expiration - Date.now()) / 2);
     this.auth = auth;
     this.resolve(auth);
     this.promise = Promise.resolve(auth);
     this.trigger('update', auth);
+    this.save();
+  }
+
+  save () {
+    if (typeof window !== 'object' || !window.localStorage) return;
+    window.localStorage.setItem('auth', JSON.stringify(this.auth));
+  }
+
+  load () {
+    if (typeof window !== 'object' || !window.localStorage || this.auth) return;
+    let auth;
+    try {
+      auth = JSON.parse(window.localStorage.getItem('auth'));
+    } catch (error) { return; }
+    if (auth) this.onSuccess(auth);
   }
 
 }
