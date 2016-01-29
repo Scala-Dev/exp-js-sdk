@@ -5,31 +5,31 @@ const authManager = require('./authManager');
 
 class ChannelDelegate {
 
-  constructor (name, options, context) {
-    this.name = name;
-    this.options = options || {};
+  constructor (id, context) {
+    this.id = id;
     this.context = context;
   }
 
   broadcast (name, payload, timeout) {
-    return this.generateId().then(id => {
-      return networkManager.broadcast(name, id, payload, timeout);
-    });
+    return networkManager.broadcast(name, this.id, payload, timeout);
   }
 
   listen (name, callback) {
-    return this.generateId().then(id => {
-      return networkManager.listen(name, id, callback, this.context);
-    });
+    return networkManager.listen(name, this.id, callback, this.context);
   }
 
-  generateId () {
+  static create (name, options, context) {
+    return this.generateId(name, options || {}).then(id => new this(id, context));
+  }
+
+  static generateId (name, options) {
     return authManager.get().then(auth => {
-      const array = [auth.identity.organization, this.name, this.options.system ? 1 : 0, this.options.consumer ? 1: 0];
+      const array = [auth.identity.organization, name, options.system ? 1 : 0, options.consumer ? 1: 0];
       const string = JSON.stringify(array);
       if (typeof window === 'undefined') return (new Buffer(string)).toString('base64');
       else return btoa(string);
     });
+
   }
 
 }

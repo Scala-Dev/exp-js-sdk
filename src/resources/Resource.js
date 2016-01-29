@@ -56,7 +56,7 @@ class Resource {
   }
 
   getChannel (options) {
-    return new ChannelDelegate(this.getChannelName(), options);
+    return ChannelDelegate.create(this.getChannelName(), options, this.context);
   }
 
   getChannelName () {

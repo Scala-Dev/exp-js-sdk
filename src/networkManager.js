@@ -80,8 +80,8 @@ class NetworkManager extends EventNode {
     return this.subscriptions[channel].promise.then(() => listener);
   }
 
-  respond (id, payload) {
-    if (this.socket) this.socket.emit('response', { id: id, payload: payload });
+  respond (id, channel, payload) {
+    return api.post('/api/networks/current/responses', null, { id: id, channel: channel, payload: payload });
   }
 
   sync () {

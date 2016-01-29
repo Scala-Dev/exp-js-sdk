@@ -76,7 +76,7 @@ class Sdk {
   get isConnected () { return networkManager.isConnected; }
   getAuth () { return authManager.get(); }
 
-  getChannel (name, options) { return new ChannelDelegate(name, options, this.context); }
+  getChannel (name, options) { return ChannelDelegate.create(name, options, this.context); }
 
 }
 

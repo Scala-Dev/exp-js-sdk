@@ -13,7 +13,9 @@ class Channel {
   listen (name, callback, context) {
     return this.events.on(name, (payload, message) => {
       callback(payload, response => {
-        this.network.respond(message.id, response);
+        return Promise.resolve().then(() => response).then(() => {
+          return this.network.respond(message.id, message.channel, response);
+        });
       });
     }, context);
   }

@@ -15,7 +15,7 @@ class AuthManager extends EventNode {
 
   start (options) {
     if (this.started) throw new Error('Manager already started.');
-    setTimeout(() => this.load(), 2000);
+    setTimeout(() => this.load(), 4000);
     this.started = true;
     this.running = true;
     this.options = options;
@@ -96,7 +96,6 @@ class AuthManager extends EventNode {
   }
 
   onSuccess (auth) {
-    console.log('AUTH_UPDATED!!!!!!');
     if (!this.running) return;
     setTimeout(() => this.refresh(), (auth.expiration - Date.now()) / 2);
     this.auth = auth;

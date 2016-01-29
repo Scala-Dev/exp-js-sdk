@@ -23,6 +23,10 @@ class Api {
           return body;
         });
       });
+    }).catch(error => {
+      console.log(error.stack);
+      console.log(error);
+      throw error;
     });
   }
 
