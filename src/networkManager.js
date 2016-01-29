@@ -124,6 +124,7 @@ class NetworkManager extends EventNode {
 
   onOnline () {
     this.trigger('online');
+    this.socket.emit('channels');
     this.resolve();
   }
 

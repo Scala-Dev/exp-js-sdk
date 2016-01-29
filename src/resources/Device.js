@@ -20,8 +20,8 @@ class Device extends Resource {
     return '/api/devices';
   }
 
-  identify (payload, options) {
-    return this.getChannel(options).broadcast('identify', payload);
+  identify () {
+    return this.getChannel().broadcast('identify', null, 500);
   }
 
 }
