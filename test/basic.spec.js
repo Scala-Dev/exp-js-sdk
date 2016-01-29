@@ -28,85 +28,81 @@ describe('basic', () => {
   });
 
   it('should be able to send a message with a payload', () => {
-    return exp.getChannel(name).then(channel => channel.broadcast('test', {}));
+    const channel = exp.getChannel(name);
+    return channel.broadcast('test', {});
   });
 
   it('should be able to send a message with a timeout', () => {
-    return exp.getChannel(name).then(channel => channel.broadcast('test', null, 500));
+    const channel = exp.getChannel(name);
+    return channel.broadcast('test', null, 500);
   });
 
   it('should be able to listen on a channel.', () => {
-    return exp.getChannel(name).then(channel => channel.listen('test', () => {}));
+    const channel = exp.getChannel(name);
+    return channel.listen('test', () => {});
   });
 
   it('should call listener callback on broadcast', () => {
-    exp.getChannel(name).then(channel => {
-      channel.listen('test', resolve).then(() => {
-        channel.broadcast('test');
-      });
-    }).catch(reject);
+    const channel = exp.getChannel(name);
+    channel.listen('test', resolve).then(() => channel.broadcast('test'));
     return promise;
   });
 
   it('should receive broadcast payload in listener callback', () => {
-    exp.getChannel(name).then(channel => {
-      return channel.listen('test', payload => {
-        if (payload !== 55) reject();
-        else resolve();
-      }).then(() => {
-        return channel.broadcast('test', 55);
-      });
-    }).catch(reject);
+    const channel = exp.getChannel(name);
+    channel.listen('test', payload => {
+      if (payload !== 55) reject();
+      else resolve();
+    }).then(() => channel.broadcast('test', 55));
     return promise;
   });
 
   it('should receive response to broadcast event', () => {
-    exp.getChannel(name).then(channel => {
-      return channel.listen('test', (payload, callback) => callback({ value: 199})).then(() => {
-        return channel.broadcast('test', null, 500).then(response => {
-          if (response.length !== 1 || response[0].value !== 199) reject();
-          else resolve();
-        });
+    const channel = exp.getChannel(name);
+    channel.listen('test', (payload, callback) => callback({ value: 199})).then(() => {
+      channel.broadcast('test', null, 500).then(response => {
+        if (response.length !== 1 || response[0].value !== 199) reject();
+        else resolve();
       });
-    }).catch(reject);
+    });
     return promise;
   });
 
   it('should receive multiple responses to broadcast event', () => {
-    exp.getChannel(name).then(channel => {
-      return Promise.resolve()
-        .then(() => channel.listen('test', (payload, callback) => callback(1)))
-        .then(() => channel.listen('test', (payload, callback) => callback(2)))
-        .then(() => channel.listen('test', (payload, callback) => callback(3)))
-        .then(() => {
-          return channel.broadcast('test', null, 500).then(response => {
-            if (response.length !== 3) reject();
-            else if (response.indexOf(1) === -1) reject();
-            else if (response.indexOf(2) === -1) reject();
-            else if (response.indexOf(3) === -1) reject();
-            resolve();
-          });
-        });
-    }).catch(reject);
+    const channel = exp.getChannel(name);
+    Promise.resolve()
+    .then(() => channel.listen('test', (payload, callback) => callback(1)))
+    .then(() => channel.listen('test', (payload, callback) => callback(2)))
+    .then(() => channel.listen('test', (payload, callback) => callback(3)))
+    .then(() => {
+      return channel.broadcast('test', null, 500).then(response => {
+        if (response.length !== 3) reject();
+        else if (response.indexOf(1) === -1) reject();
+        else if (response.indexOf(2) === -1) reject();
+        else if (response.indexOf(3) === -1) reject();
+        resolve();
+      });
+    });
+    return promise;
   });
 
   it('should receive experience update event', () => {
     exp.createExperience({}).then(experience => {
-      return experience.getChannel({ system: true }).then(channel => channel.listen('update', resolve, true)).then(() => {
+      const channel = experience.getChannel({ system: true });
+      channel.listen('update', resolve).then(() => {
         experience.document.name = 'Test' + Math.random();
-        experience.save().catch(reject);
+        experience.save();
       });
-    }).catch(reject);
+    });
     return promise;
   });
 
   it('should be able to cancel listener', () => {
-    exp.getChannel(name).then(channel => {
-      return channel.listen('test', () => reject()).then(listener => {
-        listener.cancel();
-        return channel.broadcast('test');
-      });
-    }).catch(reject);
+    const channel = exp.getChannel(name);
+    channel.listen('test', () => reject()).then(listener => {
+      listener.cancel();
+      return channel.broadcast('test');
+    });
     setTimeout(resolve, 1000);
     return promise;
   });

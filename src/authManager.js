@@ -15,12 +15,21 @@ class AuthManager extends EventNode {
 
   start (options) {
     if (this.started) throw new Error('Manager already started.');
-    setTimeout(() => this.load(), 4000);
     this.started = true;
     this.running = true;
     this.options = options;
     this.trigger('start');
     this.login();
+    return this.promise;
+  }
+
+  set (auth) {
+    this.onSuccess(auth);
+  }
+
+  getSync () {
+    if (!this.auth) throw new Error('Not authenticated.');
+    return this.auth;
   }
 
   get () {
@@ -76,7 +85,7 @@ class AuthManager extends EventNode {
     }).then(response => {
       if (response.status === 401) return this.abort(new Error('Authentication failed. Please check your credentials.'));
       else if (!response.ok) throw new Error();
-      return response.json().then(auth => this.onSuccess(auth));
+      return response.json().then(auth => this.set(auth));
     }).catch(() => setTimeout(() => this.login(), 5000));
   }
 
@@ -91,7 +100,7 @@ class AuthManager extends EventNode {
     }).then(response => {
       if (response.status === 401) this.login();
       else if (!response.ok) throw new Error();
-      else return response.json().then(auth => this.onSuccess(auth));
+      else return response.json().then(auth => this.set(auth));
     }).catch(() => setTimeout(() => this.refresh(), 5000));
   }
 
@@ -102,21 +111,6 @@ class AuthManager extends EventNode {
     this.resolve(auth);
     this.promise = Promise.resolve(auth);
     this.trigger('update', auth);
-    this.save();
-  }
-
-  save () {
-    if (typeof window !== 'object' || !window.localStorage) return;
-    window.localStorage.setItem('auth', JSON.stringify(this.auth));
-  }
-
-  load () {
-    if (typeof window !== 'object' || !window.localStorage || this.auth) return;
-    let auth;
-    try {
-      auth = JSON.parse(window.localStorage.getItem('auth'));
-    } catch (error) { return; }
-    if (auth) this.onSuccess(auth);
   }
 
 }

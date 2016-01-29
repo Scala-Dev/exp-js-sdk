@@ -30,7 +30,10 @@ class Sdk {
     this.context = context;
   }
 
-  start (options) { return runtime.start(options); }
+  start (options) {
+    runtime.start(options);
+  }
+
   stop () { return runtime.stop(); }
 
   on (name, callback) { return events.on(name, callback, this.context); }
@@ -74,9 +77,12 @@ class Sdk {
 
 
   get isConnected () { return networkManager.isConnected; }
-  getAuth () { return authManager.get(); }
+  get auth () { return authManager.getSync(); }
 
-  getChannel (name, options) { return ChannelDelegate.create(name, options, this.context); }
+  getChannel (name, options) { return new ChannelDelegate(name, options, this.context); }
+
+  _setAuth (auth) { return authManager.set(auth); }
+
 
 }
 

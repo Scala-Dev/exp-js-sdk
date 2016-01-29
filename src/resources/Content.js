@@ -49,26 +49,24 @@ class Content extends Resource {
   }
 
   getUrl () {
-    return authManager.get().then(auth => {
-      if (this.subtype === 'scala:content:file') {
-        return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '?_rt=' + auth.readToken;
-      } else if (this.subtype === 'scala:content:app') {
-        return auth.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html?_rt=' + auth.readToken;
-      } else if (this.subtype === 'scala:content:url') {
-        return this.document.url;
-      }
-      throw new Error('Content item does not have a url.');
-    });
+    const auth = authManager.getSync();
+    if (this.subtype === 'scala:content:file') {
+      return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '?_rt=' + auth.readToken;
+    } else if (this.subtype === 'scala:content:app') {
+      return auth.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html?_rt=' + auth.readToken;
+    } else if (this.subtype === 'scala:content:url') {
+      return this.document.url;
+    }
+    throw new Error('Content item does not have a url.');
   }
 
   getVariantUrl (name) {
-    return authManager.get().then(auth => {
-      if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
-        const query = '?variant=' + encodeURIComponent(name) + '&_rt=' + auth.readToken;
-        return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
-      }
-      throw new Error('Variant does not exist.');
-    });
+    const auth = authManager.getSync();
+    if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
+      const query = '?variant=' + encodeURIComponent(name) + '&_rt=' + auth.readToken;
+      return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
+    }
+    throw new Error('Variant does not exist.');
   }
 
   hasVariant (name) {

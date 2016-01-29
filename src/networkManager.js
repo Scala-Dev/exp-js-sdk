@@ -17,6 +17,7 @@ class NetworkManager extends EventNode {
     this.socket = null;
     this.channels = {};
     this.subscriptions = {};
+    this.promise = new Promise(resolve => this.resolve = resolve);
     setInterval(() => this.sync(), 10000);
   }
 
@@ -26,6 +27,7 @@ class NetworkManager extends EventNode {
     this.trigger('start');
     this.listener = authManager.on('update', () => this.refresh());
     this.refresh();
+    return this.promise;
   }
 
   stop () {
@@ -99,8 +101,13 @@ class NetworkManager extends EventNode {
   }
 
   onChannels (ids) {
+    const old = this.subscriptions;
     this.subscriptions = {};
-    ids.forEach(id => this.subscriptions[id] = true);
+    ids.forEach(id => {
+      if (old[id]) old[id].resolve();
+      this.subscriptions[id] = {};
+      this.subscriptions[id].promise = new Promise(a => this.subscriptions[id].resolve = a);
+    });
     this.sync();
   }
 
@@ -117,7 +124,7 @@ class NetworkManager extends EventNode {
 
   onOnline () {
     this.trigger('online');
-    this.socket.emit('subscriptions');
+    this.resolve();
   }
 
   onOffline () {
@@ -125,7 +132,7 @@ class NetworkManager extends EventNode {
   }
 
   onError (error) {
-    events.trigger('error', error);
+    this.trigger('error', error);
     this.reject(error);
     this.disconnect();
   }

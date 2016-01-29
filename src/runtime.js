@@ -8,8 +8,9 @@ class Runtime {
 
   static start (options) {
     return optionsManager.set(options).then(options => {
-      authManager.start(options);
-      if (options.enableEvents) networkManager.start();
+      return authManager.start(options).then(() => {
+        if (options.enableEvents) return networkManager.start();
+      });
     });
   }
 

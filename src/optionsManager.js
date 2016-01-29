@@ -27,14 +27,17 @@ class OptionsManager {
   get () { return this.promise; }
 
   static validate (options) {
-    if (options.type === 'user') {
+    if (options.type === 'user' || options.username || options.password || options.organization) {
+      options.type = 'user';
       if (!options.username) throw new Error('Please specify the username.');
       if (!options.password) throw new Error('Please specify the password.');
       if (!options.organization) throw new Error('Please specify the organization.');
-    } else if (options.type === 'device') {
+    } else if (options.type === 'device' || options.secret) {
+      options.type = 'device';
       if (!options.uuid && !options.allowPairing) throw new Error('Please specify the uuid.');
       if (!options.secret && !options.allowPairing) throw new Error('Please specify the device secret.');
-    } else if (options.type === 'consumerApp') {
+    } else if (options.type === 'consumerApp' || options.apiKey) {
+      options.type = 'consumerApp';
       if (!options.uuid) throw new Error('Please specify the uuid.');
       if (!options.apiKey) throw new Error('Please specify the apiKey');
     } else {
