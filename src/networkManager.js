@@ -21,25 +21,23 @@ class NetworkManager extends EventNode {
     setInterval(() => this.sync(), 10000);
   }
 
+
+
   start () {
-    if (this.started) throw new Error('Network manager already started.');
+    if (this.started) return this.promise;
     this.started = true;
     this.trigger('start');
-    this.listener = authManager.on('update', () => this.refresh());
-    this.refresh();
+    this.listener = authManager.on('update', auth => this.connect(auth));
     return this.promise;
   }
 
   stop () {
     if (!this.started) return;
+    if (this.listener) this.listener.cancel();
     this.trigger('stop');
-    this.listener.cancel();
     this.disconnect();
   }
 
-  refresh () {
-    authManager.get().then(auth => this.connect(auth));
-  }
 
   connect (auth) {
     this.disconnect();
@@ -62,7 +60,7 @@ class NetworkManager extends EventNode {
 
   disconnect () {
     if (!this.socket) return;
-    this.socket.disconnect();
+    this.socket.close();
     this.socket = null;
   }
 

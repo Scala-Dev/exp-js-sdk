@@ -108,9 +108,9 @@ class AuthManager extends EventNode {
     if (!this.running) return;
     setTimeout(() => this.refresh(), (auth.expiration - Date.now()) / 2);
     this.auth = auth;
+    this.trigger('update', auth);
     this.resolve(auth);
     this.promise = Promise.resolve(auth);
-    this.trigger('update', auth);
   }
 
 }
