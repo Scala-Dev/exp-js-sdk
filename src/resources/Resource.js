@@ -16,7 +16,7 @@ class Resource {
 
   static get (uuid, context) {
     if (!uuid) return Promise.reject(new Error('Document uuid is required.'));
-    return api.get(this.path + '/' + uuid).then(document => new this(document, context));
+    return api.get(this.path + '/' + encodeURIComponent(uuid)).then(document => new this(document, context));
   }
 
   static create (document, options, context) {
@@ -40,7 +40,7 @@ class Resource {
   }
 
   get path () {
-    return this.constructor.path + '/' + this.uuid;
+    return this.constructor.path + '/' + encodeURIComponent(this.uuid);
   }
 
   save () {
