@@ -10,7 +10,7 @@ class Feed extends Resource {
   }
 
   getData () {
-    return api.get(this.path + '/' + this.document.uuid + '/data');
+    return api.get(this.documentPath + '/data');
   }
 
 }

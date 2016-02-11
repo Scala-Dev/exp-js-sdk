@@ -26,7 +26,7 @@ class Location extends Resource {
 
   getLayoutUrl () {
     const auth = authManager.getSync();
-    return auth.api.host  + '/api/locations/' + this.document.uuid + '/layout?_rt=' + auth.readToken;
+    return this.documentPath + '/layout?_rt=' + auth.restrictedToken;
   }
 
 }
