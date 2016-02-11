@@ -10,7 +10,7 @@ class Data extends Resource {
   }
 
   get documentPath () {
-    return this.path + '/' + encodeURIComponent(this.document.group) + '/' + encodeURIComponent(this.document.key);
+    return this.constructor.path + '/' + encodeURIComponent(this.document.group) + '/' + encodeURIComponent(this.document.key);
   }
 
   get group () {
