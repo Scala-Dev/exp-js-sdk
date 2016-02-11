@@ -39,12 +39,12 @@ class Resource {
     });
   }
 
-  get path () {
-    return this.constructor.path + '/' + encodeURIComponent(this.uuid);
+  get documentPath () {
+    return this.path + '/' + encodeURIComponent(this.uuid);
   }
 
   save () {
-    return api.patch(this.path, null, this.document).then(document => this.document = document);
+    return api.patch(this.documentPath, null, this.document).then(document => this.document = document);
   }
 
   get uuid () {
@@ -52,7 +52,7 @@ class Resource {
   }
 
   refresh () {
-    return api.get(this.path).then(document => this.document = document);
+    return api.get(this.documentPath).then(document => this.document = document);
   }
 
   getChannel (options) {
