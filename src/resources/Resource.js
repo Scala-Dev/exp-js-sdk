@@ -16,7 +16,7 @@ class Resource {
 
   static get (uuid, context) {
     if (!uuid) return Promise.reject(new Error('Document uuid is required.'));
-    return api.get(this.constructor.path + '/' + encodeURIComponent(uuid)).then(document => new this(document, context));
+    return api.get(this.path + '/' + encodeURIComponent(uuid)).then(document => new this(document, context));
   }
 
   static create (document, options, context) {
@@ -26,14 +26,14 @@ class Resource {
       if (options.sync === true) return resource;
       return Promise.resolve(resource);
     }
-    return api.post(this.constructor.path, null, resource.document).then(document => {
+    return api.post(this.path, null, resource.document).then(document => {
       resource.document = document;
       return resource;
     });
   }
 
   static find (params, context) {
-    return api.get(this.constructor.path, params).then(query => {
+    return api.get(this.path, params).then(query => {
       const results = query.results.map(document => new this(document, context));
       return { total: query.total, results: results };
     });
