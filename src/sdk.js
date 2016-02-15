@@ -31,10 +31,12 @@ class Sdk {
   }
 
   start (options) {
-    runtime.start(options);
+    return runtime.start(options);
   }
 
-  stop () { return runtime.stop(); }
+  stop () {
+    return runtime.stop();
+  }
 
   on (name, callback) { return events.on(name, callback, this.context); }
   getDelegate (context) { return new Sdk(context); }
