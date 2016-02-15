@@ -1,6 +1,6 @@
 'use strict';
 
-const EventNode = require('./EventNode');
+const EventNode = require('event-node');
 
 class Channel {
 

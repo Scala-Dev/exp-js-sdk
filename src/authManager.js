@@ -1,8 +1,7 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-
-const EventNode = require('./EventNode');
+const EventNode = require('event-node');
 
 class AuthManager extends EventNode {
 

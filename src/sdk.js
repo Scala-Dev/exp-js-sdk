@@ -8,7 +8,7 @@ const authManager = require('./authManager');
 const api = require('./api');
 const ChannelDelegate = require('./ChannelDelegate');
 
-const EventNode = require('./EventNode');
+const EventNode = require('event-node');
 
 class SdkEvents extends EventNode {
 
