@@ -16,7 +16,7 @@ class Resource {
 
   static get (uuid, context) {
     if (!uuid) return Promise.reject(new Error('Document uuid is required.'));
-    return api.get(this.path + '/' + uuid).then(document => new this(document, context));
+    return api.get(this.path + '/' + encodeURIComponent(uuid)).then(document => new this(document, context));
   }
 
   static create (document, options, context) {
@@ -39,12 +39,12 @@ class Resource {
     });
   }
 
-  get path () {
-    return this.constructor.path + '/' + this.uuid;
+  get documentPath () {
+    return this.constructor.path + '/' + encodeURIComponent(this.uuid);
   }
 
   save () {
-    return api.patch(this.path, null, this.document).then(document => this.document = document);
+    return api.patch(this.documentPath, null, this.document).then(document => this.document = document);
   }
 
   get uuid () {
@@ -52,7 +52,7 @@ class Resource {
   }
 
   refresh () {
-    return api.get(this.path).then(document => this.document = document);
+    return api.get(this.documentPath).then(document => this.document = document);
   }
 
   getChannel (options) {

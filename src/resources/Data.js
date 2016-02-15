@@ -9,8 +9,8 @@ class Data extends Resource {
     return '/api/data';
   }
 
-  get path () {
-    return this.constructor.path + '/' + this.document.group + '/' + this.document.key;
+  get documentPath () {
+    return this.constructor.path + '/' + encodeURIComponent(this.document.group) + '/' + encodeURIComponent(this.document.key);
   }
 
   get group () {
@@ -29,9 +29,9 @@ class Data extends Resource {
     this.document.value = value;
   }
 
-  static get (key, group, context) {
+  static get (group, key, context) {
     if (!key || !group) return Promise.reject(new Error('Key and group are required.'));
-    return api.get(this.path + '/' + key + '/' + group).then(document => {
+    return api.get(this.documentPath).then(document => {
       return new this(document, context);
     });
   }
@@ -40,7 +40,7 @@ class Data extends Resource {
     options = options || {};
     const resource = new this(document, context);
     if (options.save === false) return resource;
-    return api.post(this.path + '/' + document.key + '/' + document.group, null, resource.document).then(document => {
+    return api.post(resource.documentPath, null, resource.document).then(document => {
       resource.document = document;
       return resource;
     });
