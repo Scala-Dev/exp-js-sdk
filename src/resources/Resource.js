@@ -6,7 +6,9 @@ const ChannelDelegate = require('../ChannelDelegate');
 class Resource {
 
   constructor (document, context) {
+    if (document && document.__isResource) document = document.document;
     this.document = document || {};
+    this.isResource = true;
     this.context = context;
   }
 

@@ -1,8 +1,9 @@
 'use strict';
 
 const _ = require('lodash');
+
 const Resource = require('./Resource');
-const authManager = require('../authManager');
+const runtime = require('../runtime');
 
 class Content extends Resource {
 
@@ -49,7 +50,7 @@ class Content extends Resource {
   }
 
   getUrl () {
-    const auth = authManager.getSync();
+    const auth = runtime.auth;
     if (this.subtype === 'scala:content:file') {
       return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '?_rt=' + auth.restrictedToken;
     } else if (this.subtype === 'scala:content:app') {
@@ -61,7 +62,7 @@ class Content extends Resource {
   }
 
   getVariantUrl (name) {
-    const auth = authManager.getSync();
+    const auth = runtime.auth;
     if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
       const query = '?variant=' + encodeURIComponent(name) + '&_rt=' + auth.restrictedToken;
       return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;

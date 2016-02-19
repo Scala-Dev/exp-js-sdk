@@ -11,7 +11,3 @@ before(() => {
     host: 'http://localhost:9000'
   });
 });
-
-after(() => {
-  exp.stop();
-});

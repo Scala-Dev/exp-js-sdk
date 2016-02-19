@@ -1,44 +1,70 @@
 'use strict';
+/* jshint -W074 */
+
+const EventNode = require('event-node');
+const _ = require('lodash');
 
 const resources = require('./resources');
-
 const runtime = require('./runtime');
-const networkManager = require('./networkManager');
-const authManager = require('./authManager');
+const network = require('./network');
 const api = require('./api');
 const ChannelDelegate = require('./ChannelDelegate');
 
-const EventNode = require('event-node');
 
-class SdkEvents extends EventNode {
+class Events extends EventNode {
 
   constructor () {
     super();
-    authManager.on('update', auth => this.trigger('authenticated', auth));
-    authManager.on('error', error => this.trigger('error', error));
-    networkManager.on('online', () => this.trigger('online'));
-    networkManager.on('offline', () => this.trigger('offline'));
+    runtime.on('update', auth => this.trigger('authenticated', auth));
+    runtime.on('error', error => this.trigger('error', error));
+    network.on('online', () => this.trigger('online'));
+    network.on('offline', () => this.trigger('offline'));
   }
 
 }
-
-const events = new SdkEvents();
 
 class Sdk {
 
   constructor (context) {
     this.context = context;
+    if (!this.constructor.events) this.constructor.events = new Events();
   }
 
   start (options) {
-    return runtime.start(options);
+    if (this.constructor.started) return Promise.reject(new Error('Runtime already started.'));
+    this.constructor.started = true;
+    const defaults = { host: 'https://api.goexp.io', enableEvents: true };
+    options = _.merge({}, defaults, options);
+    if (options.type === 'user' || options.username || options.password || options.organization) {
+      options.type = 'user';
+      if (!options.username) return Promise.reject(new Error('Please specify the username.'));
+      if (!options.password) return Promise.reject(new Error('Please specify the password.'));
+      if (!options.organization) return Promise.reject(new Error('Please specify the organization.'));
+    } else if (options.type === 'device' || options.secret) {
+      options.type = 'device';
+      if (!options.uuid && !options.allowPairing) return Promise.reject(new Error('Please specify the uuid.'));
+      if (!options.secret && !options.allowPairing) return Promise.reject(new Error('Please specify the device secret.'));
+    } else if (options.type === 'consumerApp' || options.apiKey) {
+      options.type = 'consumerApp';
+      if (!options.uuid) return Promise.reject(new Error('Please specify the uuid.'));
+      if (!options.apiKey) return Promise.reject(new Error('Please specify the apiKey'));
+    } else {
+      return Promise.reject(new Error('Please specify authentication type.'));
+    }
+    if (options.enableEvents) network.start();
+    return new Promise((resolve, reject) => {
+      if (options.enableEvents) {
+        network.start(options);
+        network.on('online', resolve);
+      } else {
+        runtime.on('update', resolve);
+      }
+      runtime.on('error', reject);
+      runtime.start(options);
+    });
   }
 
-  stop () {
-    return runtime.stop();
-  }
-
-  on (name, callback) { return events.on(name, callback, this.context); }
+  on (name, callback) { return this.constuctor.events.on(name, callback, this.context); }
   getDelegate (context) { return new Sdk(context); }
 
   get (path, params) { return api.get(path, params); }
@@ -78,14 +104,11 @@ class Sdk {
   get EventNode () { return EventNode; }
 
 
-  get isConnected () { return networkManager.isConnected; }
+  get isConnected () { return network.isConnected; }
 
-  get auth () { return authManager.getSync(); }
-  getAuth () { return authManager.get(); }
+  get auth () { return runtime.auth; }
 
-  getChannel (name, options) { return new ChannelDelegate(name, options, this.context); }
-
-  _setAuth (auth) { return authManager.set(auth); }
+  getChannel (name, options) { return ChannelDelegate.create(name, options, this.context); }
 
 
 }

@@ -3,17 +3,15 @@
 const io = require('socket.io-client');
 const Channel = require('./Channel');
 const api = require('./api');
+const runtime = require('./runtime');
 
 const EventNode = require('event-node');
 
-const authManager = require('./authManager');
 
-
-class NetworkManager extends EventNode {
+class Network extends EventNode {
 
   constructor () {
     super();
-    this.started = false;
     this.socket = null;
     this.channels = {};
     this.subscriptions = {};
@@ -21,34 +19,20 @@ class NetworkManager extends EventNode {
     setInterval(() => this.sync(), 10000);
   }
 
-
-
   start () {
-    if (this.started) return this.promise;
-    this.started = true;
-    this.trigger('start');
-    this.listener = authManager.on('update', auth => this.connect(auth));
-    return this.promise;
+    runtime.on('update', () => this.connect());
   }
 
-  stop () {
-    if (!this.started) return;
-    if (this.listener) this.listener.cancel();
-    this.trigger('stop');
+  connect () {
     this.disconnect();
-  }
-
-
-  connect (auth) {
-    this.disconnect();
-    this.socket = io(auth.network.host, {
+    this.socket = io(runtime.auth.network.host, {
       forceNew: true,
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 20000,
       timeout: 20000,
       reconnectionAttempts: Infinity,
-      query: `token=${ auth.token }`
+      query: `token=${ runtime.auth.token }`
     });
     this.socket.on('broadcast', message => this.onBroadcast(message));
     this.socket.on('channels', ids => this.onChannels(ids));
@@ -152,5 +136,5 @@ class NetworkManager extends EventNode {
 
 }
 
-module.exports = new NetworkManager();
+module.exports = new Network();
 
