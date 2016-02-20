@@ -73,7 +73,6 @@ class Runtime extends EventNode {
     setTimeout(() => this.refresh(id), (auth.expiration - Date.now()) / 2);
     this.auth = auth;
     this.trigger('update', auth);
-    if (this.options.enableEvents) this.network.connect(this.auth);
   }
 
 }

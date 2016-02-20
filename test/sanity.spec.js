@@ -107,6 +107,10 @@ describe('Sanity Tests', () => {
     return promise;
   });
 
+  it('should be able to listen for sdk events without an error (regression).', () => {
+    return exp.on('update', () => {});
+  });
+
 /*
   it('should receive device update event', () => {
     return exp.createDevice({}).then(device => {

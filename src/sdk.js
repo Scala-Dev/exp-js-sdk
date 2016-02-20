@@ -64,7 +64,7 @@ class Sdk {
     });
   }
 
-  on (name, callback) { return this.constuctor.events.on(name, callback, this.context); }
+  on (name, callback) { return this.constructor.events.on(name, callback, this.context); }
   getDelegate (context) { return new Sdk(context); }
 
   get (path, params) { return api.get(path, params); }
