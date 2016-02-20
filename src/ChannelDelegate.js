@@ -12,7 +12,7 @@ class ChannelDelegate {
     if (!runtime.auth) throw new Error('Not authenticated.');
     const array = [runtime.auth.identity.organization, name, (options.system ? 1 : 0), (options.consumer ? 1: 0)];
     const string = JSON.stringify(array);
-    if (typeof window === 'undefined') id (new Buffer(string)).toString('base64');
+    if (typeof window === 'undefined') id = (new Buffer(string)).toString('base64');
     else id = btoa(string);
     return new this(id, context);
   }

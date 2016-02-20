@@ -2,16 +2,16 @@
 
 const EventNode = require('event-node');
 
-class Channel {
+class Channel extends EventNode {
 
   constructor (id, network) {
+    super();
     this.id = id;
     this.network = network;
-    this.events = new EventNode();
   }
 
   listen (name, callback, context) {
-    return this.events.on(name, (payload, message) => {
+    return this.on(name, (payload, message) => {
       callback(payload, response => {
         return Promise.resolve().then(() => response).then(() => {
           return this.network.respond(message.id, message.channel, response);
@@ -21,11 +21,11 @@ class Channel {
   }
 
   get hasListeners () {
-    return this.events.hasListeners;
+    return Object.keys(this.events.namespaces).length > 0;
   }
 
   receive (message) {
-    this.events.trigger(message.name, message.payload, message);
+    this.trigger(message.name, message.payload, message);
   }
 
 }

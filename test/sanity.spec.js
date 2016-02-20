@@ -3,7 +3,7 @@
 const exp = require('../');
 
 
-describe('basic', () => {
+describe('Sanity Tests', () => {
   let name;
   let promise;
   let resolve;
