@@ -1,36 +1,33 @@
 'use strict';
+/* jshint -W074 */
 
-const networkManager = require('./networkManager');
-const authManager = require('./authManager');
+const network = require('./network');
+const runtime = require('./runtime');
 
 class ChannelDelegate {
 
-  constructor (name, options, context) {
-    this.name = name;
-    this.options = options || {};
+  static create (name, options, context) {
+    options = options || {};
+    let id;
+    if (!runtime.auth) throw new Error('Not authenticated.');
+    const array = [runtime.auth.identity.organization, name, (options.system ? 1 : 0), (options.consumer ? 1: 0)];
+    const string = JSON.stringify(array);
+    if (typeof window === 'undefined') id = (new Buffer(string)).toString('base64');
+    else id = btoa(string);
+    return new this(id, context);
+  }
+
+  constructor (id, context) {
+    this.id = id;
     this.context = context;
   }
 
   broadcast (name, payload, timeout) {
-    return this.generateId().then(id => {
-      return networkManager.broadcast(name, id, payload, timeout);
-    });
+    return network.broadcast(name, this.id, payload, timeout);
   }
 
   listen (name, callback) {
-    return this.generateId().then(id => {
-      return networkManager.listen(name, id, callback, this.context);
-    });
-  }
-
-  generateId () {
-    return authManager.get().then(auth => {
-      const array = [auth.identity.organization, this.name, this.options.system ? 1 : 0, this.options.consumer ? 1: 0];
-      const string = JSON.stringify(array);
-      if (typeof window === 'undefined') return (new Buffer(string)).toString('base64');
-      else return btoa(string);
-    });
-
+    return network.listen(name, this.id, callback, this.context);
   }
 
 }

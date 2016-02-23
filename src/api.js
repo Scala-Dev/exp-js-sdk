@@ -1,32 +1,25 @@
 'use strict';
 
 const fetch = require('isomorphic-fetch');
-
-const authManager = require('./authManager');
-
+const runtime = require('./runtime');
 
 
 class Api {
 
   fetch (path, options) {
-    return authManager.get().then(auth => {
-      const url = auth.api.host + path;
-      options.cors = true;
-      options.credentials = 'include';
-      options.headers = options.headers || {};
-      options.headers.Authorization = 'Bearer ' + auth.token;
-      options.headers.Accept = 'application/json';
-      return fetch(url, options).then(response => {
-        return response.json().then(body => {
-          body = body || {};
-          if (!response.ok) throw new Error(body.code || 'unknownError');
-          return body;
-        });
+    if (!runtime.auth) return Promise.reject(new Error('Not authenticated.'));
+    const url = runtime.auth.api.host + path;
+    options.cors = true;
+    options.credentials = 'include';
+    options.headers = options.headers || {};
+    options.headers.Authorization = 'Bearer ' + runtime.auth.token;
+    options.headers.Accept = 'application/json';
+    return fetch(url, options).then(response => {
+      return response.json().then(body => {
+        body = body || {};
+        if (!response.ok) throw new Error(body.code || 'unknownError');
+        return body;
       });
-    }).catch(error => {
-      console.log(error.stack);
-      console.log(error);
-      throw error;
     });
   }
 

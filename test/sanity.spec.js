@@ -3,7 +3,7 @@
 const exp = require('../');
 
 
-describe('basic', () => {
+describe('Sanity Tests', () => {
   let name;
   let promise;
   let resolve;
@@ -105,6 +105,10 @@ describe('basic', () => {
     });
     setTimeout(resolve, 1000);
     return promise;
+  });
+
+  it('should be able to listen for sdk events without an error (regression).', () => {
+    return exp.on('update', () => {});
   });
 
 /*

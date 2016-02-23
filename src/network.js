@@ -3,57 +3,51 @@
 const io = require('socket.io-client');
 const Channel = require('./Channel');
 const api = require('./api');
+const runtime = require('./runtime');
 
-const EventNode = require('./EventNode');
-
-const authManager = require('./authManager');
+const EventNode = require('event-node');
 
 
-class NetworkManager extends EventNode {
+class Subscription {
+
+  constructor () {
+    this.promise = new Promise(resolve => { this.resolve = () => { this.status = true; resolve(); }});
+    this.status = false;
+  }
+
+}
+
+
+
+class Network extends EventNode {
 
   constructor () {
     super();
-    this.started = false;
     this.socket = null;
     this.channels = {};
     this.subscriptions = {};
     this.promise = new Promise(resolve => this.resolve = resolve);
-    setInterval(() => this.sync(), 10000);
   }
-
-
 
   start () {
-    if (this.started) return this.promise;
-    this.started = true;
-    this.trigger('start');
-    this.listener = authManager.on('update', auth => this.connect(auth));
-    return this.promise;
+    runtime.on('update', () => this.connect());
   }
 
-  stop () {
-    if (!this.started) return;
-    if (this.listener) this.listener.cancel();
-    this.trigger('stop');
+  connect () {
     this.disconnect();
-  }
-
-
-  connect (auth) {
-    this.disconnect();
-    this.socket = io(auth.network.host, {
+    this.socket = io(runtime.auth.network.host, {
       forceNew: true,
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 20000,
       timeout: 20000,
       reconnectionAttempts: Infinity,
-      query: `token=${ auth.token }`
+      query: `token=${ runtime.auth.token }`
     });
     this.socket.on('broadcast', message => this.onBroadcast(message));
     this.socket.on('channels', ids => this.onChannels(ids));
     this.socket.on('connect', () => this.onOnline());
-    this.socket.on('subscribed', ids => this.onSubscribed(ids));
+    this.socket.on('subscribed', ids => this.onChannels(ids));
     this.socket.on('connect_error', () => this.onOffline());
     this.socket.on('error', error => this.onError(error));
   }
@@ -74,8 +68,11 @@ class NetworkManager extends EventNode {
   }
 
   listen (name, channel, callback, context) {
-    if (!this.subscriptions[channel]) this.subscribe([channel]);
     if (!this.channels[channel]) this.channels[channel] = new Channel(channel, this);
+    if (!this.subscriptions[channel]) {
+      this.subscriptions[channel] = new Subscription();
+      this.socket.emit('subscribe', [channel]);
+    }
     const listener = this.channels[channel].listen(name, callback, context);
     return this.subscriptions[channel].promise.then(() => listener);
   }
@@ -85,45 +82,48 @@ class NetworkManager extends EventNode {
   }
 
   sync () {
-    const toSubscribe = [];
-    const toUnsubscribe = [];
-    Object.keys(this.channels).forEach(id => {
+    if (!this.socket || !this.socket.isConnected) return;
+    const subscribe = {};
+    const unsubscribe = {};
+    Object.keys(this.channels).then(id => {
       if (!this.channels[id].hasListeners) delete this.channels[id];
-      else if (!this.subscriptions[id]) toSubscribe.push(id);
+      else if (!this.subscriptions[id]) this.subscriptions[id] = new Subscription();
+      subscribe[id] = true;
     });
-    Object.keys(this.subscriptions).forEach(id => {
-      if (!this.channels[id]) toUnsubscribe.push(id);
+    Object.keys(this.subscriptions).then(id => {
+      if (this.channel[id]) {
+        if (this.subscriptions.status) unsubscribe[id] = true;
+        delete this.subscription[id];
+      } else if (this.subscriptions[id].status) delete subscribe[id];
     });
-    if (toSubscribe.length > 0) this.subscribe(toSubscribe);
-    if (toUnsubscribe.length > 0) this.unsubscribe(toUnsubscribe);
+    if (Object.keys(subscribe).length > 0) this.socket.emit('subscribe', Object.keys(subscribe));
+    if (Object.keys(unsubscribe).length > 0) this.socket.emit('unsubscribe', Object.keys(unsubscribe));
   }
 
   onChannels (ids) {
-    const old = this.subscriptions;
-    this.subscriptions = {};
     ids.forEach(id => {
-      if (old[id]) old[id].resolve();
-      this.subscriptions[id] = {};
-      this.subscriptions[id].promise = new Promise(a => this.subscriptions[id].resolve = a);
+      if (!this.subscriptions[id]) this.subscriptions[id] = new Subscription();
+      this.subscriptions[id].resolve();
+    });
+    this.sync();
+  }
+
+  onSubscribed (ids) {
+    ids.forEach(id => {
+      if (!this.subscriptions[id]) this.subscriptions[id] = new Subscription();
+      this.subscriptions[id].resolve();
     });
     this.sync();
   }
 
   onBroadcast (message) {
-    if (!this.channels[message.channel]) return;
+    if (!this.channels[message.channel]) return this.unsubscribe([message.channel]);
     this.channels[message.channel].receive(message);
-  }
-
-  onSubscribed (ids) {
-    ids.forEach(id => {
-      if (this.subscriptions[id]) this.subscriptions[id].resolve();
-    });
   }
 
   onOnline () {
     this.trigger('online');
     this.socket.emit('channels');
-    this.resolve();
   }
 
   onOffline () {
@@ -132,25 +132,10 @@ class NetworkManager extends EventNode {
 
   onError (error) {
     this.trigger('error', error);
-    this.reject(error);
-    this.disconnect();
-  }
-
-  unsubscribe (ids) {
-    ids.forEach(id => delete this.subscriptions[id]);
-    this.socket.emit('unsubscribe', ids);
-  }
-
-  subscribe (ids) {
-    ids.forEach(id => {
-      const subscription = {};
-      subscription.promise = new Promise(a => subscription.resolve = a);
-      this.subscriptions[id] = subscription;
-    });
-    this.socket.emit('subscribe', ids);
+    setTimeout(() => this.connect(), 10000);
   }
 
 }
 
-module.exports = new NetworkManager();
+module.exports = new Network();
 

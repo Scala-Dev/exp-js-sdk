@@ -2,7 +2,7 @@
 
 const Resource = require('./Resource');
 const Zone = require('./Zone');
-const authManager = require('../authManager');
+const runtime = require('../runtime');
 
 class Location extends Resource {
 
@@ -25,8 +25,7 @@ class Location extends Resource {
   }
 
   getLayoutUrl () {
-    const auth = authManager.getSync();
-    return this.documentPath + '/layout?_rt=' + auth.restrictedToken;
+    return this.documentPath + '/layout?_rt=' + runtime.auth.restrictedToken;
   }
 
 }
