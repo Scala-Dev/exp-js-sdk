@@ -1,49 +1,80 @@
 'use strict';
+/* jshint -W074 */
 
-const config = require('./config');
-const credentials = require('./credentials');
-const socket = require('./socket');
-const utilities = require('./utilities');
+const jwt = require('jsonwebtoken');
+const EventNode = require('event-node');
 
-const events = new utilities.EventNode();
-var resolve_;
 
-socket.events.on('online', () => {
-  events.trigger('online');
-  if (!resolve_) return;
-  resolve_();
-  resolve_ = null;
-});
+class Runtime extends EventNode {
 
-socket.events.on('offline', () => {
-  events.trigger('offline');
-});
-
-module.exports.start = options => {
-  options = options || {};
-  config.host = options.host || config.host;
-  if ((options.uuid || options.deviceUuid) && options.secret) {
-    credentials.setDeviceCredentials(options.uuid || options.deviceUuid, options.secret);
-  } else if (options.networkUuid && options.apiKey) {
-    credentials.setNetworkCredentials(options.networkUuid, options.apiKey);
-  } else if (options.username && options.password && options.organization) {
-    credentials.setUserCredentials(options.username, options.password, options.organization);
-  } else if (options.token) {
-    credentials.setToken(options.token);
+  constructor () {
+    super();
+    this.auth = null;
   }
-  return new Promise((resolve, reject) => {
-    resolve_ = resolve;
-    return credentials.getToken()
-      .then(token => {
-        socket.connect({ token: token, host: config.host });
-      })
-      .catch(reject)
-  });
-};
 
-module.exports.stop = () => {
-  credentials.clear();
-  socket.disconnect();
-};
+  start (options) {
+    this.options = options;
+    this.login();
+  }
 
-module.exports.on = events.on;
+  getLoginPayload () {
+    if (this.options.type === 'user') {
+      return {
+        type: 'user',
+        username: this.options.username,
+        password: this.options.password,
+        organization: this.options.organization
+      };
+    } else if (this.options.type === 'device') {
+      return {
+        token: jwt.sign({
+          type: 'device',
+          uuid: this.options.uuid,
+          allowPairing: this.options.allowPairing,
+        }, this.options.secret || '_')
+      };
+    } else if (this.options.type === 'consumerApp') {
+      return {
+        token : jwt.sign({
+          type: 'consumerApp',
+          uuid: this.options.uuid,
+        }, this.options.apiKey)
+      };
+    }
+  }
+
+  login () {
+    fetch(this.options.host + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(this.getLoginPayload())
+    }).then(response => {
+      if (response.status === 401) return this.trigger('error', new Error('Authentication failed.'));
+      else if (!response.ok) throw new Error();
+      return response.json().then(auth => this.update(auth));
+    }).catch(() => setTimeout(() => this.login(), 5000));
+  }
+
+  refresh () {
+    fetch(this.options.host + '/api/auth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + this.auth.token
+      }
+    }).then(response => {
+      if (response.status === 401) this.login();
+      else if (!response.ok) throw new Error();
+      else return response.json().then(auth => this.update(auth));
+    }).catch(() => setTimeout(() => this.refresh(), 5000));
+  }
+
+  update (auth, id) {
+    setTimeout(() => this.refresh(id), (auth.expiration - Date.now()) / 2);
+    this.auth = auth;
+    this.trigger('update', auth);
+  }
+
+}
+
+module.exports = new Runtime();
