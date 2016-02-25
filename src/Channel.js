@@ -21,7 +21,7 @@ class Channel extends EventNode {
   }
 
   get hasListeners () {
-    return Object.keys(this.events.namespaces).length > 0;
+    return Object.keys(this.namespaces).length > 0;
   }
 
   receive (message) {
