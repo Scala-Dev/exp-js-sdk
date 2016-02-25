@@ -8,13 +8,12 @@ const runtime = require('./runtime');
 const EventNode = require('event-node');
 
 
-class Subscription {
+class ActiveSubscription {}
 
+class PendingSubscription {
   constructor () {
-    this.promise = new Promise(resolve => { this.resolve = () => { this.status = true; resolve(); }});
-    this.status = false;
+    this.promise = new Promise(resolve => this.resolve = resolve);
   }
-
 }
 
 
@@ -25,8 +24,8 @@ class Network extends EventNode {
     super();
     this.socket = null;
     this.channels = {};
-    this.subscriptions = {};
-    this.promise = new Promise(resolve => this.resolve = resolve);
+    this.activeSubscriptions = {};
+    this.pendingSubscriptions = {};
   }
 
   start () {
@@ -45,9 +44,9 @@ class Network extends EventNode {
       query: `token=${ runtime.auth.token }`
     });
     this.socket.on('broadcast', message => this.onBroadcast(message));
-    this.socket.on('channels', ids => this.onChannels(ids));
+    this.socket.on('channels', ids => { this.onChannels(ids); this.sync(); });
     this.socket.on('connect', () => this.onOnline());
-    this.socket.on('subscribed', ids => this.onChannels(ids));
+    this.socket.on('subscribed', ids => { this.onSubscribed(ids); this.sync(); });
     this.socket.on('connect_error', () => this.onOffline());
     this.socket.on('error', error => this.onError(error));
   }
@@ -68,13 +67,15 @@ class Network extends EventNode {
   }
 
   listen (name, channel, callback, context) {
+    let promise = Promise.resolve();
     if (!this.channels[channel]) this.channels[channel] = new Channel(channel, this);
-    if (!this.subscriptions[channel]) {
-      this.subscriptions[channel] = new Subscription();
-      this.socket.emit('subscribe', [channel]);
-    }
     const listener = this.channels[channel].listen(name, callback, context);
-    return this.subscriptions[channel].promise.then(() => listener);
+    if (!this.activeSubscriptions[channel]) {
+      if (!this.pendingSubscriptions[channel]) this.pendingSubscriptions[channel] = new PendingSubscription();
+      promise = this.pendingSubscriptions[channel].promise;
+    }
+    this.sync();
+    return promise.then(() => listener);
   }
 
   respond (id, channel, payload) {
@@ -82,38 +83,45 @@ class Network extends EventNode {
   }
 
   sync () {
-    if (!this.socket || !this.socket.isConnected) return;
-    const subscribe = {};
-    const unsubscribe = {};
-    Object.keys(this.channels).then(id => {
+    if (!this.socket || !this.socket.connected) return;
+    const subscribe = Object.keys(this.channels).filter(id => {
       if (!this.channels[id].hasListeners) delete this.channels[id];
-      else if (!this.subscriptions[id]) this.subscriptions[id] = new Subscription();
-      subscribe[id] = true;
+      else if (this.activeSubscriptions[id]) return;
+      else if (!this.pendingSubscriptions[id]) this.pendingSubscriptions[id] = new PendingSubscription();
+      return true;
     });
-    Object.keys(this.subscriptions).then(id => {
-      if (this.channel[id]) {
-        if (this.subscriptions.status) unsubscribe[id] = true;
-        delete this.subscription[id];
-      } else if (this.subscriptions[id].status) delete subscribe[id];
+    const unsubscribe = Object.keys(this.activeSubscriptions).filter(id => {
+      if (!this.channels[id]) {
+        delete this.activeSubscriptions[id];
+        return true;
+      }
     });
-    if (Object.keys(subscribe).length > 0) this.socket.emit('subscribe', Object.keys(subscribe));
-    if (Object.keys(unsubscribe).length > 0) this.socket.emit('unsubscribe', Object.keys(unsubscribe));
+    if (subscribe.length > 0) this.socket.emit('subscribe', subscribe);
+    if (unsubscribe.length > 0) this.socket.emit('unsubscribe', unsubscribe);
   }
 
   onChannels (ids) {
-    ids.forEach(id => {
-      if (!this.subscriptions[id]) this.subscriptions[id] = new Subscription();
-      this.subscriptions[id].resolve();
+    this.onSubscribed(ids);
+    const map = {};
+    ids.forEach(id => map[id] = true);
+
+    // Remove subscriptions that are no longer active.
+    Object.keys(this.activeSubscriptions).forEach(id => {
+      if (!map[id]) delete this.activeSubscriptions[id];
     });
-    this.sync();
+
   }
 
+
   onSubscribed (ids) {
+    // Resolve pending subscriptions.
     ids.forEach(id => {
-      if (!this.subscriptions[id]) this.subscriptions[id] = new Subscription();
-      this.subscriptions[id].resolve();
+      if (!this.activeSubscriptions[id]) this.activeSubscriptions[id] = new ActiveSubscription();
+      if (this.pendingSubscriptions[id]) {
+        this.pendingSubscriptions[id].resolve();
+        delete this.pendingSubscriptions[id];
+      }
     });
-    this.sync();
   }
 
   onBroadcast (message) {
