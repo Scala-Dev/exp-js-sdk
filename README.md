@@ -256,3 +256,205 @@ An arbitrary object that contains any data you want.
 
 #### data.group
 The data item's group.
+
+
+# Sending Messages on the EXP Network
+
+The EXP network facilitates real time messaging between devices within an organization.
+
+## Channels
+
+exp.getChannel(name, options)
+
+```name``` is the name of the channel and ```options``` is 
+
+options.system
+options.consumer
+
+## Broadcasting
+
+
+
+
+# SDK Reference
+
+  start (options) {
+    if (this.constructor.started) return Promise.reject(new Error('Runtime already started.'));
+    this.constructor.started = true;
+    const defaults = { host: 'https://api.goexp.io', enableEvents: true };
+    options = _.merge({}, defaults, options);
+    if (options.type === 'user' || options.username || options.password || options.organization) {
+      options.type = 'user';
+      if (!options.username) return Promise.reject(new Error('Please specify the username.'));
+      if (!options.password) return Promise.reject(new Error('Please specify the password.'));
+      if (!options.organization) return Promise.reject(new Error('Please specify the organization.'));
+    } else if (options.type === 'device' || options.secret) {
+      options.type = 'device';
+      if (!options.uuid && !options.allowPairing) return Promise.reject(new Error('Please specify the uuid.'));
+      if (!options.secret && !options.allowPairing) return Promise.reject(new Error('Please specify the device secret.'));
+    } else if (options.type === 'consumerApp' || options.apiKey) {
+      options.type = 'consumerApp';
+      if (!options.uuid) return Promise.reject(new Error('Please specify the uuid.'));
+      if (!options.apiKey) return Promise.reject(new Error('Please specify the apiKey'));
+    } else {
+      return Promise.reject(new Error('Please specify authentication type.'));
+    }
+    if (options.enableEvents) network.start();
+    return new Promise((resolve, reject) => {
+      if (options.enableEvents) {
+        network.start(options);
+        network.on('online', resolve);
+      } else {
+        runtime.on('update', resolve);
+      }
+      runtime.on('error', reject);
+      runtime.start(options);
+    });
+  }
+
+  on (name, callback) { return this.constructor.events.on(name, callback, this.context); }
+  getDelegate (context) { return new Sdk(context); }
+
+  get (path, params) { return api.get(path, params); }
+  post (path, params, body) { return api.post(path, params, body); }
+  patch(path, params, body) { return api.patch(path, params, body); }
+  put (path, params, body) { return api.put(path, params, body); }
+  delete (path, params) { return api.post(path, params); }
+
+  getDevice (uuid) { return resources.Device.get(uuid, this.context); }
+  findDevices (params) { return resources.Device.find(params, this.context); }
+  createDevice (document, options) { return resources.Device.create(document, options, this.context); }
+
+  getThing (uuid) { return resources.Thing.get(uuid, this.context); }
+  findThings (params) { return resources.Thing.find(params, this.context); }
+  createThing (document, options) { return resources.Thing.create(document, options, this.context); }
+
+  getExperience (uuid) { return resources.Experience.get(uuid,  this.context); }
+  findExperiences (params) { return resources.Experience.find(params, this.context); }
+  createExperience (document, options) { return resources.Experience.create(document, options, this.context); }
+
+  getLocation (uuid) { return resources.Location.get(uuid, this.context); }
+  findLocations (params) { return resources.Location.find(params, this.context); }
+  createLocation (document, options) { return resources.Location.create(document, options, this.context); }
+
+  getData (key, group) { return resources.Data.get(key, group, this.context); }
+  findData (params) { return resources.Data.find(params, this.context); }
+  createData (document, options) { return resources.Data.create(document, options, this.context); }
+
+  getContent (uuid) { return resources.Content.get(uuid, this.context); }
+  findContent (params) { return resources.Content.find(params, this.context); }
+
+  getFeed (uuid) { return resources.Feed.get(uuid, this.context); }
+  findFeeds (params) { return resources.Feed.find(params, this.context); }
+  createFeed (document, options) { return resources.Feed.create(document, options, this.context); }
+
+
+  get EventNode () { return EventNode; }
+
+
+  get isConnected () { return network.isConnected; }
+
+  get auth () { return runtime.auth; }
+
+  getChannel (name, options) { return ChannelDelegate.create(name, options, this.context); }
+
+
+}
+
+
+
+
+
+# Communicating on the EXP Network
+
+The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
+
+### Channels
+
+All messages on the EXP network are sent over a channel. Channels have a name, and two flags: ```system``` and ```consumer```.
+
+```javascript
+const channel = exp.getChannel("my_channel", { system: false, consumer: false })
+```
+Set ```system``` to ```true``` to get a system channel. You cannot send messages on a system channels but can listen for system notifications, such as updates to API resources.
+
+Set ```consumer``` to ```true``` to get a consumer channel. Consumer devices can only listen or broadcast on consumer channels. When ```consumer``` is ```false``` you will not receive consumer device broadcasts and consumer devices will not be able to hear your broadcasts.
+
+Both ```system``` and ```consumer``` default to ```false```.
+
+
+### Broadcasting
+
+Use the broadcast method of a channel object to send a named message with a JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The call will return a promise that will resolve after the given timeout (or immediately). The promise will resolve to an array of the received JSON responses to the broadcast.
+
+```javascript
+exp.getChannel("myChannel").broadcast('Hello!', [1, 2, 3], 3000).then(function (responses) {
+  console.log('I got a response!')
+  console.log(responses);
+});
+```
+
+
+### Listening
+
+To listen for broadcasts, call the listen method of a channel object. 
+
+```javascript
+channel = exp.getChannel("myChannel").listen('Hello!', function (payload) {
+  console.log('I received a broadcast!');
+  console.log(payload);
+});
+```
+
+The listen method takes a function as the second argument. When a broadcast is received, this function will be called with the broadcast payload as the first argument.
+
+
+
+
+### Responding
+
+To respond to broadcast add a second argument to the listener callback. The second argument is a method that can be invoked with a JSON serializable variable. Invoking this method will respond to the broadcast with the given data.
+
+
+```javascript
+channel = exp.getChannel("myChannel").listen('Hello!', function (payload, respond) {
+  console.log('I\'m going to respond!');
+  respond('I got your message!');
+});
+```
+
+
+### Full Example
+
+```javascript
+
+var channel = exp.getChannel('myChannel');
+channel.listen('get_random_number', function (payload, respond) {
+  respond(Math.random());
+});
+
+channel.broadcast('get_random_number', null, 5000).then(function (numbers) {
+  console.log('Here is a list of random numbers I got from others!');
+  
+});
+
+
+
+```python
+
+channel = exp.get_channel("my_channel")
+listener = channel.listen(name="my_custom_event")
+
+while True:
+  broadcast = listener.wait(5)
+  if broadcast and broadcast.payload is "hello!":
+    print "Responding to broadcast."
+    broadcast.respond("Nice to meet you!")
+
+```
+
+
+
+
+
+
