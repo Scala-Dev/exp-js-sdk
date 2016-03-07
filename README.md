@@ -37,85 +37,6 @@ enable_network | ```True``` | Whether to enable real time network communication.
 
 
 
-# Communicating on the EXP Network
-
-The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
-
-### Channels
-
-All messages on the EXP network are sent over a channel. Channels have a name, and two flags: ```system``` and ```consumer```.
-
-```javascript
-const channel = exp.getChannel("my_channel", { system: false, consumer: false })
-```
-Set ```system``` to ```true``` to get a system channel. You cannot send messages on a system channels but can listen for system notifications, such as updates to API resources.
-
-Set ```consumer``` to ```true``` to get a consumer channel. Consumer devices can only listen or broadcast on consumer channels. When ```consumer``` is ```false``` you will not receive consumer device broadcasts and consumer devices will not be able to hear your broadcasts.
-
-Both ```system``` and ```consumer``` default to ```false```.
-
-
-### Broadcasting
-
-Use the broadcast method of a channel object to send a named message with a JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The call will return a promise that will resolve after the given timeout (or immediately). The promise will resolve to an array of the received JSON responses to the broadcast.
-
-```javascript
-exp.getChannel("myChannel").broadcast('Hello!', [1, 2, 3], 3000).then(function (responses) {
-  console.log('I got a response!')
-  console.log(responses);
-});
-```
-
-
-### Listening
-
-To listen for broadcasts, call the listen method of a channel object. 
-
-```javascript
-channel = exp.getChannel("myChannel").listen('Hello!', function (payload) {
-  console.log('I received a broadcast!');
-  console.log(payload);
-});
-```
-
-The listen method takes a function as the second argument. When a broadcast is received, this function will be called with the broadcast payload as the first argument.
-
-
-
-
-### Responding
-
-To respond to broadcast add a second argument to the listener callback. The second argument is a method that can be invoked with a JSON serializable variable. Invoking this method will respond to the broadcast with the given data.
-
-
-```javascript
-channel = exp.getChannel("myChannel").listen('Hello!', function (payload, respond) {
-  console.log('I\'m going to respond!');
-  respond('I got your message!');
-});
-```
-
-
-### Full Example
-
-```javascript
-
-var channel = exp.getChannel('myChannel');
-channel.listen('get_random_number', function (payload, respond) {
-  respond(Math.random());
-});
-
-channel.broadcast('get_random_number', null, 5000).then(function (numbers) {
-  console.log('Here is a list of random numbers I got from others!');
-  
-});
-
-
-# Getting Started
-
-
-
-
 
 # Reference
 
@@ -151,3 +72,89 @@ channel.broadcast('get_random_number', null, 5000).then(function (numbers) {
 
 
 # Examples
+
+
+## Creating a Device and Listening for Updates
+
+Updates to API resources are sent out over a system channel with the event name "update".
+
+```javascript
+exp.createDevice({ 'name': 'my_sweet_device' }).then(device => {
+  return device.save().then(() => {
+    device.getChannel({ system: true }).listen('update', payload => {
+      console.log('Device was updated!');
+    });
+  });
+});
+```
+
+
+## Modifying a Resource in Place
+
+```javascript
+exp.getExperience('[uuid]').then(experience => {
+  experience.document.name = 'new name';
+  return experience.save()
+});
+```
+
+
+## Using The EXP Network
+
+The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
+
+### Channels
+
+All messages on the EXP network are sent over a channel. Channels have a name, and two flags: ```system``` and ```consumer```.
+
+```javascript
+const channel = exp.getChannel('myChannel', { system: false, consumer: false });
+```
+
+Use ```system: true``` to get a system channel. You cannot send messages on a system channels but can listen for system notifications, such as updates to API resources.
+
+Use ```consumer: true``` to get a consumer channel. Consumer devices can only listen or broadcast on consumer channels. When ```consumer: false``` you will not receive consumer device broadcasts and consumer devices will not be able to hear your broadcasts.
+
+Both ```system``` and ```consumer``` default to ```false```. Consumer devices will be unable to broadcast or listen to messages on non-consumer channels.
+
+
+### Broadcasting
+
+Use the broadcast method of a channel object to send a named message containing an optional JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The broadcast will return a promise and resolve approximately after the given timeout (milliseconds) with a ```list``` of response payloads. Each response payload can any JSON serializable type.
+
+```javascript
+exp.getChannel('myChannel').broadcast('myEvent', 'hello', 5000).then(responses => {
+  responses.forEach(response => console.log(response));
+});
+```
+
+### Listening
+
+To listen for broadcasts, call the listen method of a channel object.  Pass in the name of the event you wish to listen for and a callback to handle the broadcast. The callback will receive the broadcast payload. Listen returns a promise that resolves with a listener object when listening on the network has actually started. Calling cancel on the listener object stops the callback from being executed.
+
+
+```javascript
+
+exp.getChannel('myChannel').listen('myEvent', payload => {
+  console.log('Event Received!');
+  console.log(payload);
+}).then(listener => {
+  // Remove the listener after 5 seconds.
+  setTimeout(() => listener.cancel(), 5000);
+});
+
+```
+
+
+### Responding
+
+To respond to a broadcast, call the second argument of the listener callback with your response.
+
+```javascript
+
+exp.getChannel('my_channel').listen('my_event', (payload, respond) => {
+  if (payload === 'hello!') respond('hi there!');
+});
+
+```
+
