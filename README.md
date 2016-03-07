@@ -30,7 +30,7 @@ Additional options:
 Name | Default | Description
 --- | --- | ---
 host | ```'https://api.goexp.io'``` | The api server to authenticate with.
-enable_network | ```True``` | Whether to enable real time network communication. If set to ```False``` you will be unable to listen on the [EXP network](# Communicating on the EXP Network).
+enable_network | ```true``` | Whether to enable real time network communication. If set to ```true``` you will be unable to listen on the EXP network.
 
 
 
