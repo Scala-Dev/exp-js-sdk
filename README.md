@@ -42,31 +42,99 @@ enable_network | ```true``` | Whether to enable real time network communication.
 
 ## Runtime
 
-- exp.start(options).then(() => {});
-- exp.get_auth().then(auth => {});
-- exp.isConnected
+- ```exp.start(options)```: Start/configure the SDK. Returns a promise that resovles when authenticated.
+- ```exp.getAuth()```: Resolves to current latest authentication response from server.
+- ```exp.isConnected```: Whether or not you are connected to the EXP network.
+- ```exp.on('online', callback)```: Callback is called when connection to EXP network is established.
+- ```exp.on('update', callback)```: Callback is called when authentication changes.
+- ```exp.on('offline', callback)```: Callback is called when connection to EXP network is lost.
+- ```exp.on('error', callback)```: Callback is called when a fatal error occurs.
 
 
 ## Devices
-- exp.getDevice().then(device => {});
-- exp.findDevices(params).then(devices => {});
-- exp.createDevice(document).then(device => {});
-- device.save().then(() => {});
-- device.uuid
+- ```exp.getDevice(uuid)```: Resolves to device with given uuid. 
+- ```exp.findDevices(params)```: Resolves to an array of matching devices. Params is a dictionary of query params. See the API docs. 
+- ```exp.createDevice(document)```: Resolves to an unsaved device.
+- ```device.save()```: Saves or updates the device.
+- ```device.refresh()```: Refreshes the device.
+- ```device.uuid```: The device's uuid.
+- ```device.document```: The device's underlying document.
+- ```device.getChannel(options)```: Returns a channel for communication about the device. See [Channels](#channels).
 
 ## Things
+- ```exp.getThing(uuid)```: Resolves to the thing with the given uuid.
+- ```exp.findThings(params)```: Resolves to an array of matching things. Params is a dictionary of query params. See the API docs. 
+- ```exp.createThing(document)```: Resolves to an unsaved thing.
+- ```thing.save()```: Saves or updates the thing.
+- ```thing.refresh()```: Refreshes the thing.
+- ```thing.uuid```: The thing's uuid.
+- ```thing.document```: The thing's underlying document.
+- ```thing.getChannel(options)```: Returns a channel for communication about the thing. See [Channels](#channels).
 
 ## Experiences
+- ```exp.getExperience(uuid)```: Resolves to the experience with the given uuid.
+- ```exp.findExperiences(params)```: Resolves to an array of matching experiences. Params is a dictionary of query params. See the API docs. 
+- ```exp.createExperience(document)```: Resolves to an unsaved experience.
+- ```experience.save()```: Saves or updates the experience.
+- ```experience.refresh()```: Refreshes the experience.
+- ```experience.uuid```: The experience's uuid.
+- ```experience.document```: The experience's underlying document.
+- ```experience.getChannel(options)```: Returns a channel for communication about the experience. See [Channels](#channels).
 
 ## Locations
+- ```exp.getLocation(uuid)```: Resolves to the location with the given uuid.
+- ```exp.findLocations(params)```: Resolves to an array of matching locations. Params is a dictionary of query params. See the API docs. 
+- ```exp.createLocation(document)```: Resolves to an unsaved location.
+- ```location.save()```: Saves or updates the location.
+- ```location.refresh()```: Refreshes the location.
+- ```location.uuid```: The location's uuid.
+- ```location.document```: The location's underlying document.
+- ```location.getChannel(options)```: Returns a channel for communication about the location. See [Channels](#channels).
+- ```location.getZones()```: Returns a promise that resolves to an array of the location's zones.
+
+## Feeds
+- ```exp.getFeed(uuid)```: Resolves to the feed with the given uuid.
+- ```exp.findFeeds(params)```: Resolves to an array of matching feeds. Params is a dictionary of query params. See the API docs.
+- ```exp.createFeed(document)```: Resolves to an unsaved feed.
+- ```feed.save()```: Saves or updates the feed.
+- ```feed.refresh()```: Refreshes the feed.
+- ```feed.uuid```
+- ```feed.document```
+- ```feed.getChannel(options)```: Returns a channel for communication about the feed. See [Channels](#channels).
 
 ## Zones
-
+- ```zone.document```: The zone's underlying document.
+- ```zone.getChannel(options)```: Returns a channel for communications about the zone. See [Channels](#channels).
 ## Content
+- ```exp.getContent(uuid)```: Resolves to the content with the given uuid.
+- ```exp.findContent(params)```: Resolves to an array of matching content. Params is a dictionary of query params. See the API docs. 
+- ```content.refresh()```: Refreshes the content.
+- ```content.uuid```: The content's uuid.
+- ```content.document```: The content's underlying document.
+- ```content.getChannel(options)```: Returns a channel for communication about the content. See [Channels](#channels).
+- ```content.get_url()```: Returns the delivery URL for the content.
+- ```content.get_variant_url(name)```: Returns the delivery URL for a variant.
+- ```content.has_variant(name)```: Returns ```true``` or ```false``` to indicate if the specified variant exists.
+- ```content.subtype```: The subtype of the content.
 
 ## Data
+- ```exp.getData(key, group)```: Resolves to the data resource for the given key and group. Group is set to "default" if not specified. 
+- ```exp.findData(params)```: Resolves to an array of matching data resources. Params is a dictionary of query params. See the API docs.
+- ```exp.createData(key, value, group)```: Creates an unsaved data object. Group is set to "default" if not specified.
+- ```data.save()```: Save the data object.
+- ```data.refresh()```: Refresh the data.
+- ```data.value```
+- ```data.key```
+- ```data.group```
+
 
 ## Channels
+- ```exp.getChannel(name, options)```: Returns a channel. Options is an object that can have system: true/false and consumer true/false.
+- ```channel.listen(name, callback)```: Returns a promise that resolves to a [listener](#listeners) when the listener is registered. Callback is called when a broadcast for the named event is received. Callback is passed the payload of the broadcast and a response callback that, when called, can be passed the response to the broadcast.
+- ```channel.broadcast(name, payload, timeout)```: Returns a promise that resolves to a list of responses to the broadcast. Request will wait for responses for the given timeout. 
+
+## Listeners
+- ```listener.cancel()```: Cancels the registered callback associated with the listener.
 
 ## Exceptions
 
