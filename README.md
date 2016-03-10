@@ -1,3 +1,14 @@
+
+- [Getting Started](#getting-started)
+- [Reference](#reference)
+  - [Resources](#resources)
+  - [Devices](#devices)
+  - [Things](#things)
+  - [Experiences](#experiences)
+  - [Locations](#locations)
+
+
+
 # Getting Started
 
 ## Browser
@@ -89,19 +100,20 @@ enableNetwork | `true` | Whether to enable real time network communication. If s
 `exp.start(options)` | Start/configure the SDK. Returns a configured sdk object. See [Starting the SDK](#starting-the-sdk).
 `exp.getAuth()` | Resolves to the current authentication payload.
 `exp.isConnected` | Whether or not you are connected to the EXP network.
-`exp.on('online', callback)` | Callback is called when connection to EXP network is established.
-`exp.on('update', callback)` | Callback is called when authentication payload is updated.
-`exp.on('offline', callback)` | Callback is called when connection to EXP network is lost.
-`exp.on('error', callback)` | Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
+`exp.on('online',callback)` | Callback is called when connection to EXP network is established.
+`exp.on('update',callback)` | Callback is called when authentication payload is updated.
+`exp.on('offline',callback)` | Callback is called when connection to EXP network is lost.
+`exp.on('error',callback)` | Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
 
 
 ## Resources
-Most API Resources, such as devices, things, and experiences, share common methods and properties.
-- `resource.uuid`: The uuid of the resource.
-- `resource.save().then(() => {})`: Returns a promise that resolves when the resource is saved. The resource is updated in place.
-- `resource.refresh().then(() => {})`: Returns a promise that resolves when the local copy of the resource is refreshed. The resource is updated in place.
-- `resource.document`: The resource's underlying document. See the [API documentation](https://docs.goexp.io).
-- `resource.getChannel(options)`: Returns a channel for communication about the resource. See [Channels](#channels).
+Most API Resources, such as [devices](#devices), [things](#things), and [experiences](#experiences), share common methods and properties.
+ | Description
+`resource.uuid` | The uuid of the resource.
+`resource.save().then(() => {})` | Returns a promise that resolves when the resource is saved. The resource is updated in place.
+`resource.refresh().then(() => {})` | Returns a promise that resolves when the local copy of the resource is refreshed. The resource is updated in place.
+`resource.document` | The resource's underlying document. See the [API documentation](https://docs.goexp.io).
+`resource.getChannel(options)` | Returns a channel for communication about the resource. See [Channels](#channels).
 
 ## Devices
 Devices inherit [common resource methods and properties](#resources).
