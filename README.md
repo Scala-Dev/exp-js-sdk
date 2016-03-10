@@ -84,14 +84,15 @@ enableNetwork | `true` | Whether to enable real time network communication. If s
 # Reference
 
 ## Runtime
-
-- `exp.start(options)`: Start/configure the SDK. Returns a configured sdk object. See [Starting the SDK](#starting-the-sdk).
-- `exp.getAuth()`: Resolves to the current authentication payload.
-- `exp.isConnected`: Whether or not you are connected to the EXP network.
-- `exp.on('online', callback)`: Callback is called when connection to EXP network is established.
-- `exp.on('update', callback)`: Callback is called when authentication payload is updated.
-- `exp.on('offline', callback)`: Callback is called when connection to EXP network is lost.
-- `exp.on('error', callback)`: Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
+ | Description
+------ | ---
+`exp.start(options)` | Start/configure the SDK. Returns a configured sdk object. See [Starting the SDK](#starting-the-sdk).
+`exp.getAuth()` | Resolves to the current authentication payload.
+`exp.isConnected` | Whether or not you are connected to the EXP network.
+`exp.on('online', callback)` | Callback is called when connection to EXP network is established.
+`exp.on('update', callback)` | Callback is called when authentication payload is updated.
+`exp.on('offline', callback)` | Callback is called when connection to EXP network is lost.
+`exp.on('error', callback)` | Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
 
 
 ## Resources
@@ -104,13 +105,17 @@ Most API Resources, such as devices, things, and experiences, share common metho
 
 ## Devices
 Devices inherit [common resource methods and properties](#resources).
-- `exp.getDevice(uuid`: Resolves to device with given uuid. 
-- `exp.findDevices(params)`: Resolves to an array of matching devices. Params is a dictionary of query params. See the [API documentation](https://docs.goexp.io).
-- `exp.createDevice(document)`: Resolves to an unsaved device.
+
+ | Description
+--- | ---
+`exp.getDevice(uuid)` | Resolves to device with given uuid. 
+`exp.findDevices(params)` | Resolves to an array of matching devices. Params is a dictionary of query params. See the [API documentation](https://docs.goexp.io).
+`exp.createDevice(document)` | Resolves to an unsaved device.
 
 
 ## Things
 Things inherit [common resource methods and properties](#resources).
+Method | Description
 - ```exp.getThing(uuid)```: Resolves to the thing with the given uuid.
 - ```exp.findThings(params)```: Resolves to an array of matching things. Params is a dictionary of query params. See the API docs. 
 - ```exp.createThing(document)```: Resolves to an unsaved thing.
