@@ -1,40 +1,83 @@
 # Getting Started
 
-The SDK is started by calling ```exp.start``` and specifying your credentials and configuration options. You may supply user, device, or consumer app credentials. You can also authenticate in pairing mode. When the promise returned by ```exp.start``` resolves, you are authenticated and can begin using the SDK. 
+## Browser
+
+The easiest way to get the SDK for standalone browser usage is using `bower`.
+
+```
+bower install exp-sdk
+```
+
+Then include the sdk in a script tag from the bower_components directory. You can then access the sdk as the window bound global `exp`.
+
+```html
+<script src="bower_components/exp-sdk.min.js"></script>
+<script>// I have access to exp module!</script>
+```
+
+
+## Node
+
+To use the EXP SDK with Node, install using `npm`
+
+```
+npm install exp-sdk
+```
+
+and require in the `exp` module.
+
+```javascript
+const exp = require('exp-sdk');
+```
+
+
+## Starting the SDK
+
+The SDK is started by calling ```exp.start``` and specifying your credentials and configuration options. You may supply user, device, or consumer app credentials. You can also authenticate in pairing mode.
 
 Users must specify their ```username```, ```password```, and ```organization```.
 
 ```javascript
-exp.start({ username: 'joe@joemail.com', password: 'JoeRocks42', organization: 'joesorg' }).then(() => {});
+exp.start({ username: 'joe@joemail.com', password: 'JoeRocks42', organization: 'joesorg' });
 ```
 
 Devices must specify their ```uuid``` and ```secret``` .
 ```javascript
-exp.start({ uuid: '[uuid]', secret: '[secret]' })
+exp.start({ uuid: '[uuid]', secret: '[secret]' });
 ```
 
 Consumer apps must specify their ```uuid``` and ```apiKey```.
 
 ```javascript
-exp.start({ uuid: '[uuid]', apiKey: '[api key]')
+exp.start({ uuid: '[uuid]', apiKey: '[api key]');
 ```
 
-Advanced users can authenticate in pairing mode by setting ```allow_pairing``` to ```False```.
+Advanced users can authenticate in pairing mode by setting ```allowPairing``` to ```False```.
 
-```python
-exp.start({ allow_pairing=False })
+```javascript
+exp.start({ allowPairing=False });
 ```
 
-Additional options:
+## Using Multiple Instance of the SDK
+
+Each call of exp.start() spawns and returns new instance of the sdk. The `exp` module is bound to the most recently instantiated instance. You can stop an instance by invoking the `stop` method. Once an instance of the SDK is stopped it should no longer be used.
+
+```javascript
+const exp = require('exp-sdk');
+const sdk1 = exp.start(options1);
+const sdk2 = exp.start(options2); // exp === sdk2
+sdk1.stop()
+sdk2.stop()
+sdk1.getDevices() // Don't even think about it!
+```
+
+## Additional Options
+
 
 Name | Default | Description
 --- | --- | ---
-host | ```'https://api.goexp.io'``` | The api server to authenticate with.
-enable_network | ```true``` | Whether to enable real time network communication. If set to ```true``` you will be unable to listen on the EXP network.
-
-
-
-
+host | `https://api.goexp.io` | The api server to authenticate with.
+enableNetwork | `true` | Whether to enable real time network communication. If set to `false` you will be unable to listen on the EXP network.
 
 
 
@@ -42,34 +85,36 @@ enable_network | ```true``` | Whether to enable real time network communication.
 
 ## Runtime
 
-- ```exp.start(options)```: Start/configure the SDK. Returns a promise that resovles when authenticated.
-- ```exp.getAuth()```: Resolves to current latest authentication response from server.
-- ```exp.isConnected```: Whether or not you are connected to the EXP network.
-- ```exp.on('online', callback)```: Callback is called when connection to EXP network is established.
-- ```exp.on('update', callback)```: Callback is called when authentication changes.
-- ```exp.on('offline', callback)```: Callback is called when connection to EXP network is lost.
-- ```exp.on('error', callback)```: Callback is called when a fatal error occurs.
+- `exp.start(options)`: Start/configure the SDK. Returns a configured sdk object. See [Starting the SDK](#starting-the-sdk).
+- `exp.getAuth()`: Resolves to the current authentication payload.
+- `exp.isConnected`: Whether or not you are connected to the EXP network.
+- `exp.on('online', callback)`: Callback is called when connection to EXP network is established.
+- `exp.on('update', callback)`: Callback is called when authentication payload is updated.
+- `exp.on('offline', callback)`: Callback is called when connection to EXP network is lost.
+- `exp.on('error', callback)`: Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
 
+
+## Resources
+Most API Resources, such as devices, things, and experiences, share common methods and properties.
+- `resource.uuid`: The uuid of the resource.
+- `resource.save().then(() => {})`: Returns a promise that resolves when the resource is saved. The resource is updated in place.
+- `resource.refresh().then(() => {})`: Returns a promise that resolves when the local copy of the resource is refreshed. The resource is updated in place.
+- `resource.document`: The resource's underlying document. See the [API documentation](https://docs.goexp.io).
+- `resource.getChannel(options)`: Returns a channel for communication about the resource. See [Channels](#channels).
 
 ## Devices
-- ```exp.getDevice(uuid)```: Resolves to device with given uuid. 
-- ```exp.findDevices(params)```: Resolves to an array of matching devices. Params is a dictionary of query params. See the API docs. 
-- ```exp.createDevice(document)```: Resolves to an unsaved device.
-- ```device.save()```: Saves or updates the device.
-- ```device.refresh()```: Refreshes the device.
-- ```device.uuid```: The device's uuid.
-- ```device.document```: The device's underlying document.
-- ```device.getChannel(options)```: Returns a channel for communication about the device. See [Channels](#channels).
+Devices inherit [common resource methods and properties](#resources).
+- `exp.getDevice(uuid`: Resolves to device with given uuid. 
+- `exp.findDevices(params)`: Resolves to an array of matching devices. Params is a dictionary of query params. See the [API documentation](https://docs.goexp.io).
+- `exp.createDevice(document)`: Resolves to an unsaved device.
+
 
 ## Things
+Things inherit [common resource methods and properties](#resources).
 - ```exp.getThing(uuid)```: Resolves to the thing with the given uuid.
 - ```exp.findThings(params)```: Resolves to an array of matching things. Params is a dictionary of query params. See the API docs. 
 - ```exp.createThing(document)```: Resolves to an unsaved thing.
-- ```thing.save()```: Saves or updates the thing.
-- ```thing.refresh()```: Refreshes the thing.
-- ```thing.uuid```: The thing's uuid.
-- ```thing.document```: The thing's underlying document.
-- ```thing.getChannel(options)```: Returns a channel for communication about the thing. See [Channels](#channels).
+
 
 ## Experiences
 - ```exp.getExperience(uuid)```: Resolves to the experience with the given uuid.
@@ -129,7 +174,7 @@ enable_network | ```true``` | Whether to enable real time network communication.
 
 
 ## Channels
-- ```exp.getChannel(name, options)```: Returns a channel. Options is an object that can have system: true/false and consumer true/false.
+- ```exp.getChannel(name, options)```: Returns a channel. Options is an object that can have system: true/false and consumer true/false, i.e. ```{ system: true, consumer: false }```. 
 - ```channel.listen(name, callback)```: Returns a promise that resolves to a [listener](#listeners) when the listener is registered. Callback is called when a broadcast for the named event is received. Callback is passed the payload of the broadcast and a response callback that, when called, can be passed the response to the broadcast.
 - ```channel.broadcast(name, payload, timeout)```: Returns a promise that resolves to a list of responses to the broadcast. Request will wait for responses for the given timeout. 
 
