@@ -1,6 +1,6 @@
 {
   "name": "exp-sdk",
-  "version": "0.0.1-1",
+  "version": "0.0.1-alpha1",
   "description": "Scala EXP SDK",
   "main": "./index.js",
   "scripts": {
@@ -13,7 +13,7 @@
   "dependencies": {
     "base64url": "^1.0.4",
     "crypto": "0.0.3",
-    "event-node": "git+https://github.com/jrd261/event-node.git#master",
+    "event-node": "0.0.1",
     "isomorphic-fetch": "^2.1.0",
     "jsonwebtoken": "^5.4.1",
     "lodash": "^3.10.1",
