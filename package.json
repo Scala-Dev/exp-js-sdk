@@ -1,6 +1,6 @@
 {
   "name": "exp-sdk",
-  "version": "1.0.1-0",
+  "version": "0.0.0",
   "description": "Scala EXP SDK",
   "main": "./index.js",
   "scripts": {
@@ -11,13 +11,13 @@
   "author": "James Dalessio <jrd261@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "base64url": "^1.0.4",
+    "base64url": "1.0.4",
     "crypto": "0.0.3",
     "event-node": "0.0.1",
-    "isomorphic-fetch": "^2.1.0",
-    "jsonwebtoken": "^5.4.1",
-    "lodash": "^3.10.1",
-    "socket.io-client": "^1.3.5"
+    "isomorphic-fetch": "2.1.0",
+    "jsonwebtoken": "5.4.1",
+    "lodash": "3.10.1",
+    "socket.io-client": "1.3.5"
   },
   "devDependencies": {
     "mocha": "^2.3.4",
