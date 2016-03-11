@@ -18,8 +18,8 @@ describe('Sanity Tests', () => {
   });
 
   it('should respond with a device', () => {
-    return exp.findDevices().then(query => {
-      if (!query.results) throw Error();
+    return exp.findDevices().then(results => {
+      if (!results) throw Error();
     });
   });
 
@@ -88,12 +88,13 @@ describe('Sanity Tests', () => {
 
   it('should receive experience update event', () => {
     exp.createExperience({}).then(experience => {
-      const channel = experience.getChannel({ system: true });
-      channel.listen('update', resolve).then(() => {
-        experience.document.name = 'Test' + Math.random();
-        experience.save();
+      return experience.save().then(() => {
+        const channel = experience.getChannel({ system: true });
+        return channel.listen('update', resolve).then(() => {
+          return experience.save();
+        });
       });
-    });
+    }).catch(reject);
     return promise;
   });
 

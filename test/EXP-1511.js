@@ -5,16 +5,6 @@
 
 const exp = require('../');
 
-before(() => {
-  return exp.start({
-    type: 'user',
-    username: 'email@email.com',
-    password: 'Password12321',
-    organization: 'scala',
-    host: 'http://localhost:9000'
-  });
-});
-
 describe('EXP-1511', () => {
   it('Should be able to listen on a channel immediately after connecting.', () => {
     const channel = exp.getChannel('foo');
