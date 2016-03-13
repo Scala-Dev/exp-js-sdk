@@ -69,18 +69,7 @@ Advanced users can authenticate in pairing mode by setting ```allowPairing``` to
 exp.start({ allowPairing=False });
 ```
 
-## Using Multiple Instance of the SDK
 
-Each call of exp.start() spawns and returns new instance of the sdk. The `exp` module is bound to the most recently instantiated instance. You can stop an instance by invoking the `stop` method. Once an instance of the SDK is stopped it should no longer be used.
-
-```javascript
-const exp = require('exp-sdk');
-const sdk1 = exp.start(options1);
-const sdk2 = exp.start(options2); // exp === sdk2
-sdk1.stop()
-sdk2.stop()
-sdk1.getDevices() // Don't even think about it!
-```
 
 ## Additional Options
 
@@ -90,6 +79,59 @@ Name | Default | Description
 host | `https://api.goexp.io` | The api server to authenticate with.
 enableNetwork | `true` | Whether to enable real time network communication. If set to `false` you will be unable to listen on the EXP network.
 
+
+# Advanced Topics
+
+## Context Memory Management
+
+A ```context``` is a string that can be used to track event listener registration. A copy of an instance of the SDK can be created by calling ```clone(context)``` method. This will return a cloned instance of the SDK bound to the given context. Calling ```clear(context)``` on any SDK instance derived from the original would remove all event listeners registered by the SDK instance bound to that context. This feature is generally intended for use by player apps, but it provides a simple interface to memory management of event listeners and can help reduce the chances of memory leaks due to orphaned event listener registrations in complex or long lived applications.
+
+In this example, a module starts the SDK, and exports two cloned instances of the SDK bound to different contexts. After some interval, we clear all the event listeners bound to one of the context:
+
+```javascript
+const exp = require('exp-sdk');
+
+const sdk = exp.start(options);
+
+setInterval(() => sdk.clear('2'), 60 * 1000);
+
+module.exports = {
+  sdk1: sdk.clone('1'), 
+  sdk2: sdk.clone('2')
+};
+
+
+```
+
+Note that calling ```stop``` on a cloned SDK instance or the original sdk instance would stop the original and all clones.
+
+
+## Using Multiple Instance of the SDK
+
+Each call of exp.start() spawns a new instance of the sdk. The `exp` module's methods are bound to the most recently instantiated instance. You can stop an instance by invoking the `stop` method. Once an instance of the SDK is stopped it can no longer be used.
+
+```javascript
+const exp = require('exp-sdk');
+const sdk1 = exp.start(options1);
+const sdk2 = exp.start(options2); // exp ~ sdk2
+sdk1.stop()
+sdk2.stop()
+sdk1.getDevices() // Don't even think about it!
+```
+
+Context based memory management is also supported when using multiple instances of the SDK, but unique names must be used for each context as event listeners are registered in a global pool.
+
+```javascript
+const exp = require('exp-sdk');
+const sdk1 = exp.start(options1);
+const sdk2 = exp.start(options2);
+sdk1A = sdk1.clone('A');
+sdk1B = sdk1.clone('B');
+sdk2A = sdk2.clone('A');
+
+sdk2.clear('A'); // Also clears sdk1A!
+
+```
 
 
 # Reference
@@ -104,11 +146,15 @@ enableNetwork | `true` | Whether to enable real time network communication. If s
 `exp.on('update',callback)` | Callback is called when authentication payload is updated.
 `exp.on('offline',callback)` | Callback is called when connection to EXP network is lost.
 `exp.on('error',callback)` | Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
+`exp.stop()` | Stops the SDK and clears all event listeners.
+`exp.clone(context)` | Creates a copy of the SDK for the given content (a string). If context is not specified, a random string is generated.
+`exp.clear(context)` | Clears all event listeners for the specified context. If no context is specified, clears every event listener. 
 
 
-## Resources
-Most API Resources, such as [devices](#devices), [things](#things), and [experiences](#experiences), share common methods and properties.
+## Common Resource Methods and Properties
+
  | Description
+ --- | ---
 `resource.uuid` | The uuid of the resource.
 `resource.save().then(() => {})` | Returns a promise that resolves when the resource is saved. The resource is updated in place.
 `resource.refresh().then(() => {})` | Returns a promise that resolves when the local copy of the resource is refreshed. The resource is updated in place.
@@ -116,13 +162,15 @@ Most API Resources, such as [devices](#devices), [things](#things), and [experie
 `resource.getChannel(options)` | Returns a channel for communication about the resource. See [Channels](#channels).
 
 ## Devices
-Devices inherit [common resource methods and properties](#resources).
 
  | Description
 --- | ---
 `exp.getDevice(uuid)` | Resolves to device with given uuid. 
 `exp.findDevices(params)` | Resolves to an array of matching devices. Params is a dictionary of query params. See the [API documentation](https://docs.goexp.io).
 `exp.createDevice(document)` | Resolves to an unsaved device.
+
+Devices inherit [common resource methods and properties](#common-resource-methods-and-properties).
+
 
 
 ## Things
