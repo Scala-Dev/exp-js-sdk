@@ -1,11 +1,42 @@
 
-- [Getting Started](#getting-started)
+- [Getting the SDK](#getting-started)
+  - [Using Bower](#bower)
+  - [Using NPM](#npm)
+- [Starting the SDK](#)
+  - [Introduction](#)
+  - [Options](#)
+  - [Example: Starting the SDK as a User](#)
+  - [Example: Starting the SDK as a Device](#)
+  - [Example: Starting the SDK as a Consumer App](#)
+- [API Resources](#api-resources)
+  - [Introduction](#)
+  - [Example: Creating a New Location](#)
+  - [Example: Getting Feed Data](#)
+  - [Example: Getting a Content Variant](#)
+  - [Example: Storing Arbitrary JSON Data](#)
+- [Real Time Communication on the EXP Network](#communicating-on-the-exp-network)
+  - [Introduction](#)
+  - [Example: Sending a Broadcast](#)
+  - [Example: Listening for a Broadcast](#)
+  - [Example: Responding to a Broadcast](#)
+  - [Example: Listening for Changes to a Data](#)
+  - [Example: Canceling a Listener](#)
+- [Advanced Topics](#advanced-topics)
+  - [Context Based Memory Management](#context-based-memory-management)
+  - [Using Multiple Instances of the SDK](#using-multiple-instances-of-the-sdk)
 - [Reference](#reference)
   - [Resources](#resources)
   - [Devices](#devices)
   - [Things](#things)
   - [Experiences](#experiences)
   - [Locations](#locations)
+  - [Zones](#zones)
+  - [Content](#content)
+  - [Data](#data)
+  - [Channels](#channels)
+  - [Listeners](#listeners)
+
+
 
 
 
@@ -63,26 +94,25 @@ Consumer apps must specify their ```uuid``` and ```apiKey```.
 exp.start({ uuid: '[uuid]', apiKey: '[api key]');
 ```
 
-Advanced users can authenticate in pairing mode by setting ```allowPairing``` to ```False```.
-
-```javascript
-exp.start({ allowPairing=False });
-```
 
 
-
-## Additional Options
+## Advanced Options
 
 
 Name | Default | Description
 --- | --- | ---
 host | `https://api.goexp.io` | The api server to authenticate with.
 enableNetwork | `true` | Whether to enable real time network communication. If set to `false` you will be unable to listen on the EXP network.
+allowPairing | `false` | Whether or not to allow the SDK to run in pairing mode.
 
+
+# API Resources
+
+# The EXP Network
 
 # Advanced Topics
 
-## Context Memory Management
+## Context Based Memory Management
 
 A ```context``` is a string that can be used to track event listener registration. A copy of an instance of the SDK can be created by calling ```clone(context)``` method. This will return a cloned instance of the SDK bound to the given context. Calling ```clear(context)``` on any SDK instance derived from the original would remove all event listeners registered by the SDK instance bound to that context. This feature is generally intended for use by player apps, but it provides a simple interface to memory management of event listeners and can help reduce the chances of memory leaks due to orphaned event listener registrations in complex or long lived applications.
 
@@ -134,28 +164,28 @@ sdk2.clear('A'); // Also clears sdk1A!
 ```
 
 
+
 # Reference
 
 ## Runtime
  | Description
 ------ | ---
-`exp.start(options)` | Start/configure the SDK. Returns a configured sdk object. See [Starting the SDK](#starting-the-sdk).
-`exp.getAuth()` | Resolves to the current authentication payload.
-`exp.isConnected` | Whether or not you are connected to the EXP network.
-`exp.on('online',callback)` | Callback is called when connection to EXP network is established.
-`exp.on('update',callback)` | Callback is called when authentication payload is updated.
-`exp.on('offline',callback)` | Callback is called when connection to EXP network is lost.
-`exp.on('error',callback)` | Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
-`exp.stop()` | Stops the SDK and clears all event listeners.
-`exp.clone(context)` | Creates a copy of the SDK for the given content (a string). If context is not specified, a random string is generated.
-`exp.clear(context)` | Clears all event listeners for the specified context. If no context is specified, clears every event listener. 
+`start(options)` | Start/configure the SDK. Returns a configured sdk instance. See [Starting the SDK](#starting-the-sdk).
+`getAuth()` | Resolves to the current authentication payload.
+`isConnected` | Whether or not you are connected to the EXP network.
+`on('online',callback)` | Callback is called when connection to EXP network is established.
+`on('update',callback)` | Callback is called when authentication payload is updated.
+`on('offline',callback)` | Callback is called when connection to EXP network is lost.
+`on('error',callback)` | Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
+`stop()` | Stops the SDK and clears all event listeners.
+`clone(context)` | Creates a copy of the SDK for the given content (a string). If context is not specified, a random string is generated.
+`clear(context)` | Clears all event listeners for the specified context. If no context is specified, clears every event listener. 
 
 
 ## Common Resource Methods and Properties
 
  | Description
  --- | ---
-`resource.uuid` | The uuid of the resource.
 `resource.save().then(() => {})` | Returns a promise that resolves when the resource is saved. The resource is updated in place.
 `resource.refresh().then(() => {})` | Returns a promise that resolves when the local copy of the resource is refreshed. The resource is updated in place.
 `resource.document` | The resource's underlying document. See the [API documentation](https://docs.goexp.io).
@@ -165,9 +195,9 @@ sdk2.clear('A'); // Also clears sdk1A!
 
  | Description
 --- | ---
-`exp.getDevice(uuid)` | Resolves to device with given uuid. 
-`exp.findDevices(params)` | Resolves to an array of matching devices. Params is a dictionary of query params. See the [API documentation](https://docs.goexp.io).
-`exp.createDevice(document)` | Resolves to an unsaved device.
+`getDevice(uuid)` | Resolves to device with given uuid. 
+`findDevices(params)` | Resolves to an array of matching devices. Params is a dictionary of query params. See the [API documentation](https://docs.goexp.io).
+`createDevice(document)` | Resolves to an unsaved device.
 
 Devices inherit [common resource methods and properties](#common-resource-methods-and-properties).
 
