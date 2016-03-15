@@ -30,6 +30,10 @@ class ChannelDelegate {
     return network.listen(name, this.id, callback, this.context);
   }
 
+  fling (payload) {
+    return this.broadcast('fling', payload);
+  }
+
 }
 
 module.exports = ChannelDelegate;
