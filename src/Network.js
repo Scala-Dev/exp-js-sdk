@@ -55,9 +55,7 @@ class Channel {
   }
 
   get hasListeners () {
-    return Object.keys(this._events.namespaces).some(name => {
-      return Object.keys(this._events.namespaces[name].listeners).length > 0;
-    });
+    return this._events.hasListeners;
   }
 
 }
@@ -118,7 +116,8 @@ class Network {
   }
 
   stop () {
-    this._listener.cancel();
+    if (this._listener) this._listener.cancel();
+    this._listener = null;
     this._disconnect();
   }
 

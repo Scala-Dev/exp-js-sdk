@@ -121,33 +121,37 @@ In this example, a module starts the SDK, and exports two cloned instances of th
 ```javascript
 const exp = require('exp-sdk');
 
-const sdk = exp.start(options);
+exp.start(options);
+exp1 = exp.clone('context 1')
+exp2 = exp.clone('context 2');
 
-setInterval(() => sdk.clear('2'), 60 * 1000);
+exp1.getChannel('myChannelName').listen('myEventName', () => {});
+exp2.getChannel('myChannelName').listen('myEventName', () => {});
 
-module.exports = {
-  sdk1: sdk.clone('1'), 
-  sdk2: sdk.clone('2')
-};
-
+exp2.clear(); // Unregisters all callbacks and listerers attached by exp2.
 
 ```
 
-Note that calling ```stop``` on a cloned SDK instance or the original sdk instance would stop the original and all clones.
+Note that calling ```stop``` on a cloned SDK instance or the original sdk instance stops the sdk for the original and all derived clones.
 
 
-## Using Multiple Instance of the SDK
+## Using Multiple Instances of the SDK
 
-Each call of exp.start() spawns a new instance of the sdk. The `exp` module's methods are bound to the most recently instantiated instance. You can stop an instance by invoking the `stop` method. Once an instance of the SDK is stopped it can no longer be used.
+Calling ```exp.fork()``` will return an unstarted instance of the sdk.
 
 ```javascript
+
 const exp = require('exp-sdk');
-const sdk1 = exp.start(options1);
-const sdk2 = exp.start(options2); // exp ~ sdk2
-sdk1.stop()
-sdk2.stop()
-sdk1.getDevices() // Don't even think about it!
+const exp2 = exp.fork();
+
+exp.start(options1);
+exp2.start(options2)
+
+exp.stop();
+exp2.stop();
+
 ```
+
 
 Context based memory management is also supported when using multiple instances of the SDK, but unique names must be used for each context as event listeners are registered in a global pool.
 

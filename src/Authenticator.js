@@ -15,19 +15,22 @@ class Authenticator {
     this._promise = null;
     this._resolve = null;
     this._reject = null;
-    this._status = true;
+    this._running = false;
     this._reset();
     this._lastAuth = null;
   }
 
   start () {
+    if (this._running) return;
+    this._running = true;
     this._login();
   }
 
   stop () {
-    clearTimeout(this._timeout);
-    this._status = false;
-    this._promise = Promise.reject(new Error('SDK was stopped.'));
+    if (!this._running) return;
+    this._running = false;
+    this._auth = null;
+    this._reset();
   }
 
   getAuthSync () {
@@ -43,7 +46,8 @@ class Authenticator {
   }
 
   _onSuccess (auth) {
-    if (!this._status) return;
+
+    if (!this._running) return;
     this._reset();
     this._timeout = setTimeout(() => this._refresh(), (auth.expiration - Date.now()) / 2);
     this._auth = auth;
@@ -60,17 +64,17 @@ class Authenticator {
   }
 
   _onError (error) {
-    if (!this._status) return;
+    if (!this._running) return;
     this._reset();
     console.warn(error);
   }
 
   _onFatal (error) {
-    if (!this._status) return;
+    if (!this._running) return;
     this._reset();
     this._reject(error);
-    this._trigger('error', error);
-    this._status = false;
+    this._events.trigger('error', error);
+    this._running = false;
   }
 
 

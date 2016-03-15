@@ -1,31 +1,59 @@
 'use strict';
 /* jshint -W074 */
 
+const EventNode = require('event-node');
+const _ = require('lodash');
 
 const Authenticator = require('./Authenticator');
 const Api = require('./Api');
 const Network = require('./Network');
-
-const EventNode = require('event-node');
-const _ = require('lodash');
 
 const defaults = { host: 'https://api.goexp.io', enableNetwork: true };
 
 class Sdk {
 
   constructor () {
-    this.authenticator = new Authenticator(this);
-    this.api = new Api(this);
-    this.network = new Network(this);
-    this.events = new EventNode();
+    this.started = false;
+    this.stopped = false;
+    this._events = new EventNode();
     this.options = null;
-    this.network.on('online', () => this.events.trigger('online'));
-    this.network.on('offline', () => this.events.trigger('offline'));
-    this.authenticator.on('error', error => this.events.trigger('error', error));
-    this.authenticator.on('update', auth => this.events.trigger('update', auth));
+    this._authenticator = new Authenticator(this);
+    this._api = new Api(this);
+    this._network = new Network(this);
+    this._network.on('online', () => this.events.trigger('online'));
+    this._network.on('offline', () => this.events.trigger('offline'));
+    this._authenticator.on('error', error => this.events.trigger('error', error));
+    this._authenticator.on('update', auth => this.events.trigger('update', auth));
+  }
+
+
+  get events () {
+    this.check();
+    return this._events;
+  }
+
+  get network () {
+    this.check();
+    return this._network;
+  }
+
+  get api () {
+    this.check();
+    return this._api;
+  }
+
+  get authenticator () {
+    this.check();
+    return this._authenticator;
+  }
+
+  check () {
+    if (this.stopped) throw new Error('SDK wass stopped.');
   }
 
   start (options) {
+    if (this.started) throw new Error('SDK already running.');
+    if (this.stopped) throw new Error('SDK was stopped. Fork to start a new SDK instance.');
     options = _.merge({}, defaults, options);
     if (options.type === 'user' || options.username || options.password || options.organization) {
       options.type = 'user';
@@ -43,15 +71,16 @@ class Sdk {
     } else {
       throw new Error('Please specify authentication type.');
     }
+    this.started = true;
     this.options = options;
-    this.network.start();
-    this.authenticator.start();
+    this._network.start();
+    this._authenticator.start();
   }
 
   stop () {
-    this.network.stop();
-    this.authenticator.stop();
-    this.events.clear();
+    this.stopped = true;
+    this._network.stop();
+    this._authenticator.stop();
   }
 
 }
