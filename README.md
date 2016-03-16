@@ -201,7 +201,7 @@ sdk2.clear('A'); // Also clears sdk1A!
 --- | ---
 `getDevice(uuid)` | Resolves to device with given uuid. 
 `findDevices(params)` | Resolves to an array of matching devices. Params is a dictionary of query params. See the [API documentation](https://docs.goexp.io).
-`createDevice(document)` | Resolves to an unsaved device.
+`createDevice(document)` | Resolves to a new device.
 
 Devices inherit [common resource methods and properties](#common-resource-methods-and-properties).
 

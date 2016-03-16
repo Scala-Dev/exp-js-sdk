@@ -3,70 +3,42 @@
 const fetch = require('isomorphic-fetch');
 const _ = require('lodash');
 
+
 class Resource {
 
-  constructor (document, exists, sdk, context) {
-    this.document = document || {};
-    this._context = context;
-    this._exists = exists;
+  constructor (document, sdk, context) {
+    this.document = document;
     this._sdk = sdk;
+    this._context = context;
+  }
+
+  static create (document, sdk, context) {
+    return sdk.api.post(this.getCollectionPath(document), null, document).then(document => new this(document, sdk, context));
   }
 
   static get (uuid, sdk, context) {
     if (!uuid) return Promise.reject(new Error('Document uuid is required.'));
-    return sdk.api.get(this.path + '/' + encodeURIComponent(uuid)).then(document => new this(document, true, sdk, context));
-  }
-
-  static create (document, sdk, context) {
-    return Promise.resolve(new this(document, false, sdk, context));
+    return sdk.api.get(this.getResourcePath({ uuid: uuid })).then(document => new this(document, sdk, context));
   }
 
   static find (params, sdk, context) {
-    return sdk.api.get(this._getPath(), params).then(query => query.results.map(document => new this(document, true, sdk, context)));
+    return sdk.api.get(this.getCollectionPath(), params).then(query => query.results.map(document => new this(document, sdk, context)));
   }
 
-  _hasPath () {
-    return !!this.document && !!this.document.uuid;
-  }
-
-  _getPath () {
-    return this.constructor._getPath() + '/' + this.document.uuid;
-  }
-
-  static _getPath () {
-    throw new Error('Not implemented.');
-  }
-
-  _saveExisting () {
-    return this._sdk.api.patch(this._getPath(), null, this.document).then(document => {
-      this.document = document;
-      return this;
-    });
-  }
-
-  _saveNew () {
-    return this._sdk.api.post(this.constructor._getPath(), null, this.document).then(document => {
-      this.document = document;
-      this._exists = true;
-      return this;
-    });
-  }
+  static getCollectionPath () { return '/api/resources'; }
+  static getResourcePath (document) { return this.getCollectionPath() + '/' + encodeURIComponent(document.uuid); }
+  static getChannelName (document) { return document.uuid; }
 
   save () {
-    if (this._exists) return this._saveExisting();
-    else return this._saveNew();
+    return this._sdk.api.patch(this.constructor.getResourcePath(this.document), null, this.document).then(document => this.document = document);
   }
 
   refresh () {
-    return this._sdk.api.get(this.path).then(document => this.document = document);
+    return this._sdk.api.get(this.constructor.getResourcePath(this.document)).then(document => this.document = document);
   }
 
   getChannel (options) {
-    return this._sdk.network.getChannel(this._getChannelName(), options, this._context);
-  }
-
-  _getChannelName () {
-    return this.document.uuid;
+    return this._sdk.network.getChannel(this.constructor.getChannelName(this.document), options, this._context);
   }
 
   fling (payload, options) {
@@ -74,7 +46,7 @@ class Resource {
   }
 
   clone (context) {
-    return new this.constructor(this.document, this._exists, this._sdk, context);
+    return new this.constructor(this.document, this._sdk, context || this._context);
   }
 
 }
@@ -82,9 +54,7 @@ class Resource {
 
 class Device extends Resource {
 
-  static _getPath () {
-    return '/api/devices';
-  }
+  static getCollectionPath () { return '/api/devices'; }
 
   getExperience () {
     const uuid = _.get(this, 'document.experience.uuid');
@@ -98,6 +68,14 @@ class Device extends Resource {
     return this._sdk.api.Location.get(_.get(this, 'document.location.uuid'), this._sdk, this.context);
   }
 
+  getZones () {
+    return this.getLocation().then(location => {
+      return location.document.zones.filter(locationZoneDocument => {
+        return this.document.location.zones.find(deviceZoneDocument => deviceZoneDocument.key === locationZoneDocument.key);
+      }).map(document => new this._sdk.api.Zone(document, location, this._sdk, this._context));
+    });
+  }
+
   identify () {
     return this.getChannel().broadcast('identify', null, 500);
   }
@@ -107,25 +85,26 @@ class Device extends Resource {
 
 class Thing extends Device {
 
-  static _getPath () {
-    return '/api/things';
-  }
+  static getCollectionPath () { return '/api/things'; }
 
 }
 
 
 class Experience extends Resource {
 
-  static _getPath () {
-    return '/api/experiences';
+  static getCollectionPath () { return '/api/experiences'; }
+
+  getDevices () {
+    return this._sdk.Device.find({ 'experience.uuid' : this.document.uuid }, this._sdk, this._context);
   }
 
 }
 
+
 class Zone extends Resource {
 
-  constructor (document, location, exists, sdk, context) {
-    super(document, sdk, exists, context);
+  constructor (document, location, sdk, context) {
+    super(document, sdk, context);
     this._location = location;
   }
 
@@ -134,11 +113,21 @@ class Zone extends Resource {
   }
 
   refresh () {
-    throw new Error('Not implemented.');
+    return this._location.refresh().then(() => {
+      this.document = (this._location.document.zones || []).find(document => document.key === this.key);
+    });
   }
 
   getLocation () {
     return Promise.resolve(this._location);
+  }
+
+  getDevices () {
+    return this._sdk.Device.find({ 'location.uuid' : this._location.document.uuid, 'location.zones.key': this.key }, this._sdk, this._context);
+  }
+
+  getThings () {
+    return this._sdk.Thing.find({ 'location.uuid' : this._location.document.uuid, 'location.zones.key': this.key }, this._sdk, this._context);
   }
 
   _getChannelName () {
@@ -195,45 +184,24 @@ class Feed extends Resource {
 
 class Data extends Resource {
 
-  static _getPath () {
-    return '/api/data';
-  }
+  static getCollectionPath () { return '/api/data'; }
 
-  _getPath () {
-    return this.constructor._getPath() + '/' + encodeURIComponent(this.document.group) + '/' + encodeURIComponent(this.document.key);
-  }
-
-  get value () {
-    return this.document.value;
-  }
-
-  set value (value) {
-    this.document.value = value;
+  static getResourcePath (document) {
+    return this.constructor.getCollectionPath() + '/' + encodeURIComponent(document.group || 'default') + '/' + encodeURIComponent(document.key);
   }
 
   save () {
-    return this._sdk.api.put(this._getPath(), null, this.document).then(document => this.document = document);
-  }
-
-  static get (key, group, sdk, context) {
-    group = group || 'default';
-    if (!key) return Promise.reject(new Error('Key is required.'));
-    const data = new this({ key: key, group: group }, true, sdk, context);
-    data.refresh().then(() => data);
+    return this._sdk.api.put(this.getResourcePath(this.document), null, this.document).then(document => this.document = document);
   }
 
   getChannelName () {
-    return 'data' + ':' + this.document.key + ':' + this.document.group;
+    return 'data' + ':' + this.document.key + ':' + this.document.group || 'default';
   }
 
 }
 
 
 class Content extends Resource {
-
-  constructor (document, exists, sdk, context) {
-    super(document, exists, sdk, context);
-  }
 
   static _encodePath (value) {
     return encodeURI(value)
@@ -250,10 +218,6 @@ class Content extends Resource {
       .replace('=', '%3D')
       .replace('?', '%3F')
       .replace('~', '%7E');
-  }
-
-  get subtype () {
-    return this.document.subtype;
   }
 
   static _getPath () {

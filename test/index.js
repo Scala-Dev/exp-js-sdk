@@ -16,6 +16,7 @@ describe('Users', () => {
   before(() => require('./startup/user')(sdk));
   require('./runtime/authentication.spec')(sdk);
   require('./sanity.spec')(sdk);
+  require('./api/resources')(sdk.createDevice.bind(sdk), sdk.getDevice.bind(sdk), sdk.findDevices.bind(sdk));
   after(() => sdk.stop());
 });
 
@@ -33,3 +34,4 @@ require('./regression/exp1511.spec')(exp);
 describe('Runtime', () => {
   require('./runtime/clone.spec')(exp);
 });
+

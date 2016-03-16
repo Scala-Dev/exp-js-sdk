@@ -2,10 +2,9 @@
 
 module.exports = exp => {
   exp.start({
-    type: 'user',
-    username: 'email@email.com',
-    password: 'Password12321',
-    organization: 'scala',
+    username: process.env.EXP_TEST_USERNAME,
+    password: process.env.EXP_TEST_PASSWORD,
+    organization: process.env.EXP_TEST_ORGANIZATION,
     host: 'http://localhost:9000'
   });
 };

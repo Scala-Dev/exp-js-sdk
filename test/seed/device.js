@@ -4,7 +4,7 @@ const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 
 const query = { uuid: 'test-device' };
-const doc = { uuid: 'test-device', secret: 'test-secret', org: 'test-org', name: 'test-device', subtype: 'scala:device:server' };
+const doc = { uuid: 'test-device', secret: 'test-secret', org: process.env.EXP_TEST_ORGANIZATION, name: 'test-device', subtype: 'scala:device:server' };
 
 module.exports = () => {
   return MongoClient.connect('mongodb://localhost:27017/data-store').then(database => {
