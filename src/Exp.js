@@ -14,20 +14,17 @@ class Exp {
   /* Runtime */
   start (options) { return this._sdk.start(options); }
   stop () { return this._sdk.stop(); }
-  fork () { return new this.constructor(); }
+  fork (context) { return new this.constructor(null, context); }
   clone (context) { return this.constructor(this._sdk, context); }
-  clear () { return EventNode.clear(this._context); }
+  clear (context) { return EventNode.clear(context || this._context); }
   getAuth () { return this._sdk.authenticator.getAuth(); }
   on (name, callback) { return this._sdk.events.on(name, callback, this._context); }
 
   /* Network */
-  getChannel (name, options) {
-    return this._sdk.network.getChannel(name, options, this._context);
-
-  }
+  getChannel (name, options) { return this._sdk.network.getChannel(name, options, this._context); }
   get isConnected () { return this._sdk.network.isConnected; }
 
-  /* API */
+  /* Naked API */
   get (path, params) { return this._sdk.api.get(path, params); }
   post (path, params, body) { return this._sdk.api.post(path, params, body); }
   patch(path, params, body) { return this._sdk.api.patch(path, params, body); }
@@ -44,47 +41,28 @@ class Exp {
   findExperiences (params) { return this._sdk.api.Experience.find(params, this._sdk, this._context); }
   createExperience (document) { return this._sdk.api.Experience.create(document, this._sdk, this._context); }
 
-  /* Deprecated */
-  getDelegate (context) {
-    console.warn('Deprecated: getDelgate(). Use clone() instead.');
-    return this.clone(context);
-  }
+  /* Locations */
+  getLocation (uuid) { return this._sdk.api.Location.get(uuid, this._sdk, this._context); }
+  findLocations (params) { return this._sdk.api.Location.find(params, this._sdk, this._context); }
+  createLocation (document) { return this._sdk.api.Location.create(document, this._sdk, this._context); }
 
-  /* Deprecated */
-  get auth () {
-    console.warn('Deprecated: auth. Use getAuth() instead.');
-    return this._sdk.authenticator.getAuthSync();
-  }
+  /* Things */
+  getThing (uuid) { return this._sdk.api.Thing.get(uuid, this._sdk, this._context); }
+  findThings (params) { return this._sdk.api.Thing.find(params, this._sdk, this._context); }
+  createThing (document) { return this._sdk.api.Thing.create(document, this,_sdk, this._context); }
 
+  /* Data */
+  getData (key, group) { return this._sdk.api.Data.get({ key: key, group: group }, this._sdk, this._context); }
+  findData (params) { return this._sdk.api.Data.find(params, this._sdk, this._context); }
+  createData (document) { return this._sdk.api.Data.create(document, this._sdk, this._context); }
 
-/*
-  getThing (uuid) { return resources.Thing.get(uuid, this.context); }
-  findThings (params) { return resources.Thing.find(params, this.context); }
-  createThing (document, options) { return resources.Thing.create(document, options, this.context); }
+  /* Content */
+  getContent (uuid) { return this._sdk.api.Content.get({ uuid: uuid }, this._sdk, this._context); }
+  findContent (params) { return this._sdk.api.Content.find(params, this._sdk, this._context); }
 
-  
-
-  getLocation (uuid) { return resources.Location.get(uuid, this.context); }
-  findLocations (params) { return resources.Location.find(params, this.context); }
-  createLocation (document, options) { return resources.Location.create(document, options, this.context); }
-
-  getData (key, group) { return resources.Data.get(key, group, this.context); }
-  findData (params) { return resources.Data.find(params, this.context); }
-  createData (document, options) { return resources.Data.create(document, options, this.context); }
-
-  getContent (uuid) { return resources.Content.get(uuid, this.context); }
-  findContent (params) { return resources.Content.find(params, this.context); }
-
-  getFeed (uuid) { return resources.Feed.get(uuid, this.context); }
-  findFeeds (params) { return resources.Feed.find(params, this.context); }
-  createFeed (document, options) { return resources.Feed.create(document, options, this.context); }
-
-*/
-  get EventNode () { return EventNode; }
-
-
-
-
+  /* Feeds */
+  getFeed (uuid) { return this._sdk.api.Feed.get({ uuid: uuid }, this._sdk, this._context); }
+  findFeeds (params) { return this._sdk.api.Feed.find(params, this._sdk, this._context); }
 
 }
 

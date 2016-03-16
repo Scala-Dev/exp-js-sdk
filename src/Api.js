@@ -143,9 +143,8 @@ class Zone extends Resource {
 
 class Location extends Resource {
 
-  static _getPath () {
-    return '/api/locations';
-  }
+  static getCollectionPath () { return '/api/locations'; }
+
 
   getZones () {
     if (!this.document.zones) return Promise.resolve([]);
