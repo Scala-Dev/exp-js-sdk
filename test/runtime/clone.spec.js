@@ -1,10 +1,8 @@
 'use strict';
 
-module.exports = exp => {
+module.exports = sdk => {
   describe('Cloning', () => {
-    describe('Sanity', () => {
-      it('Should succeed', () => exp.clone());
-      it('Should succeed with a context.', () => exp.clone('context'));
-    });
+  	it('Should succeed', () => sdk.clone());
+    it('Should succeed with a context.', () => sdk.clone('context'));
   });
 };

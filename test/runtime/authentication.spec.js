@@ -1,7 +1,7 @@
 'use strict';
 
-module.exports = exp => {
+module.exports = sdk => {
   describe('Authentication', () => {
-    it('should authenticate sucessfully', () => exp.getAuth());
+    it('should authenticate sucessfully', () => sdk.getAuth());
   });
 };

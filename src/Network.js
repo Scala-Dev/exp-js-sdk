@@ -202,7 +202,9 @@ class Network {
   _onOnline () {
     Object.keys(this._subscriptions).forEach(id => {
       this._subscriptions[id].reset();
-      if (!this._channels[id] || !this._channels[id].hasListeners) delete this._subscriptions[id];
+      if (!this._channels[id] || !this._channels[id].hasListeners) {
+        delete this._subscriptions[id];
+      }
     });
     this._emit('subscribe', Object.keys(this._subscriptions));
     this._events.trigger('online');
