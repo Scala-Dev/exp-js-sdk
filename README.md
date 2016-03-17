@@ -267,7 +267,7 @@ sdk2.clear('A'); // Also clears sdk1A!
 `location.getDevices()` | Resolves to an array of [devices](#devices) in the location.
 `location.getThings()` | Resolves to an array of [things](#things) in the location.
 `location.getZones()` | Resolves to an array of [zones](#zones) in the location.
-
+`location.getLayoutUrl()` | Returns url to location layout image.
 
 
 
