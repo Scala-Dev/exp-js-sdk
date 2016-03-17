@@ -253,29 +253,31 @@ sdk2.clear('A'); // Also clears sdk1A!
 
 
 
-
-
-
-
-### GOOD TILL HERE
-
-
-
-
-
-
-
-
 ## Locations
-- ```exp.getLocation(uuid)```: Resolves to the location with the given uuid.
-- ```exp.findLocations(params)```: Resolves to an array of matching locations. Params is a dictionary of query params. See the API docs. 
-- ```exp.createLocation(document)```: Resolves to an unsaved location.
-- ```location.save()```: Saves or updates the location.
-- ```location.refresh()```: Refreshes the location.
-- ```location.uuid```: The location's uuid.
-- ```location.document```: The location's underlying document.
-- ```location.getChannel(options)```: Returns a channel for communication about the location. See [Channels](#channels).
-- ```location.getZones()```: Returns a promise that resolves to an array of the location's zones.
+`exp.getLocation(uuid)` | Resolves to the location with given uuid or `null`.
+`exp.findLocations(params)` | Resolves to an array of locations matching the given query parameters.
+`exp.createLocation(document)` | Resolves to a newly created location.
+`location.document` | The location's underlying document.
+`location.refresh()` | Resolves when the location is refreshed. The document is updated in place.
+`location.save()` | Resolves when the location is saved. The document is updated in place.
+`location.getChannel(options)` | Returns the [channel](#channel) for this location with the given [channel options](#channel-options).
+`location.fling(payload, options, timeout)` | Sends fling event on location's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+`location.getDevices()` | Resolves to an array of [devices](#devices) in the location.
+`location.getThings()` | Resolves to an array of [things](#things) in the location.
+`location.getZones()` | Resolves to an array of [zones](#zones) in the location.
+
+
+
+
+
+
+### TESTED TILL HERE
+
+
+
+
+
+
 
 ## Feeds
 - ```exp.getFeed(uuid)```: Resolves to the feed with the given uuid.
