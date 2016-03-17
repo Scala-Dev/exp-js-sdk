@@ -254,6 +254,8 @@ sdk2.clear('A'); // Also clears sdk1A!
 
 
 ## Locations
+ | Description
+ --- | ---
 `exp.getLocation(uuid)` | Resolves to the location with given uuid or `null`.
 `exp.findLocations(params)` | Resolves to an array of locations matching the given query parameters.
 `exp.createLocation(document)` | Resolves to a newly created location.
