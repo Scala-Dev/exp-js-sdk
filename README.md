@@ -191,10 +191,10 @@ sdk2.clear('A'); // Also clears sdk1A!
 ## Events
  | Description
 --- | ---
-`exp.on('online',callback)` | Callback is called when connection to the network is established.
-`exp.on('update',callback)` | Callback is called when authentication payload is updated.
-`exp.on('offline',callback)` | Callback is called when connection to the network is lost.
-`exp.on('error',callback)` | Callback is called with an error when a critical error occurs and the SDK cannot continue.
+`exp.on('online',callback)` | Callback is called when connection to the network is established. Returns a [listener](#listener).
+`exp.on('update',callback)` | Callback is called when authentication payload is updated. Returns a [listener](#listener).
+`exp.on('offline',callback)` | Callback is called when connection to the network is lost. Returns a [listener](#listener).
+`exp.on('error',callback)` | Callback is called with an error when a critical error occurs and the SDK cannot continue. Returns a [listener](#listener).
 
 
 ## Channels
@@ -202,8 +202,12 @@ sdk2.clear('A'); // Also clears sdk1A!
  --- | ---
  `exp.getChannel(name, options)` | Returns a channel with the given name and [channel options](#channel-options].
  `channel.broadcast(name, payload, timeout)` | Sends a broadcast with given name and payload on the channel. Waits for responses for timeout milliseconds.
- `channel.listen(name, callback` | Listeners for broadcasts with given name on the channel. `callback` will be called with the broadcast payload and the response callback.
+ `channel.listen(name, callback` | Listens for broadcasts with given name on the channel. `callback` will be called with the broadcast payload and the response callback.Resolves to a [listener](#listener) when the channel is registered.
  `channel.fling(payload, timeout)` | Sends a fling broadcast on this channel with the given payload and timeout.
+
+
+## Listeners
+- ```listener.cancel()```: Cancels the registered callback associated with the listener.
 
 
 ## Devices
@@ -321,9 +325,6 @@ sdk2.clear('A'); // Also clears sdk1A!
 - ```exp.getChannel(name, options)```: Returns a channel. Options is an object that can have system: true/false and consumer true/false, i.e. ```{ system: true, consumer: false }```. 
 - ```channel.listen(name, callback)```: Returns a promise that resolves to a [listener](#listeners) when the listener is registered. Callback is called when a broadcast for the named event is received. Callback is passed the payload of the broadcast and a response callback that, when called, can be passed the response to the broadcast.
 - ```channel.broadcast(name, payload, timeout)```: Returns a promise that resolves to a list of responses to the broadcast. Request will wait for responses for the given timeout. 
-
-## Listeners
-- ```listener.cancel()```: Cancels the registered callback associated with the listener.
 
 ## Exceptions
 
