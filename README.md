@@ -180,33 +180,44 @@ sdk2.clear('A'); // Also clears sdk1A!
 
  | Description
 --- | ---
-`start(options)` | Resolves when login succeeds. `options` is an object containing [startup options](#startup-options). Throws an error if `options` is invalid. 
-`getAuth()` | Resolves to the current authentication payload.
-`isConnected` | Whether or not you are connected to the network.
-`stop()` | Stops networking and clears all event listeners for this instance and all clones. This instance of the and all of its clones can no longer be used.
-`clone(context)` | Returns a clone of the instance with the given [context](#contexts). `context` defaults to the current [context](#contexts).
-`fork(context)` | Returns an unstarted instance of the SDK with the given [context](#contexts). `context` defaults to the current [context](#contexts).
-`clear(context)` | Clears all event listeners for the specified [context](#contexts). If no [context](#contexts) is specified, the current instances [context](#contexts) is used.
+`exp.start(options)` | Resolves when login succeeds. `options` is an object containing [startup options](#startup-options). Throws an error if `options` is invalid. 
+`exp.getAuth()` | Resolves to the current authentication payload.
+`exp.isConnected` | Whether or not you are connected to the network.
+`exp.stop()` | Stops networking and clears all event listeners for this instance and all clones. This instance of the and all of its clones can no longer be used.
+`exp.clone(context)` | Returns a clone of the instance with the given [context](#contexts). `context` defaults to the current [context](#contexts).
+`exp.fork(context)` | Returns an unstarted instance of the SDK with the given [context](#contexts). `context` defaults to the current [context](#contexts).
+`exp.clear(context)` | Clears all event listeners for the specified [context](#contexts). If no [context](#contexts) is specified, the current instances [context](#contexts) is used.
 
 ## Events
  | Description
------- | ---
-`on('online',callback)` | Callback is called when connection to the network is established.
-`on('update',callback)` | Callback is called when authentication payload is updated.
-`on('offline',callback)` | Callback is called when connection to the network is lost.
-`on('error',callback)` | Callback is called with an error when a critical error occurs and the SDK cannot continue.
+--- | ---
+`exp.on('online',callback)` | Callback is called when connection to the network is established.
+`exp.on('update',callback)` | Callback is called when authentication payload is updated.
+`exp.on('offline',callback)` | Callback is called when connection to the network is lost.
+`exp.on('error',callback)` | Callback is called with an error when a critical error occurs and the SDK cannot continue.
+
+
+## Channels
+ | Description
+ --- | ---
+ `exp.getChannel(name, options)` | Returns a channel with the given name and [channel options](#channel-options].
+ `channel.broadcast(name, payload, timeout)` | Sends a broadcast with given name and payload on the channel. Waits for responses for timeout milliseconds.
+ `channel.listen(name, callback` | Listeners for broadcasts with given name on the channel. `callback` will be called with the broadcast payload and the response callback.
+ `channel.fling(payload, timeout)` | Sends a fling broadcast on this channel with the given payload and timeout.
+
 
 ## Devices
 
  | Description
 --- | ---
-`getDevice(uuid)` | Resolves to the device with given uuid or `null`.
-`findDevices(params)` | Resolves to an array of devices matching the given query parameters.
-`createDevice(document)` | Resolves to a newly created device.
+`exp.getDevice(uuid)` | Resolves to the device with given uuid or `null`.
+`exp.findDevices(params)` | Resolves to an array of devices matching the given query parameters.
+`exp.createDevice(document)` | Resolves to a newly created device.
 `device.document` | The device's underlying document.
 `device.refresh()` | Resolves when the device is refreshed. The document is updated in place.
 `device.save()` | Resolves when the device is saved. The document is updated in place.
 `device.getChannel(options)` | Returns the [channel](#channel) for this device with the given [channel options](#channel-options).
+`device.fling(payload, options, timeout)` | Sends fling event on device's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
 `device.getExperience()` | Resolves to the device's [experience](#experience) or null.
 `device.getLocation()` | Resolve to the device's [location](#locations) or null.
 `device.getZones()` | Resolves to an array of the device's [zones](#zones).
@@ -215,16 +226,30 @@ sdk2.clear('A'); // Also clears sdk1A!
 
  | Description
 --- | ---
-`getThing(uuid)` | Resolves to the thing with given uuid or `null`.
-`findThings(params)` | Resolves to an array of things matching the given query parameters.
-`createThing(document)` | Resolves to a newly created thing.
+`exp.getThing(uuid)` | Resolves to the thing with given uuid or `null`.
+`exp.findThings(params)` | Resolves to an array of things matching the given query parameters.
+`exp.createThing(document)` | Resolves to a newly created thing.
 `thing.document` | The thing's underlying document.
 `thing.refresh()` | Resolves when the thing is refreshed. The document is updated in place.
 `thing.save()` | Resolves when the thing is saved. The document is updated in place.
 `thing.getChannel(options)` | Returns the [channel](#channel) for this thing with the given [channel options](#channel-options).
+`thing.fling(payload, options, timeout)` | Sends fling event on thing's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
 `thing.getLocation()` | Resolve to the thing's [location](#locations) or null.
 `thing.getZones()` | Resolves to an array of the thing's [zones](#zones).
 
+## Experiences
+
+ | Description
+--- | ---
+`exp.getExperience(uuid)` | Resolves to the experience with given uuid or `null`.
+`exp.findExperiences(params)` | Resolves to an array of experiences matching the given query parameters.
+`exp.createExperience(document)` | Resolves to a newly created experience.
+`experience.document` | The experience's underlying document.
+`experience.refresh()` | Resolves when the experience is refreshed. The document is updated in place.
+`experience.save()` | Resolves when the experience is saved. The document is updated in place.
+`experience.getChannel(options)` | Returns the [channel](#channel) for this experience with the given [channel options](#channel-options).
+`experience.fling(payload, options, timeout)` | Sends fling event on experience's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+`experience.getDevices()` | Resolves to an array of [devices](#devices) in the experience.
 
 
 
@@ -240,15 +265,6 @@ sdk2.clear('A'); // Also clears sdk1A!
 
 
 
-## Experiences
-- ```exp.getExperience(uuid)```: Resolves to the experience with the given uuid.
-- ```exp.findExperiences(params)```: Resolves to an array of matching experiences. Params is a dictionary of query params. See the API docs. 
-- ```exp.createExperience(document)```: Resolves to an unsaved experience.
-- ```experience.save()```: Saves or updates the experience.
-- ```experience.refresh()```: Refreshes the experience.
-- ```experience.uuid```: The experience's uuid.
-- ```experience.document```: The experience's underlying document.
-- ```experience.getChannel(options)```: Returns a channel for communication about the experience. See [Channels](#channels).
 
 ## Locations
 - ```exp.getLocation(uuid)```: Resolves to the location with the given uuid.
