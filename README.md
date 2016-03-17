@@ -1,48 +1,25 @@
 
-- [Getting the SDK](#getting-started)
-  - [Using Bower](#bower)
-  - [Using NPM](#npm)
-- [Starting the SDK](#)
-  - [Introduction](#)
-  - [Options](#)
-  - [Example: Starting the SDK as a User](#)
-  - [Example: Starting the SDK as a Device](#)
-  - [Example: Starting the SDK as a Consumer App](#)
-- [API Resources](#api-resources)
-  - [Introduction](#)
-  - [Example: Creating a New Location](#)
-  - [Example: Getting Feed Data](#)
-  - [Example: Getting a Content Variant](#)
-  - [Example: Storing Arbitrary JSON Data](#)
-- [Real Time Communication on the EXP Network](#communicating-on-the-exp-network)
-  - [Introduction](#)
-  - [Example: Sending a Broadcast](#)
-  - [Example: Listening for a Broadcast](#)
-  - [Example: Responding to a Broadcast](#)
-  - [Example: Listening for Changes to a Data](#)
-  - [Example: Canceling a Listener](#)
-- [Advanced Topics](#advanced-topics)
-  - [Context Based Memory Management](#context-based-memory-management)
-  - [Using Multiple Instances of the SDK](#using-multiple-instances-of-the-sdk)
+- [Installation](#installation)
+  - [Bower](#bower)
+  - [NPM](#npm)
 - [Reference](#reference)
-  - [Resources](#resources)
+  - [Runtime](#runtime)
+  - [Events](#events)
+  - [Channels](#channels)
+  - [Listeners](#listeners)
   - [Devices](#devices)
   - [Things](#things)
   - [Experiences](#experiences)
   - [Locations](#locations)
-  - [Zones](#zones)
-  - [Content](#content)
-  - [Data](#data)
-  - [Channels](#channels)
-  - [Listeners](#listeners)
 
 
 
 
 
-# Getting Started
 
-## Browser
+# Installation
+
+## Bower
 
 The easiest way to get the SDK for standalone browser usage is using `bower`.
 
@@ -58,7 +35,7 @@ Then include the sdk in a script tag from the bower_components directory. You ca
 ```
 
 
-## Node
+## NPM
 
 To use the EXP SDK with Node, install using `npm`
 
@@ -71,6 +48,258 @@ and require in the `exp` module.
 ```javascript
 const exp = require('exp-sdk');
 ```
+
+
+
+# Reference
+
+
+
+
+## Runtime
+
+ | Description
+--- | ---
+`exp.start(options)` | Resolves when login succeeds. `options` is an object containing [startup options](#startup-options). Throws an error if `options` is invalid. 
+`exp.getAuth()` | Resolves to the current authentication payload.
+`exp.isConnected` | Whether or not you are connected to the network.
+`exp.stop()` | Stops networking and clears all event listeners for this instance and all clones. This instance of the and all of its clones can no longer be used.
+`exp.clone(context)` | Returns a clone of the instance with the given [context](#contexts). `context` defaults to the current [context](#contexts).
+`exp.fork(context)` | Returns an unstarted instance of the SDK with the given [context](#contexts). `context` defaults to the current [context](#contexts).
+`exp.clear(context)` | Clears all event listeners for the specified [context](#contexts). If no [context](#contexts) is specified, the current instances [context](#contexts) is used.
+
+## Events
+ | Description
+--- | ---
+`exp.on('online',callback)` | Callback is called when connection to the network is established. Returns a [listener](#listener).
+`exp.on('update',callback)` | Callback is called when authentication payload is updated. Returns a [listener](#listener).
+`exp.on('offline',callback)` | Callback is called when connection to the network is lost. Returns a [listener](#listener).
+`exp.on('error',callback)` | Callback is called with an error when a critical error occurs and the SDK cannot continue. Returns a [listener](#listener).
+
+
+## Channels
+ | Description
+ --- | ---
+ `exp.getChannel(name, options)` | Returns a channel with the given name and [channel options](#channel-options].
+ `channel.broadcast(name, payload, timeout)` | Sends a broadcast with given name and payload on the channel. Waits for responses for timeout milliseconds.
+ `channel.listen(name, callback` | Listens for broadcasts with given name on the channel. `callback` will be called with the broadcast payload and the response callback.Resolves to a [listener](#listener) when the channel is registered.
+ `channel.fling(payload, timeout)` | Sends a fling broadcast on this channel with the given payload and timeout.
+
+
+## Listeners
+ | Description
+ --- | ---
+`listener.cancel()` | Cancels the registered callback associated with the listener.
+
+
+## Devices
+
+ | Description
+--- | ---
+`exp.getDevice(uuid)` | Resolves to the device with given uuid or `null`.
+`exp.findDevices(params)` | Resolves to an array of devices matching the given query parameters.
+`exp.createDevice(document)` | Resolves to a newly created device.
+`device.document` | The device's underlying document.
+`device.refresh()` | Resolves when the device is refreshed. The document is updated in place.
+`device.save()` | Resolves when the device is saved. The document is updated in place.
+`device.getChannel(options)` | Returns the [channel](#channel) for this device with the given [channel options](#channel-options).
+`device.fling(payload, options, timeout)` | Sends fling event on device's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+`device.getExperience()` | Resolves to the device's [experience](#experience) or null.
+`device.getLocation()` | Resolve to the device's [location](#locations) or null.
+`device.getZones()` | Resolves to an array of the device's [zones](#zones).
+
+## Things
+
+ | Description
+--- | ---
+`exp.getThing(uuid)` | Resolves to the thing with given uuid or `null`.
+`exp.findThings(params)` | Resolves to an array of things matching the given query parameters.
+`exp.createThing(document)` | Resolves to a newly created thing.
+`thing.document` | The thing's underlying document.
+`thing.refresh()` | Resolves when the thing is refreshed. The document is updated in place.
+`thing.save()` | Resolves when the thing is saved. The document is updated in place.
+`thing.getChannel(options)` | Returns the [channel](#channel) for this thing with the given [channel options](#channel-options).
+`thing.fling(payload, options, timeout)` | Sends fling event on thing's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+`thing.getLocation()` | Resolve to the thing's [location](#locations) or null.
+`thing.getZones()` | Resolves to an array of the thing's [zones](#zones).
+
+## Experiences
+
+ | Description
+--- | ---
+`exp.getExperience(uuid)` | Resolves to the experience with given uuid or `null`.
+`exp.findExperiences(params)` | Resolves to an array of experiences matching the given query parameters.
+`exp.createExperience(document)` | Resolves to a newly created experience.
+`experience.document` | The experience's underlying document.
+`experience.refresh()` | Resolves when the experience is refreshed. The document is updated in place.
+`experience.save()` | Resolves when the experience is saved. The document is updated in place.
+`experience.getChannel(options)` | Returns the [channel](#channel) for this experience with the given [channel options](#channel-options).
+`experience.fling(payload, options, timeout)` | Sends fling event on experience's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+`experience.getDevices()` | Resolves to an array of [devices](#devices) in the experience.
+
+
+
+## Locations
+ | Description
+ --- | ---
+`exp.getLocation(uuid)` | Resolves to the location with given uuid or `null`.
+`exp.findLocations(params)` | Resolves to an array of locations matching the given query parameters.
+`exp.createLocation(document)` | Resolves to a newly created location.
+`location.document` | The location's underlying document.
+`location.refresh()` | Resolves when the location is refreshed. The document is updated in place.
+`location.save()` | Resolves when the location is saved. The document is updated in place.
+`location.getChannel(options)` | Returns the [channel](#channel) for this location with the given [channel options](#channel-options).
+`location.fling(payload, options, timeout)` | Sends fling event on location's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+`location.getDevices()` | Resolves to an array of [devices](#devices) in the location.
+`location.getThings()` | Resolves to an array of [things](#things) in the location.
+`location.getZones()` | Resolves to an array of [zones](#zones) in the location.
+`location.getLayoutUrl()` | Returns url to location layout image.
+
+
+
+
+
+### TESTED TILL HERE
+
+
+
+## Startup Options
+## Channel Options
+## Contexts
+
+
+
+## Feeds
+- ```exp.getFeed(uuid)```: Resolves to the feed with the given uuid.
+- ```exp.findFeeds(params)```: Resolves to an array of matching feeds. Params is a dictionary of query params. See the API docs.
+- ```exp.createFeed(document)```: Resolves to an unsaved feed.
+- ```feed.save()```: Saves or updates the feed.
+- ```feed.refresh()```: Refreshes the feed.
+- ```feed.uuid```
+- ```feed.document```
+- ```feed.getChannel(options)```: Returns a channel for communication about the feed. See [Channels](#channels).
+
+## Zones
+- ```zone.document```: The zone's underlying document.
+- ```zone.getChannel(options)```: Returns a channel for communications about the zone. See [Channels](#channels).
+## Content
+- ```exp.getContent(uuid)```: Resolves to the content with the given uuid.
+- ```exp.findContent(params)```: Resolves to an array of matching content. Params is a dictionary of query params. See the API docs. 
+- ```content.refresh()```: Refreshes the content.
+- ```content.uuid```: The content's uuid.
+- ```content.document```: The content's underlying document.
+- ```content.getChannel(options)```: Returns a channel for communication about the content. See [Channels](#channels).
+- ```content.get_url()```: Returns the delivery URL for the content.
+- ```content.get_variant_url(name)```: Returns the delivery URL for a variant.
+- ```content.has_variant(name)```: Returns ```true``` or ```false``` to indicate if the specified variant exists.
+- ```content.subtype```: The subtype of the content.
+
+## Data
+- ```exp.getData(key, group)```: Resolves to the data resource for the given key and group. Group is set to "default" if not specified. 
+- ```exp.findData(params)```: Resolves to an array of matching data resources. Params is a dictionary of query params. See the API docs.
+- ```exp.createData(key, value, group)```: Creates an unsaved data object. Group is set to "default" if not specified.
+- ```data.save()```: Save the data object.
+- ```data.refresh()```: Refresh the data.
+- ```data.value```
+- ```data.key```
+- ```data.group```
+
+
+## Channels
+- ```exp.getChannel(name, options)```: Returns a channel. Options is an object that can have system: true/false and consumer true/false, i.e. ```{ system: true, consumer: false }```. 
+- ```channel.listen(name, callback)```: Returns a promise that resolves to a [listener](#listeners) when the listener is registered. Callback is called when a broadcast for the named event is received. Callback is passed the payload of the broadcast and a response callback that, when called, can be passed the response to the broadcast.
+- ```channel.broadcast(name, payload, timeout)```: Returns a promise that resolves to a list of responses to the broadcast. Request will wait for responses for the given timeout. 
+
+## Exceptions
+
+
+# Examples
+
+
+## Creating a Device and Listening for Updates
+
+Updates to API resources are sent out over a system channel with the event name "update".
+
+```javascript
+exp.createDevice({ 'name': 'my_sweet_device' }).then(device => {
+  return device.save().then(() => {
+    device.getChannel({ system: true }).listen('update', payload => {
+      console.log('Device was updated!');
+    });
+  });
+});
+```
+
+
+## Modifying a Resource in Place
+
+```javascript
+exp.getExperience('[uuid]').then(experience => {
+  experience.document.name = 'new name';
+  return experience.save()
+});
+```
+
+
+## Using The EXP Network
+
+The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
+
+### Channels
+
+All messages on the EXP network are sent over a channel. Channels have a name, and two flags: ```system``` and ```consumer```.
+
+```javascript
+const channel = exp.getChannel('myChannel', { system: false, consumer: false });
+```
+
+Use ```system: true``` to get a system channel. You cannot send messages on a system channels but can listen for system notifications, such as updates to API resources.
+
+Use ```consumer: true``` to get a consumer channel. Consumer devices can only listen or broadcast on consumer channels. When ```consumer: false``` you will not receive consumer device broadcasts and consumer devices will not be able to hear your broadcasts.
+
+Both ```system``` and ```consumer``` default to ```false```. Consumer devices will be unable to broadcast or listen to messages on non-consumer channels.
+
+
+### Broadcasting
+
+Use the broadcast method of a channel object to send a named message containing an optional JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The broadcast will return a promise and resolve approximately after the given timeout (milliseconds) with a ```list``` of response payloads. Each response payload can any JSON serializable type.
+
+```javascript
+exp.getChannel('myChannel').broadcast('myEvent', 'hello', 5000).then(responses => {
+  responses.forEach(response => console.log(response));
+});
+```
+
+### Listening
+
+To listen for broadcasts, call the listen method of a channel object.  Pass in the name of the event you wish to listen for and a callback to handle the broadcast. The callback will receive the broadcast payload. Listen returns a promise that resolves with a listener object when listening on the network has actually started. Calling cancel on the listener object stops the callback from being executed.
+
+
+```javascript
+
+exp.getChannel('myChannel').listen('myEvent', payload => {
+  console.log('Event Received!');
+  console.log(payload);
+}).then(listener => {
+  // Remove the listener after 5 seconds.
+  setTimeout(() => listener.cancel(), 5000);
+});
+
+```
+
+
+### Responding
+
+To respond to a broadcast, call the second argument of the listener callback with your response.
+
+```javascript
+
+exp.getChannel('my_channel').listen('my_event', (payload, respond) => {
+  if (payload === 'hello!') respond('hi there!');
+});
+
+```
+
 
 
 ## Starting the SDK
@@ -166,207 +395,3 @@ sdk2A = sdk2.clone('A');
 sdk2.clear('A'); // Also clears sdk1A!
 
 ```
-
-
-
-# Reference
-
-## Runtime
- | Description
------- | ---
-`start(options)` | Start/configure the SDK. Returns a configured sdk instance. See [Starting the SDK](#starting-the-sdk).
-`getAuth()` | Resolves to the current authentication payload.
-`isConnected` | Whether or not you are connected to the EXP network.
-`on('online',callback)` | Callback is called when connection to EXP network is established.
-`on('update',callback)` | Callback is called when authentication payload is updated.
-`on('offline',callback)` | Callback is called when connection to EXP network is lost.
-`on('error',callback)` | Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
-`stop()` | Stops the SDK and clears all event listeners.
-`clone(context)` | Creates a copy of the SDK for the given content (a string). If context is not specified, a random string is generated.
-`clear(context)` | Clears all event listeners for the specified context. If no context is specified, clears every event listener. 
-
-
-## Common Resource Methods and Properties
-
- | Description
- --- | ---
-`resource.save().then(() => {})` | Returns a promise that resolves when the resource is saved. The resource is updated in place.
-`resource.refresh().then(() => {})` | Returns a promise that resolves when the local copy of the resource is refreshed. The resource is updated in place.
-`resource.document` | The resource's underlying document. See the [API documentation](https://docs.goexp.io).
-`resource.getChannel(options)` | Returns a channel for communication about the resource. See [Channels](#channels).
-
-## Devices
-
- | Description
---- | ---
-`getDevice(uuid)` | Resolves to device with given uuid. 
-`findDevices(params)` | Resolves to an array of matching devices. Params is a dictionary of query params. See the [API documentation](https://docs.goexp.io).
-`createDevice(document)` | Resolves to a new device.
-
-Devices inherit [common resource methods and properties](#common-resource-methods-and-properties).
-
-
-
-## Things
-Things inherit [common resource methods and properties](#resources).
-Method | Description
-- ```exp.getThing(uuid)```: Resolves to the thing with the given uuid.
-- ```exp.findThings(params)```: Resolves to an array of matching things. Params is a dictionary of query params. See the API docs. 
-- ```exp.createThing(document)```: Resolves to an unsaved thing.
-
-
-## Experiences
-- ```exp.getExperience(uuid)```: Resolves to the experience with the given uuid.
-- ```exp.findExperiences(params)```: Resolves to an array of matching experiences. Params is a dictionary of query params. See the API docs. 
-- ```exp.createExperience(document)```: Resolves to an unsaved experience.
-- ```experience.save()```: Saves or updates the experience.
-- ```experience.refresh()```: Refreshes the experience.
-- ```experience.uuid```: The experience's uuid.
-- ```experience.document```: The experience's underlying document.
-- ```experience.getChannel(options)```: Returns a channel for communication about the experience. See [Channels](#channels).
-
-## Locations
-- ```exp.getLocation(uuid)```: Resolves to the location with the given uuid.
-- ```exp.findLocations(params)```: Resolves to an array of matching locations. Params is a dictionary of query params. See the API docs. 
-- ```exp.createLocation(document)```: Resolves to an unsaved location.
-- ```location.save()```: Saves or updates the location.
-- ```location.refresh()```: Refreshes the location.
-- ```location.uuid```: The location's uuid.
-- ```location.document```: The location's underlying document.
-- ```location.getChannel(options)```: Returns a channel for communication about the location. See [Channels](#channels).
-- ```location.getZones()```: Returns a promise that resolves to an array of the location's zones.
-
-## Feeds
-- ```exp.getFeed(uuid)```: Resolves to the feed with the given uuid.
-- ```exp.findFeeds(params)```: Resolves to an array of matching feeds. Params is a dictionary of query params. See the API docs.
-- ```exp.createFeed(document)```: Resolves to an unsaved feed.
-- ```feed.save()```: Saves or updates the feed.
-- ```feed.refresh()```: Refreshes the feed.
-- ```feed.uuid```
-- ```feed.document```
-- ```feed.getChannel(options)```: Returns a channel for communication about the feed. See [Channels](#channels).
-
-## Zones
-- ```zone.document```: The zone's underlying document.
-- ```zone.getChannel(options)```: Returns a channel for communications about the zone. See [Channels](#channels).
-## Content
-- ```exp.getContent(uuid)```: Resolves to the content with the given uuid.
-- ```exp.findContent(params)```: Resolves to an array of matching content. Params is a dictionary of query params. See the API docs. 
-- ```content.refresh()```: Refreshes the content.
-- ```content.uuid```: The content's uuid.
-- ```content.document```: The content's underlying document.
-- ```content.getChannel(options)```: Returns a channel for communication about the content. See [Channels](#channels).
-- ```content.get_url()```: Returns the delivery URL for the content.
-- ```content.get_variant_url(name)```: Returns the delivery URL for a variant.
-- ```content.has_variant(name)```: Returns ```true``` or ```false``` to indicate if the specified variant exists.
-- ```content.subtype```: The subtype of the content.
-
-## Data
-- ```exp.getData(key, group)```: Resolves to the data resource for the given key and group. Group is set to "default" if not specified. 
-- ```exp.findData(params)```: Resolves to an array of matching data resources. Params is a dictionary of query params. See the API docs.
-- ```exp.createData(key, value, group)```: Creates an unsaved data object. Group is set to "default" if not specified.
-- ```data.save()```: Save the data object.
-- ```data.refresh()```: Refresh the data.
-- ```data.value```
-- ```data.key```
-- ```data.group```
-
-
-## Channels
-- ```exp.getChannel(name, options)```: Returns a channel. Options is an object that can have system: true/false and consumer true/false, i.e. ```{ system: true, consumer: false }```. 
-- ```channel.listen(name, callback)```: Returns a promise that resolves to a [listener](#listeners) when the listener is registered. Callback is called when a broadcast for the named event is received. Callback is passed the payload of the broadcast and a response callback that, when called, can be passed the response to the broadcast.
-- ```channel.broadcast(name, payload, timeout)```: Returns a promise that resolves to a list of responses to the broadcast. Request will wait for responses for the given timeout. 
-
-## Listeners
-- ```listener.cancel()```: Cancels the registered callback associated with the listener.
-
-## Exceptions
-
-
-# Examples
-
-
-## Creating a Device and Listening for Updates
-
-Updates to API resources are sent out over a system channel with the event name "update".
-
-```javascript
-exp.createDevice({ 'name': 'my_sweet_device' }).then(device => {
-  return device.save().then(() => {
-    device.getChannel({ system: true }).listen('update', payload => {
-      console.log('Device was updated!');
-    });
-  });
-});
-```
-
-
-## Modifying a Resource in Place
-
-```javascript
-exp.getExperience('[uuid]').then(experience => {
-  experience.document.name = 'new name';
-  return experience.save()
-});
-```
-
-
-## Using The EXP Network
-
-The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
-
-### Channels
-
-All messages on the EXP network are sent over a channel. Channels have a name, and two flags: ```system``` and ```consumer```.
-
-```javascript
-const channel = exp.getChannel('myChannel', { system: false, consumer: false });
-```
-
-Use ```system: true``` to get a system channel. You cannot send messages on a system channels but can listen for system notifications, such as updates to API resources.
-
-Use ```consumer: true``` to get a consumer channel. Consumer devices can only listen or broadcast on consumer channels. When ```consumer: false``` you will not receive consumer device broadcasts and consumer devices will not be able to hear your broadcasts.
-
-Both ```system``` and ```consumer``` default to ```false```. Consumer devices will be unable to broadcast or listen to messages on non-consumer channels.
-
-
-### Broadcasting
-
-Use the broadcast method of a channel object to send a named message containing an optional JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The broadcast will return a promise and resolve approximately after the given timeout (milliseconds) with a ```list``` of response payloads. Each response payload can any JSON serializable type.
-
-```javascript
-exp.getChannel('myChannel').broadcast('myEvent', 'hello', 5000).then(responses => {
-  responses.forEach(response => console.log(response));
-});
-```
-
-### Listening
-
-To listen for broadcasts, call the listen method of a channel object.  Pass in the name of the event you wish to listen for and a callback to handle the broadcast. The callback will receive the broadcast payload. Listen returns a promise that resolves with a listener object when listening on the network has actually started. Calling cancel on the listener object stops the callback from being executed.
-
-
-```javascript
-
-exp.getChannel('myChannel').listen('myEvent', payload => {
-  console.log('Event Received!');
-  console.log(payload);
-}).then(listener => {
-  // Remove the listener after 5 seconds.
-  setTimeout(() => listener.cancel(), 5000);
-});
-
-```
-
-
-### Responding
-
-To respond to a broadcast, call the second argument of the listener callback with your response.
-
-```javascript
-
-exp.getChannel('my_channel').listen('my_event', (payload, respond) => {
-  if (payload === 'hello!') respond('hi there!');
-});
-
-```
-
