@@ -13,12 +13,15 @@ class Resource {
   }
 
   static create (document, sdk, context) {
-    return sdk.api.post(this.getCollectionPath(document), null, document).then(document => new this(document, sdk, context));
+    return sdk.api.post(this.getCollectionPath(document), document).then(document => new this(document, sdk, context));
   }
 
   static get (uuid, sdk, context) {
-    if (!uuid) return Promise.reject(new Error('Document uuid is required.'));
-    return sdk.api.get(this.getResourcePath({ uuid: uuid })).then(document => new this(document, sdk, context));
+    if (!uuid) return Promise.resolve(null);
+    return sdk.api.get(this.getResourcePath({ uuid: uuid })).then(document => new this(document, sdk, context)).catch(error => {
+      if (error && error.status === 404) return null;
+      throw error;
+    });
   }
 
   static find (params, sdk, context) {
@@ -30,7 +33,11 @@ class Resource {
   static getChannelName (document) { return document.uuid; }
 
   save () {
-    return this._sdk.api.patch(this.constructor.getResourcePath(this.document), null, this.document).then(document => this.document = document);
+    return this._sdk.api.patch(this.constructor.getResourcePath(this.document), this.document).then(document => this.document = document);
+  }
+
+  fling (payload, options, timeout) {
+    return this.getChannel(options).fling(payload, timeout);
   }
 
   refresh () {
@@ -41,10 +48,6 @@ class Resource {
     return this._sdk.network.getChannel(this.constructor.getChannelName(this.document), options, this._context);
   }
 
-  fling (payload, options) {
-    return this.getChannel(options).broadcast('fling', payload);
-  }
-
   clone (context) {
     return new this.constructor(this.document, this._sdk, context || this._context);
   }
@@ -52,24 +55,23 @@ class Resource {
 }
 
 
+/* Devices */
+
 class Device extends Resource {
 
   static getCollectionPath () { return '/api/devices'; }
 
   getExperience () {
-    const uuid = _.get(this, 'document.experience.uuid');
-    if (!uuid) return Promise.reject('Device has no experience.');
-    return this._sdk.api.Experience.get(uuid, this._sdk, this.context);
+    return this._sdk.api.Experience.get(_.get(this, 'document.experience.uuid'), this._sdk, this.context);
   }
 
   getLocation () {
-    const uuid = _.get(this, 'document.location.uuid');
-    if (!uuid) return Promise.reject('Device has no location.');
     return this._sdk.api.Location.get(_.get(this, 'document.location.uuid'), this._sdk, this.context);
   }
 
   getZones () {
     return this.getLocation().then(location => {
+      if (!location) return [];
       return location.document.zones.filter(locationZoneDocument => {
         return this.document.location.zones.find(deviceZoneDocument => deviceZoneDocument.key === locationZoneDocument.key);
       }).map(document => new this._sdk.api.Zone(document, location, this._sdk, this._context));
@@ -82,6 +84,7 @@ class Device extends Resource {
 
 }
 
+/* Things */
 
 class Thing extends Device {
 
@@ -89,16 +92,52 @@ class Thing extends Device {
 
 }
 
+Thing.identify = undefined;
+Thing.getExperience = undefined;
+
+
+
+/* Experiences */
 
 class Experience extends Resource {
 
   static getCollectionPath () { return '/api/experiences'; }
 
   getDevices () {
-    return this._sdk.Device.find({ 'experience.uuid' : this.document.uuid }, this._sdk, this._context);
+    return this._sdk.api.Device.find({ 'experience.uuid' : this.document.uuid }, this._sdk, this._context);
   }
 
 }
+
+
+
+/* Locations */
+
+class Location extends Resource {
+
+  static getCollectionPath () { return '/api/locations'; }
+
+  getDevices () {
+    return this._sdk.api.Device.find({ 'location.uuid': this.document.uuid }, this._sdk, this._context);
+  }
+
+  getThings () {
+    return this._sdk.api.Thing.find({ 'location.uuid': this.document.uuid }, this._sdk, this._context);
+  }
+
+  getZones () {
+    if (!this.document.zones) return Promise.resolve([]);
+    return Promise.resolve(this.document.zones.map(document => {
+      return new Zone(document, this, this._sdk, this._context);
+    }));
+  }
+
+  getLayoutUrl () {
+    return this.constructor.getResourcePath(this.document) + '/layout?_rt=' + this._sdk.authenticator.getAuthSync().restrictedToken;
+  }
+
+}
+
 
 
 class Zone extends Resource {
@@ -140,31 +179,6 @@ class Zone extends Resource {
 
 }
 
-
-class Location extends Resource {
-
-  static getCollectionPath () { return '/api/locations'; }
-
-
-  getZones () {
-    if (!this.document.zones) return Promise.resolve([]);
-    return Promise.resolve(this.document.zones.map(document => {
-      return new Zone(document, this, this._exists, this._sdk, this._context);
-    }));
-  }
-
-  getZone (key) {
-    if (!this.document.zones) return Promise.reject(new Error('Zone not found.'));
-    const document = this.document.zones.find(zone => zone.key === key);
-    if (!document) return Promise.reject(new Error('Zone not found'));
-    return Promise.resolve(new this._sdk.api.Zone(document, this, this._exists, this._sdk, this._context));
-  }
-
-  getLayoutUrl () {
-    return this.getPath() + '/layout?_rt=' + this._sdk.authenticator.getAuthSync().restrictedToken;
-  }
-
-}
 
 
 class Feed extends Resource {
@@ -259,6 +273,15 @@ class Content extends Resource {
   }
 }
 
+class ApiError extends Error {
+  constructor (message, code, status) {
+    super(message);
+    this.message = message;
+    this.code = code || null;
+    this.status = status || null;
+  }
+}
+
 class Api {
 
   constructor (sdk) {
@@ -274,6 +297,7 @@ class Api {
   }
 
   fetch (path, params, options) {
+    options = options || {};
     if (params) path += this.encodeQueryString(params);
     if (typeof options.body === 'object') options.body = JSON.stringify(options.body);
     return this._sdk.authenticator.getAuth().then(auth => {
@@ -283,8 +307,15 @@ class Api {
       options.headers.Authorization = 'Bearer ' + auth.token;
       options.headers.Accept = 'application/json';
       return fetch(auth.api.host + path, options).then(response => {
+        if (options.method === 'delete') return Promise.resolve();
         return response.json().then(body => {
-          if (!response.ok) throw new Error(body.code || 'An Unknown error has occured.');
+          if (!response.ok) {
+            if (body) {
+              throw new ApiError(body.message, body.code, response.status);
+            } else {
+              throw new ApiError('An unknown error has occured.');
+            }
+          }
           return body;
         });
       });
@@ -295,24 +326,24 @@ class Api {
     return this.fetch(path, params, { method: 'get' });
   }
 
-  post (path, params, body) {
+  post (path, body, params) {
     const options = { method: 'post', headers:  { 'Content-Type': 'application/json' }, body: body };
     return this.fetch(path, params, options);
   }
 
-  put (path, params, body) {
+  put (path, body, params) {
     const options = { method: 'put', headers:  { 'Content-Type': 'application/json' }, body: body };
     return this.fetch(path, params, options);
   }
 
-  patch (path, params, body) {
+  patch (path, body, params) {
     const options = { method: 'patch', headers:  { 'Content-Type': 'application/json' }, body: body };
     return this.fetch(path, params, options);
   }
 
   delete (path, params) {
     if (params) path += this.encodeQueryString(params);
-    return this.fetch(path, { method: 'delete' });
+    return this.fetch(path, null, { method: 'delete' });
   }
 
   encodeQueryString (params) {

@@ -64,7 +64,7 @@ class Channel {
 class ChannelDelegate {
 
   constructor (name, options, sdk, context) {
-    this._name = name;
+    this._name = name || 'default';
     this._options = options || {};
     this._sdk = sdk;
     this._context = context;
@@ -81,6 +81,10 @@ class ChannelDelegate {
     return this._generateId().then(id => {
       return this._sdk.network.listen(name, id, callback, this._context);
     });
+  }
+
+  fling (payload, timeout) {
+    return this.broadcast('fling', payload, timeout);
   }
 
   _generateId () {
@@ -153,16 +157,17 @@ class Network {
     if (!this._socket) return;
     this._socket.close();
     this._socket = null;
+    this._events.trigger('offline');
   }
 
   broadcast (name, channel, payload, timeout) {
     const message = { name: name, channel: channel, payload: payload };
-    return this._sdk.api.post('/api/networks/current/broadcasts', { timeout: timeout }, message);
+    return this._sdk.api.post('/api/networks/current/broadcasts', message, { timeout: timeout });
   }
 
   respond (id, channel, payload) {
     const message = { id: id, channel: channel, payload: payload };
-    return this._sdk.api.post('/api/networks/current/responses', null, message);
+    return this._sdk.api.post('/api/networks/current/responses', message);
   }
 
   get isConnected () {

@@ -15,7 +15,7 @@ class Exp {
   start (options) { return this._sdk.start(options); }
   stop () { return this._sdk.stop(); }
   fork (context) { return new this.constructor(null, context); }
-  clone (context) { return this.constructor(this._sdk, context); }
+  clone (context) { return new this.constructor(this._sdk, context); }
   clear (context) { return EventNode.clear(context || this._context); }
   getAuth () { return this._sdk.authenticator.getAuth(); }
   on (name, callback) { return this._sdk.events.on(name, callback, this._context); }
@@ -26,15 +26,20 @@ class Exp {
 
   /* Naked API */
   get (path, params) { return this._sdk.api.get(path, params); }
-  post (path, params, body) { return this._sdk.api.post(path, params, body); }
-  patch(path, params, body) { return this._sdk.api.patch(path, params, body); }
-  put (path, params, body) { return this._sdk.api.put(path, params, body); }
-  delete (path, params) { return this._sdk.api.post(path, params); }
+  post (path, body, params) { return this._sdk.api.post(path, body, params); }
+  patch(path, body, params) { return this._sdk.api.patch(path, body, params); }
+  put (path, body, params) { return this._sdk.api.put(path, body, params); }
+  delete (path, params) { return this._sdk.api.delete(path, params); }
 
   /* Devices */
   getDevice (uuid) { return this._sdk.api.Device.get(uuid, this._sdk, this._context); }
   findDevices (params) { return this._sdk.api.Device.find(params, this._sdk, this._context); }
   createDevice (document) { return this._sdk.api.Device.create(document, this._sdk, this._context); }
+
+  /* Things */
+  getThing (uuid) { return this._sdk.api.Thing.get(uuid, this._sdk, this._context); }
+  findThings (params) { return this._sdk.api.Thing.find(params, this._sdk, this._context); }
+  createThing (document) { return this._sdk.api.Thing.create(document, this._sdk, this._context); }
 
   /* Experiences */
   getExperience (uuid) { return this._sdk.api.Experience.get(uuid, this._sdk, this._context); }
@@ -46,10 +51,7 @@ class Exp {
   findLocations (params) { return this._sdk.api.Location.find(params, this._sdk, this._context); }
   createLocation (document) { return this._sdk.api.Location.create(document, this._sdk, this._context); }
 
-  /* Things */
-  getThing (uuid) { return this._sdk.api.Thing.get(uuid, this._sdk, this._context); }
-  findThings (params) { return this._sdk.api.Thing.find(params, this._sdk, this._context); }
-  createThing (document) { return this._sdk.api.Thing.create(document, this,_sdk, this._context); }
+  
 
   /* Data */
   getData (key, group) { return this._sdk.api.Data.get({ key: key, group: group }, this._sdk, this._context); }

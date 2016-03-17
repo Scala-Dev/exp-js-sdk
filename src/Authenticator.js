@@ -15,20 +15,16 @@ class Authenticator {
     this._promise = null;
     this._resolve = null;
     this._reject = null;
-    this._running = false;
     this._reset();
     this._lastAuth = null;
   }
 
   start () {
-    if (this._running) return;
-    this._running = true;
     this._login();
+    return this._promise;
   }
 
   stop () {
-    if (!this._running) return;
-    this._running = false;
     this._auth = null;
     this._reset();
   }
@@ -46,8 +42,6 @@ class Authenticator {
   }
 
   _onSuccess (auth) {
-
-    if (!this._running) return;
     this._reset();
     this._timeout = setTimeout(() => this._refresh(), (auth.expiration - Date.now()) / 2);
     this._auth = auth;
@@ -64,17 +58,14 @@ class Authenticator {
   }
 
   _onError (error) {
-    if (!this._running) return;
     this._reset();
     console.warn(error);
   }
 
   _onFatal (error) {
-    if (!this._running) return;
     this._reset();
     this._reject(error);
     this._events.trigger('error', error);
-    this._running = false;
   }
 
 

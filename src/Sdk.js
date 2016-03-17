@@ -20,10 +20,10 @@ class Sdk {
     this._authenticator = new Authenticator(this);
     this._api = new Api(this);
     this._network = new Network(this);
-    this._network.on('online', () => this.events.trigger('online'));
-    this._network.on('offline', () => this.events.trigger('offline'));
-    this._authenticator.on('error', error => this.events.trigger('error', error));
-    this._authenticator.on('update', auth => this.events.trigger('update', auth));
+    this._network.on('online', () => this._events.trigger('online'));
+    this._network.on('offline', () => this._events.trigger('offline'));
+    this._authenticator.on('error', error => this._events.trigger('error', error));
+    this._authenticator.on('update', auth => this._events.trigger('update', auth));
   }
 
 
@@ -60,7 +60,7 @@ class Sdk {
       if (!options.username) throw new Error('Please specify the username.');
       if (!options.password) throw new Error('Please specify the password.');
       if (!options.organization) throw new Error('Please specify the organization.');
-    } else if (options.type === 'device' || options.secret) {
+    } else if (options.type === 'device' || options.secret || options.allowPairing) {
       options.type = 'device';
       if (!options.uuid && !options.allowPairing) throw new Error('Please specify the uuid.');
       if (!options.secret && !options.allowPairing) throw new Error('Please specify the device secret.');
@@ -74,13 +74,14 @@ class Sdk {
     this.started = true;
     this.options = options;
     this._network.start();
-    this._authenticator.start();
+    return this._authenticator.start();
   }
 
   stop () {
     this.stopped = true;
     this._network.stop();
     this._authenticator.stop();
+    return Promise.resolve();
   }
 
 }
