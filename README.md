@@ -171,39 +171,46 @@ sdk2.clear('A'); // Also clears sdk1A!
 
 # Reference
 
+## Startup Options
+## Channel Options
+## Contexts
+
+
 ## Runtime
+
+ | Description
+--- | ---
+`start(options)` | Resolves when loging succeeds. `options` is an object containing [startup options](#startup-options). Throws an error if `options` is invalid. 
+`getAuth()` | Resolves to the current authentication payload.
+`isConnected` | Whether or not you are connected to the network.
+`stop()` | Stops networking and clears all event listeners for this instance and all clones. This instance of the and all of its clones can no longer be used.
+`clone(context)` | Creates a clone of the instance with the given [context](#contexts). `context` defaults to the current [context](#contexts).
+`fork(context)` | Creates a new unstarted instance of the SDK with the given [context](#contexts). `context` defaults to the current [context](#contexts).
+`clear(context)` | Clears all event listeners for the specified [context](#contexts). If no [context](#contexts) is specified, the current instances [context](#contexts) is used.
+
+## Events
  | Description
 ------ | ---
-`start(options)` | Start/configure the SDK. Returns a configured sdk instance. See [Starting the SDK](#starting-the-sdk).
-`getAuth()` | Resolves to the current authentication payload.
-`isConnected` | Whether or not you are connected to the EXP network.
-`on('online',callback)` | Callback is called when connection to EXP network is established.
+`on('online',callback)` | Callback is called when connection to the network is established.
 `on('update',callback)` | Callback is called when authentication payload is updated.
-`on('offline',callback)` | Callback is called when connection to EXP network is lost.
-`on('error',callback)` | Callback is called with an error when a critical error occurs, i.e. the sdk cannot authenticate with EXP.
-`stop()` | Stops the SDK and clears all event listeners.
-`clone(context)` | Creates a copy of the SDK for the given content (a string). If context is not specified, a random string is generated.
-`clear(context)` | Clears all event listeners for the specified context. If no context is specified, clears every event listener. 
-
-
-## Common Resource Methods and Properties
-
- | Description
- --- | ---
-`resource.save().then(() => {})` | Returns a promise that resolves when the resource is saved. The resource is updated in place.
-`resource.refresh().then(() => {})` | Returns a promise that resolves when the local copy of the resource is refreshed. The resource is updated in place.
-`resource.document` | The resource's underlying document. See the [API documentation](https://docs.goexp.io).
-`resource.getChannel(options)` | Returns a channel for communication about the resource. See [Channels](#channels).
+`on('offline',callback)` | Callback is called when connection to the network is lost.
+`on('error',callback)` | Callback is called with an error when a critical error occurs and the SDK cannot continue.
 
 ## Devices
 
  | Description
 --- | ---
-`getDevice(uuid)` | Resolves to device with given uuid. 
-`findDevices(params)` | Resolves to an array of matching devices. Params is a dictionary of query params. See the [API documentation](https://docs.goexp.io).
-`createDevice(document)` | Resolves to a new device.
+`getDevice(uuid)` | Resolves to the device with given uuid or `null`.
+`findDevices(params)` | Resolves to an array of devices matching the given query parameters.
+`createDevice(document)` | Resolves to a newly created device.
+`device.document` | The device's underlying document.
+`device.refresh()` | Resolves when the device is refreshed. The device's document is updated in place.
+`device.save()` | Resolves when the device is saved. The device's document is updated in place.
+`device.getChannel(options)` | Returns the [channel](#channel) for this device with the given [channel options](#channel-options).
+`device.getExperience()` | Resolves to the device's [experience](#experience) or null.
+`device.getLocation()` | Resolve to the device's [location](#locations) or null.
+`device.getZones()` | Resolves to an array of the device's [zones](#zones).
 
-Devices inherit [common resource methods and properties](#common-resource-methods-and-properties).
 
 
 
