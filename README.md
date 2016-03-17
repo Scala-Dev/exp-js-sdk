@@ -180,12 +180,12 @@ sdk2.clear('A'); // Also clears sdk1A!
 
  | Description
 --- | ---
-`start(options)` | Resolves when loging succeeds. `options` is an object containing [startup options](#startup-options). Throws an error if `options` is invalid. 
+`start(options)` | Resolves when login succeeds. `options` is an object containing [startup options](#startup-options). Throws an error if `options` is invalid. 
 `getAuth()` | Resolves to the current authentication payload.
 `isConnected` | Whether or not you are connected to the network.
 `stop()` | Stops networking and clears all event listeners for this instance and all clones. This instance of the and all of its clones can no longer be used.
-`clone(context)` | Creates a clone of the instance with the given [context](#contexts). `context` defaults to the current [context](#contexts).
-`fork(context)` | Creates a new unstarted instance of the SDK with the given [context](#contexts). `context` defaults to the current [context](#contexts).
+`clone(context)` | Returns a clone of the instance with the given [context](#contexts). `context` defaults to the current [context](#contexts).
+`fork(context)` | Returns an unstarted instance of the SDK with the given [context](#contexts). `context` defaults to the current [context](#contexts).
 `clear(context)` | Clears all event listeners for the specified [context](#contexts). If no [context](#contexts) is specified, the current instances [context](#contexts) is used.
 
 ## Events
@@ -204,22 +204,40 @@ sdk2.clear('A'); // Also clears sdk1A!
 `findDevices(params)` | Resolves to an array of devices matching the given query parameters.
 `createDevice(document)` | Resolves to a newly created device.
 `device.document` | The device's underlying document.
-`device.refresh()` | Resolves when the device is refreshed. The device's document is updated in place.
-`device.save()` | Resolves when the device is saved. The device's document is updated in place.
+`device.refresh()` | Resolves when the device is refreshed. The document is updated in place.
+`device.save()` | Resolves when the device is saved. The document is updated in place.
 `device.getChannel(options)` | Returns the [channel](#channel) for this device with the given [channel options](#channel-options).
 `device.getExperience()` | Resolves to the device's [experience](#experience) or null.
 `device.getLocation()` | Resolve to the device's [location](#locations) or null.
 `device.getZones()` | Resolves to an array of the device's [zones](#zones).
 
-
-
-
 ## Things
-Things inherit [common resource methods and properties](#resources).
-Method | Description
-- ```exp.getThing(uuid)```: Resolves to the thing with the given uuid.
-- ```exp.findThings(params)```: Resolves to an array of matching things. Params is a dictionary of query params. See the API docs. 
-- ```exp.createThing(document)```: Resolves to an unsaved thing.
+
+ | Description
+--- | ---
+`getThing(uuid)` | Resolves to the thing with given uuid or `null`.
+`findThings(params)` | Resolves to an array of things matching the given query parameters.
+`createThing(document)` | Resolves to a newly created thing.
+`thing.document` | The thing's underlying document.
+`thing.refresh()` | Resolves when the thing is refreshed. The document is updated in place.
+`thing.save()` | Resolves when the thing is saved. The document is updated in place.
+`thing.getChannel(options)` | Returns the [channel](#channel) for this thing with the given [channel options](#channel-options).
+`thing.getLocation()` | Resolve to the thing's [location](#locations) or null.
+`thing.getZones()` | Resolves to an array of the thing's [zones](#zones).
+
+
+
+
+
+
+
+
+### GOOD TILL HERE
+
+
+
+
+
 
 
 ## Experiences
