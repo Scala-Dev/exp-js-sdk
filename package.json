@@ -1,6 +1,6 @@
 {
   "name": "exp-js-sdk",
-  "version": "1.0.0-beta-0",
+  "version": "1.0.0-beta-0.0",
   "description": "Scala EXP Javascript SDK",
   "main": "./index.js",
   "scripts": {
