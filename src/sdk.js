@@ -89,7 +89,7 @@ class Sdk {
   findLocations (params) { return resources.Location.find(params, this.context); }
   createLocation (document, options) { return resources.Location.create(document, options, this.context); }
 
-  getData (key, group) { return resources.Data.get(key, group, this.context); }
+  getData (group, key) { return resources.Data.get(group, key, this.context); }
   findData (params) { return resources.Data.find(params, this.context); }
   createData (document, options) { return resources.Data.create(document, options, this.context); }
 
