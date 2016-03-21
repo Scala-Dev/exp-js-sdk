@@ -128,7 +128,7 @@ class Location extends Resource {
   getZones () {
     if (!this.document.zones) return Promise.resolve([]);
     return Promise.resolve(this.document.zones.map(document => {
-      return new Zone(document, this, this._sdk, this._context);
+      return new this._sdk.api.Zone(document, this, this._sdk, this._context);
     }));
   }
 
@@ -153,7 +153,8 @@ class Zone extends Resource {
 
   refresh () {
     return this._location.refresh().then(() => {
-      this.document = (this._location.document.zones || []).find(document => document.key === this.key);
+      const key = this.document.key;
+      this.document = (this._location.document.zones || []).find(document => document.key === key);
     });
   }
 
@@ -162,11 +163,11 @@ class Zone extends Resource {
   }
 
   getDevices () {
-    return this._sdk.Device.find({ 'location.uuid' : this._location.document.uuid, 'location.zones.key': this.key }, this._sdk, this._context);
+    return this._sdk.api.Device.find({ 'location.uuid' : this._location.document.uuid, 'location.zones.key': this.document.key }, this._sdk, this._context);
   }
 
   getThings () {
-    return this._sdk.Thing.find({ 'location.uuid' : this._location.document.uuid, 'location.zones.key': this.key }, this._sdk, this._context);
+    return this._sdk.api.Thing.find({ 'location.uuid' : this._location.document.uuid, 'location.zones.key': this.document.key }, this._sdk, this._context);
   }
 
   _getChannelName () {
@@ -183,13 +184,9 @@ class Zone extends Resource {
 
 class Feed extends Resource {
 
-  static _getPath () {
-    return '/api/connectors/feeds';
-  }
+  static getCollectionPath () { return '/api/connectors/feeds'; }
 
-  getData () {
-    return this._sdk.api.get(this._getPath() + '/data');
-  }
+  getData () { return this._sdk.api.get(this.constructor.getResourcePath(this.document) + '/data'); }
 
 }
 

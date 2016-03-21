@@ -3,70 +3,46 @@
 module.exports = suite => {
 
   describe('exp.on(\'update\', callback)', () => {
-    Object.keys(suite.credentials).forEach(name => {
-      it(`Should trigger on startup for ${ name } credentials.`, done => {
-        suite.exp.on('update', () => done());
-        suite.exp.start(suite.credentials[name]);
-      });
-      it(`Should trigger with payload for ${ name } credentials.`, done => {
-        suite.exp.on('update', auth => {
-          if (!auth) done(new Error()); else done();
-        });
-        suite.exp.start(suite.credentials[name]);
-      });
+    it('Should trigger on startup.', done => {
+      suite.startAsDevice().on('update', () => done());
     });
     it('Should not trigger when credentials are bad.', done => {
+      suite.credentials.device.uuid = '_';
+      suite.startAsDevice().on('update', () => done(new Error()));
       setTimeout(done, 1000);
-      suite.exp.on('update', () => done(new Error()));
-      try { suite.exp.start({}); }
-      catch (exception) {}
     });
   });
 
   describe('exp.on(\'online\', callback)', () => {
-    Object.keys(suite.credentials).forEach(name => {
-      it(`Should trigger on startup for ${ name } credentials.`, done => {
-        suite.exp.on('online', () => done());
-        suite.exp.start(suite.credentials[name]);
-      });
+    it('Should trigger on startup.', done => {
+      suite.startAsDevice().on('online', () => done());
     });
     it('Should not trigger when credentials are bad.', done => {
+      suite.credentials.device.uuid = '_';
+      suite.startAsDevice().on('update', () => done(new Error()));
       setTimeout(done, 1000);
-      suite.exp.on('online', () => done(new Error()));
-      try { suite.exp.start({}); }
-      catch (exception) {}
     });
     it('Should not trigger when network is disabled.', done => {
-      setTimeout(done, 1000);
-      suite.exp.on('online', () => done(new Error()));
       suite.credentials.device.enableNetwork = false;
-      try { suite.exp.start(suite.credentials.device); }
-      catch (exception) {}
+      suite.startAsDevice().on('online', () => done(new Error()));
+      setTimeout(done, 1000);
     });
   });
 
 
   describe('exp.on(\'offline\', callback)', () => {
-    Object.keys(suite.credentials).forEach(name => {
-      it(`Should trigger on stop for ${ name } credentials.`, done => {
-        suite.exp.on('offline', () => done());
-        suite.exp.on('online', () => suite.exp.stop());
-        suite.exp.start(suite.credentials[name]);
-      });
+    it('Should trigger on stop.', done => {
+      const exp = suite.startAsDevice();
+      exp.on('online', () => exp.stop());
+      exp.on('offline', () => done());
     });
   });
 
 
   describe('exp.on(\'error\', callback)', () => {
     it('Should trigger for invalid credentials.', done => {
-      suite.exp.on('error', () => done());
-      suite.credentials.user.password = 'NOT THE RIGHT PASSWORD';
-      suite.exp.start(suite.credentials.user);
-    });
-    it('Should trigger for invalid credentials with an error.', done => {
-      suite.exp.on('error', error => { if (error instanceof Error) done(); });
-      suite.credentials.user.password = 'NOT THE RIGHT PASSWORD';
-      suite.exp.start(suite.credentials.user);
+      suite.credentials.device.uuid = 'NOT THE RIGHT UUID';
+      suite.startAsDevice().on('error', () => done());
     });
   });
 

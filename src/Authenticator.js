@@ -2,14 +2,10 @@
 /* jshint -W074 */
 
 const jwt = require('jsonwebtoken');
-const EventNode = require('event-node');
-
-
 
 class Authenticator {
 
   constructor (sdk) {
-    this._events = new EventNode();
     this._sdk = sdk;
     this._auth = null;
     this._promise = null;
@@ -38,7 +34,7 @@ class Authenticator {
   }
 
   on (name, callback, context) {
-    return this._events.on(name, callback, context);
+    return this._sdk.events.on(name, callback, context);
   }
 
   _onSuccess (auth) {
@@ -46,7 +42,7 @@ class Authenticator {
     this._timeout = setTimeout(() => this._refresh(), (auth.expiration - Date.now()) / 2);
     this._auth = auth;
     this._resolve(auth);
-    this._events.trigger('update', auth);
+    this._sdk.events.trigger('update', auth);
   }
 
   _reset () {
@@ -65,7 +61,7 @@ class Authenticator {
   _onFatal (error) {
     this._reset();
     this._reject(error);
-    this._events.trigger('error', error);
+    this._sdk.events.trigger('error', error);
   }
 
 

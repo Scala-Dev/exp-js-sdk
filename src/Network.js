@@ -6,7 +6,6 @@ const io = require('socket.io-client');
 
 const EventNode = require('event-node');
 
-
 class Subscription {
 
   constructor () {
@@ -109,7 +108,6 @@ class Network {
     this._sdk = sdk;
     this._status = true;
     this._socket = null;
-    this._events = new EventNode();
     this._channels = {};
     this._subscriptions = {};
     this._listener = null;
@@ -157,7 +155,7 @@ class Network {
     if (!this._socket) return;
     this._socket.close();
     this._socket = null;
-    this._events.trigger('offline');
+    this._sdk.events.trigger('offline');
   }
 
   broadcast (name, channel, payload, timeout) {
@@ -212,12 +210,12 @@ class Network {
       }
     });
     this._emit('subscribe', Object.keys(this._subscriptions));
-    this._events.trigger('online');
+    this._sdk.events.trigger('online');
   }
 
   _onOffline () {
     Object.keys(this._subscriptions).forEach(id => this._subscriptions[id].reset());
-    this._events.trigger('offline');
+    this._sdk.events.trigger('offline');
   }
 
 }

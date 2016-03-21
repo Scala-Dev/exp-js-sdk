@@ -1,8 +1,7 @@
 'use strict';
 
-var Exp = require('./dist/node/Exp');
-var exp = new Exp();
+var EXP = require('./dist/node/EXP');
 
-if (typeof window === 'object') window.exp = exp;
+if (typeof window === 'object') window.EXP = EXP;
 
-module.exports = exp;
+module.exports = EXP;

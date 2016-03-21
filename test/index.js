@@ -1,7 +1,6 @@
 'use strict';
 
-const exp = require('../');
-const suite = {};
+const suite = { EXP: require('../') };
 
 
 function getDeviceCredentials () {
@@ -20,36 +19,33 @@ function getPairingDeviceCredentials () {
   return { allowPairing: true, host: 'http://localhost:9000' };
 }
 
-let sdk;
-beforeEach(() => {
-  sdk = exp.fork();
-  suite.exp = sdk;
+function setup () {
   suite.credentials = {
     'device': getDeviceCredentials(),
     'user': getUserCredentials(),
     'consumer': getConsumerAppCredentials(),
     'pairing': getPairingDeviceCredentials()
   };
-});
-afterEach(() => {
-  try {sdk.stop(); }
-  catch (exception) {}
-});
+  suite.startAsDevice = () => suite.EXP.start(suite.credentials.device);
+  suite.startAsUser = () => suite.EXP.start(suite.credentials.user);
+  suite.startAsConsumer = () => suite.EXP.start(suite.credentials.consumer);
+  suite.startAsPairing = () => suite.EXP.start(suite.credentials.pairing);
+}
 
-suite.credentials = {
-  'device': getDeviceCredentials(),
-  'user': getUserCredentials(),
-  'consumer': getConsumerAppCredentials(),
-  'pairing': getPairingDeviceCredentials()
-};
-suite.exp = exp;
+function tearDown () {
+  suite.EXP.stop()
+}
+
+beforeEach(() => setup());
+afterEach(() => tearDown())
+setup();
+
 
 
 //require('./start.spec')(suite);
 //require('./events.spec')(suite);
 //require('./stop.spec')(suite);
 //require('./clone.spec')(suite);
-//require('./fork.spec')(suite);
 //require('./getAuth.spec')(suite);
 //require('./getChannel.spec')(suite);
 //require('./isConnected.spec')(suite);
@@ -67,6 +63,8 @@ suite.exp = exp;
 //require('./Thing.spec')(suite);
 //require('./Experience.spec')(suite);
 
-require('./Location.spec')(suite);
+//require('./Location.spec')(suite);
+require('./Zone.spec')(suite);
 
+require('./Feed.spec')(suite);
 

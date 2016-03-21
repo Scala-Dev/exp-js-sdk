@@ -2,12 +2,10 @@
 
 module.exports = suite => {
   describe('exp.get(path, params)', () => {
-    it('Should resolve to JSON document for devices collection', done => {
-      suite.exp.get('/api/devices').then(document => {
-        if (!document.results) done(new Error()); else done();
+    it('Should resolve to JSON document for devices collection', () => {
+    	return suite.startAsDevice().get('/api/devices').then(document => {
+        if (!document.results) throw new Error();
       });
-      suite.exp.start(suite.credentials.device);
-
     });
   });
 

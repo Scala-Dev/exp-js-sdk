@@ -1,59 +1,59 @@
 'use strict';
 
-
+let exp;
 module.exports = suite => {
 
   describe('Devices', () => {
-    beforeEach(() => suite.exp.start(suite.credentials.device));
+    beforeEach(() => exp = suite.startAsDevice());
 
     it('Should be able to get existing device.', () => {
-      return suite.exp.getDevice(suite.credentials.device.uuid).then(device => {
-        if (!(device instanceof suite.exp._sdk.api.Device)) throw new Error();
+      return exp.getDevice(suite.credentials.device.uuid).then(device => {
+        if (!(device instanceof exp._sdk.api.Device)) throw new Error();
       });
     });
 
     it('Should resolve to null if uuid not specified', () => {
-      return suite.exp.getDevice().then(device => { if (device !== null) throw new Error(); });
+      return exp.getDevice().then(device => { if (device !== null) throw new Error(); });
     });
 
     it('Should resolve to null if uuid does not match existing device.', () => {
-      return suite.exp.getDevice('fakeuuid').then(device => { if (device !== null ) throw new Error(); });
+      return exp.getDevice('fakeuuid').then(device => { if (device !== null ) throw new Error(); });
     });
 
     it('Should be able to get a list of devices.', () => {
-      return suite.exp.findDevices().then(devices => devices.forEach(device => {
-        if (!(device instanceof suite.exp._sdk.api.Device)) throw new Error();
+      return exp.findDevices().then(devices => devices.forEach(device => {
+        if (!(device instanceof exp._sdk.api.Device)) throw new Error();
       }));
     });
 
     it('Should return empty list of devices for unmatched query.', () => {
-      return suite.exp.findDevices({ name: 'tootallo' }).then(devices => { if (devices.length !== 0) throw new Error(); });
+      return exp.findDevices({ name: 'tootallo' }).then(devices => { if (devices.length !== 0) throw new Error(); });
     });
 
     it('Should be able to create a new device.', () => {
-      return suite.exp.createDevice({ subtype: 'scala:device:server', name: Math.random().toString() }).then(device => {
-        return suite.exp.getDevice(device.document.uuid);
+      return exp.createDevice({ subtype: 'scala:device:server', name: Math.random().toString() }).then(device => {
+        return exp.getDevice(device.document.uuid);
       });
     });
 
     it('Should be able to fling.', () => {
-      return suite.exp.findDevices().then(devices => {
+      return exp.findDevices().then(devices => {
         return devices[0].fling({});
       });
     });
 
     it('Should be able to save changes to a device.', () => {
       const name = Math.random().toString();
-      return suite.exp.createDevice({ subtype: 'scala:device:player' }).then(device => {
+      return exp.createDevice({ subtype: 'scala:device:player' }).then(device => {
         device.document.name = name;
-        return device.save().then(() => suite.exp.getDevice(device.document.uuid)).then(device => {
+        return device.save().then(() => exp.getDevice(device.document.uuid)).then(device => {
           if (device.document.name !== name) throw new Error();
         });
       });
     });
 
     it('Should be able to listen for updates to device.', done => {
-      suite.exp.findDevices().then(devices => {
+      exp.findDevices().then(devices => {
         return devices[0].getChannel({ system: true }).listen('update', () => done()).then(() => {
           return devices[0].save();
         });
@@ -61,7 +61,7 @@ module.exports = suite => {
     });
 
     it('Should be able to communicate on device channel.', done => {
-      suite.exp.findDevices().then(devices => {
+      exp.findDevices().then(devices => {
         return devices[0].getChannel().listen('test', () => done()).then(() => {
           return devices[0].getChannel().broadcast('test');
         });
@@ -70,8 +70,8 @@ module.exports = suite => {
 
     it('Should be able to refresh a device in place.', done => {
       const name = Math.random().toString();
-      suite.exp.findDevices().then(devices => {
-        suite.exp.getDevice(devices[0].document.uuid).then(device => {
+      exp.findDevices().then(devices => {
+        exp.getDevice(devices[0].document.uuid).then(device => {
           device.document.name = name;
           device.save().then(() => {
             setTimeout(() => {
@@ -86,8 +86,8 @@ module.exports = suite => {
 
     describe('device.getExperience()', () => {
       it('Should resolve to the device\'s experience.', done => {
-        suite.exp.createExperience().then(experience => {
-          suite.exp.createDevice({ subtype: 'scala:device:server', experience: experience.document }).then(device => {
+        exp.createExperience().then(experience => {
+          exp.createDevice({ subtype: 'scala:device:server', experience: experience.document }).then(device => {
             device.getExperience().then(experience_ => {
               if (experience.document.uuid === experience_.document.uuid) done();
             });
@@ -95,7 +95,7 @@ module.exports = suite => {
         });
       });
       it('Should resolve to null when the device has no experience.', () => {
-        return suite.exp.createDevice({ subtype: 'scala:device:server' }).then(device => {
+        return exp.createDevice({ subtype: 'scala:device:server' }).then(device => {
           return device.getExperience().then(experience => { if (experience !== null) throw new Error(); });
         });
       });
@@ -103,8 +103,8 @@ module.exports = suite => {
 
     describe('device.getLocation()', () => {
       it('Should resolve to the device\'s location.', () => {
-        return suite.exp.createLocation().then(location => {
-          return suite.exp.createDevice({ subtype: 'scala:device:server', location: location.document }).then(device => {
+        return exp.createLocation().then(location => {
+          return exp.createDevice({ subtype: 'scala:device:server', location: location.document }).then(device => {
             return device.getLocation().then(location_ => {
               if (location.document.uuid !== location_.document.uuid) throw new Error();
             });
@@ -113,7 +113,7 @@ module.exports = suite => {
       });
 
       it('Should resolve to null when device has no location.', () => {
-        return suite.exp.createDevice({ subtype: 'scala:device:server' }).then(device => {
+        return exp.createDevice({ subtype: 'scala:device:server' }).then(device => {
           return device.getLocation().then(location => { if (location !== null) throw new Error(); });
         });
       });
@@ -121,8 +121,8 @@ module.exports = suite => {
 
     describe('device.getZones()', () => {
       it('Should resolve to the device\'s zones.', () => {
-        return suite.exp.createLocation({ zones: [{ key: '1', name: '1' }, { key: '2', name: '2' }, { key: '3', name: '3' }]}).then(location => {
-          return suite.exp.createDevice({ subtype: 'scala:device:server', location: { uuid: location.document.uuid, zones: [{ key: '1'}]} }).then(device => {
+        return exp.createLocation({ zones: [{ key: '1', name: '1' }, { key: '2', name: '2' }, { key: '3', name: '3' }]}).then(location => {
+          return exp.createDevice({ subtype: 'scala:device:server', location: { uuid: location.document.uuid, zones: [{ key: '1'}]} }).then(device => {
             return device.getZones().then(zones => {
               if (zones.length !== 1 || zones[0].document.name !== '1') throw new Error();
             });
@@ -131,8 +131,8 @@ module.exports = suite => {
 
       });
       it('Should resolve to an empty list if no zones match.', () => {
-        return suite.exp.createLocation({ zones: [{ key: '1', name: '1' }, { key: '2', name: '2' }, { key: '3', name: '3' }]}).then(location => {
-          return suite.exp.createDevice({ subtype: 'scala:device:server', location: { uuid: location.document.uuid, zones: [{ key: '31'}]} }).then(device => {
+        return exp.createLocation({ zones: [{ key: '1', name: '1' }, { key: '2', name: '2' }, { key: '3', name: '3' }]}).then(location => {
+          return exp.createDevice({ subtype: 'scala:device:server', location: { uuid: location.document.uuid, zones: [{ key: '31'}]} }).then(device => {
             return device.getZones().then(zones => {
               if (zones.length !== 0) throw new Error();
             });
@@ -141,7 +141,7 @@ module.exports = suite => {
       });
 
       it('Should resolve to an empty list if no location is set.', () => {
-        return suite.exp.createDevice({ subtype: 'scala:device:server', location: { uuid: 'poo', zones: [{ key: '1'}]} }).then(device => {
+        return exp.createDevice({ subtype: 'scala:device:server', location: { uuid: 'poo', zones: [{ key: '1'}]} }).then(device => {
           return device.getZones().then(zones => {
             if (zones.length !== 0) throw new Error();
           });

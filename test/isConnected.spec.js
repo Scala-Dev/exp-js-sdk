@@ -3,14 +3,11 @@
 module.exports = suite => {
   describe('exp.isConnected', () => {
     it('Should be true when online.', done => {
-      suite.exp.on('online', () => {
-        if (!suite.exp.isConnected) done(new Error());
-        done();
-      });
-      suite.exp.start(suite.credentials.device);
+      const exp = suite.startAsDevice();
+      exp.on('online', () => { if (exp.isConnected) done(); });
     });
-    it('Should be false when not started.', () => {
-      if (suite.exp.isConnected) throw new Error();
+    it('Should be false immediately after start.', () => {
+      if (suite.startAsDevice().isConnected) throw new Error();
     });
   });
 };

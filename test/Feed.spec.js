@@ -1,67 +1,71 @@
 'use strict';
 
 
-function generateTestLocation () {
-  return {};
+function generateTestFeed () {
+  return {
+    subtype: 'scala:feed:weather',
+    searchValue: '19713',
+    name: Math.random().toString()
+  };
 }
 
 let exp;
 
 module.exports = suite => {
 
-  describe('Locations', () => {
+  describe('Feeds', () => {
     beforeEach(() => exp = suite.startAsDevice());
 
 
     it('Should resolve to null if uuid not specified', () => {
-      return exp.getLocation().then(location => { if (location !== null) throw new Error(); });
+      return exp.getFeed().then(feed => { if (feed !== null) throw new Error(); });
     });
 
-    it('Should resolve to null if uuid does not match existing location.', () => {
-      return exp.getLocation('fakeuuid').then(location => { if (location !== null ) throw new Error(); });
+    it('Should resolve to null if uuid does not match existing feed.', () => {
+      return exp.getFeed('fakeuuid').then(feed => { if (feed !== null ) throw new Error(); });
     });
 
     it('Should be able to create a new location.', () => {
-      return exp.createLocation(generateTestLocation()).then(location => {
-        return exp.getLocation(location.document.uuid);
+      return exp.createFeed(generateTestFeed()).then(feed => {
+        return exp.getFeed(feed.document.uuid);
       });
     });
 
-    it('Should be able to get a list of locations.', () => {
-      return exp.findLocations().then(locations => locations.forEach(location => {
-        if (!(location instanceof exp._sdk.api.Location)) throw new Error();
+    it('Should be able to get a list of feeds.', () => {
+      return exp.findFeeds().then(feeds => feeds.forEach(feed => {
+        if (!(feed instanceof exp._sdk.api.Feed)) throw new Error();
       }));
     });
 
-    it('Should return empty list of locations for unmatched query.', () => {
-      return exp.findLocations({ name: 'tootallo' }).then(locations => { if (locations.length !== 0) throw new Error(); });
+    it('Should return empty list of feeds for unmatched query.', () => {
+      return exp.findFeeds({ name: 'tootallo' }).then(feeds => { if (feeds.length !== 0) throw new Error(); });
     });
 
-     it('Should be able to fling.', () => {
-      return exp.findLocations().then(locations => {
-        return locations[0].fling({});
+    it('Should be able to fling.', () => {
+      return exp.findFeeds().then(feeds => {
+        return feeds[0].fling({});
       });
     });
 
-    it('Should be able to save changes to a location.', () => {
+    it('Should be able to save changes to a feed.', () => {
       const name = Math.random().toString();
-      return exp.createLocation(generateTestLocation()).then(location => {
-        location.document.name = name;
-        return location.save().then(() => exp.getLocation(location.document.uuid)).then(location => {
-          if (location.document.name !== name) throw new Error();
+      return exp.createFeed(generateTestFeed()).then(feed => {
+        feed.document.name = name;
+        return feed.save().then(() => exp.getFeed(feed.document.uuid)).then(feed => {
+          if (feed.document.name !== name) throw new Error();
         });
       });
     });
 
-    it('Should be able to listen for updates to location.', done => {
-      exp.findLocations().then(locations => {
-        return locations[0].getChannel({ system: true }).listen('update', () => done()).then(() => {
-          return locations[0].save();
+    it('Should be able to listen for updates to a feed.', done => {
+      exp.findFeeds().then(feeds => {
+        return feeds[0].getChannel({ system: true }).listen('update', () => done()).then(() => {
+          return feeds[0].save();
         });
       });
     });
 
-    it('Should be able to communicate on location channel.', done => {
+    it.skip('Should be able to communicate on location channel.', done => {
       exp.findLocations().then(locations => {
         return locations[0].getChannel().listen('test', () => done()).then(() => {
           return locations[0].getChannel().broadcast('test');
@@ -69,7 +73,7 @@ module.exports = suite => {
       });
     });
 
-    it('Should be able to refresh a location in place.', () => {
+    it.skip('Should be able to refresh a location in place.', () => {
       const name = Math.random().toString();
       return exp.findLocations().then(locations => {
         return exp.getLocation(locations[0].document.uuid).then(location=> {
@@ -88,7 +92,7 @@ module.exports = suite => {
     });
 
     describe('location.getLayoutUrl()', () => {
-      it('Should return a layout url', () => {
+      it.skip('Should return a layout url', () => {
         return exp.createLocation().then(location => {
           return location.getLayoutUrl();
         });
@@ -96,7 +100,7 @@ module.exports = suite => {
     });
 
     describe('location.getDevices()', () => {
-      it('Should return all devices in location.', () => {
+      it.skip('Should return all devices in location.', () => {
         return exp.createLocation().then(location => {
           return exp.createDevice({ subtype: 'scala:device:server' }).then(device => {
             device.document.location = { uuid: location.document.uuid };
@@ -111,7 +115,7 @@ module.exports = suite => {
     });
     describe('location.getThings()', () => {
 
-      it('Should return all things in location.', () => {
+      it.skip('Should return all things in location.', () => {
         return exp.createLocation().then(location => {
           return exp.createThing({ subtype: 'scala:thing:rfid', id: 'test23' }).then(thing => {
             thing.document.location = { uuid: location.document.uuid };
@@ -126,7 +130,7 @@ module.exports = suite => {
     });
 
     describe('location.getZones()', () => {
-      it('Should resolve to an array of zones.', () => {
+      it.skip('Should resolve to an array of zones.', () => {
         const document = generateTestLocation();
         document.zones = [{ key: '1', name: '1'}, { key: '2', name: '2' }];
         return exp.createLocation(document).then(location => {

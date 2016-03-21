@@ -1,23 +1,30 @@
 
-- [Installation](#installation)
+- [Getting Started](#getting-started)
   - [Bower](#bower)
   - [NPM](#npm)
+- [Example](#example)
 - [Reference](#reference)
   - [Runtime](#runtime)
-  - [Events](#events)
   - [Channels](#channels)
   - [Listeners](#listeners)
   - [Devices](#devices)
   - [Things](#things)
   - [Experiences](#experiences)
   - [Locations](#locations)
+  - [Zones](#zones)
+
+  - [Feeds](#feeds)
+  - [Data](#data)
+  - [Content](#content)
+  - [Startup Options](#startup-options)
+  - [Channel Options](#channel-options)
 
 
 
 
 
 
-# Installation
+# Getting Started
 
 ## Bower
 
@@ -37,7 +44,7 @@ Then include the sdk in a script tag from the bower_components directory. You ca
 
 ## NPM
 
-To use the EXP SDK with Node, install using `npm`
+To use the EXP SDK with NodeJS, install using `npm`:
 
 ```
 npm install exp-sdk
@@ -46,31 +53,45 @@ npm install exp-sdk
 and require in the `exp` module.
 
 ```javascript
-const exp = require('exp-sdk');
+const EXP = require('exp-sdk');
 ```
 
+# Example
+
+More examples can be found in the [documentation](https://docs.goexp.io).
+
+```javascript
+const EXP = require('exp-sdk');
+
+// Start the SDK.
+const exp = EXP.start({ uuid: 'my-uuid', secret: 'my-secret'});
+
+// Listen for a hello message on test channel and broadcast message.
+const channel = exp.getChannel('test');
+channel.listen('hello', () => { console.log('I got a message!'); }).then(() => {
+  channel.broadcast('hello!');
+});
+
+// Identify all devices in the given experience.
+exp.getExperience('my-experience-uuid').then(experience => {
+  if (!experience) return;
+  experience.getDevices().then(devices => devices.forEach(device => device.identify()));
+});
+
+
+```
 
 
 # Reference
 
-
-
-
 ## Runtime
-
  | Description
 --- | ---
-`exp.start(options)` | Resolves when login succeeds. `options` is an object containing [startup options](#startup-options). Throws an error if `options` is invalid. 
+`EXP.start(options)` | Starts and returns an sdk instance. `options` is an object containing [startup options](#startup-options). Throws an error if `options` is invalid.
+`EXP.stop()` | Stops all running sdk instances.
 `exp.getAuth()` | Resolves to the current authentication payload.
 `exp.isConnected` | Whether or not you are connected to the network.
-`exp.stop()` | Stops networking and clears all event listeners for this instance and all clones. This instance of the and all of its clones can no longer be used.
-`exp.clone(context)` | Returns a clone of the instance with the given [context](#contexts). `context` defaults to the current [context](#contexts).
-`exp.fork(context)` | Returns an unstarted instance of the SDK with the given [context](#contexts). `context` defaults to the current [context](#contexts).
-`exp.clear(context)` | Clears all event listeners for the specified [context](#contexts). If no [context](#contexts) is specified, the current instances [context](#contexts) is used.
-
-## Events
- | Description
---- | ---
+`exp.stop()` | Stops the the instance and clears all event listeners.
 `exp.on('online',callback)` | Callback is called when connection to the network is established. Returns a [listener](#listener).
 `exp.on('update',callback)` | Callback is called when authentication payload is updated. Returns a [listener](#listener).
 `exp.on('offline',callback)` | Callback is called when connection to the network is lost. Returns a [listener](#listener).
@@ -156,6 +177,16 @@ const exp = require('exp-sdk');
 `location.getLayoutUrl()` | Returns url to location layout image.
 
 
+## Zones
+ | Description
+ --- | ---
+`zone.document` | The zone's underlying document.
+`zone.refresh()` | Resolves when the zone is refreshed. The document is updated in place.
+`zone.save()` | Resolves when the zone is saved. The document is updated in place.
+`zone.getChannel(options)` | Returns the [channel](#channel) for this zone with the given [channel options](#channel-options).
+`zone.fling(payload, options, timeout)` | Sends fling event on zone's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+`zone.getDevices()` | Resolves to an array of [devices](#devices) in the zone.
+`zone.getThings()` | Resolves to an array of [things](#things) in the zone.
 
 
 
@@ -165,7 +196,6 @@ const exp = require('exp-sdk');
 
 ## Startup Options
 ## Channel Options
-## Contexts
 
 
 
@@ -179,9 +209,6 @@ const exp = require('exp-sdk');
 - ```feed.document```
 - ```feed.getChannel(options)```: Returns a channel for communication about the feed. See [Channels](#channels).
 
-## Zones
-- ```zone.document```: The zone's underlying document.
-- ```zone.getChannel(options)```: Returns a channel for communications about the zone. See [Channels](#channels).
 ## Content
 - ```exp.getContent(uuid)```: Resolves to the content with the given uuid.
 - ```exp.findContent(params)```: Resolves to an array of matching content. Params is a dictionary of query params. See the API docs. 
@@ -203,14 +230,6 @@ const exp = require('exp-sdk');
 - ```data.value```
 - ```data.key```
 - ```data.group```
-
-
-## Channels
-- ```exp.getChannel(name, options)```: Returns a channel. Options is an object that can have system: true/false and consumer true/false, i.e. ```{ system: true, consumer: false }```. 
-- ```channel.listen(name, callback)```: Returns a promise that resolves to a [listener](#listeners) when the listener is registered. Callback is called when a broadcast for the named event is received. Callback is passed the payload of the broadcast and a response callback that, when called, can be passed the response to the broadcast.
-- ```channel.broadcast(name, payload, timeout)```: Returns a promise that resolves to a list of responses to the broadcast. Request will wait for responses for the given timeout. 
-
-## Exceptions
 
 
 # Examples

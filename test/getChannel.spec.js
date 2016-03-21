@@ -3,22 +3,22 @@
 module.exports = suite => {
   describe('exp.getChannel(name, options)', () => {
     it('Should succeed when options ommitted.', () => {
-      suite.exp.getChannel('name');
+      suite.startAsDevice().getChannel('name');
     });
 
     it('Should succeed when options empty.', () => {
-      suite.exp.getChannel('name', {});
+      suite.startAsDevice().getChannel('name', {});
     });
 
     it('Should succeed when name is not specified', () => {
-      suite.exp.getChannel();
+      suite.startAsDevice().getChannel();
     });
 
     it('Should default to { system: false }.', done => {
-      const channel1 = suite.exp.getChannel('test');
-      const channel2 = suite.exp.getChannel('test', { system: false });
-      channel2.listen('test', () => done()).then(() => channel1.broadcast('test'));
-      suite.exp.start(suite.credentials.device);
+      const exp = suite.startAsDevice();
+      const channel1 = exp.getChannel('test');
+      const channel2 = exp.getChannel('test', { system: false });
+      return channel2.listen('test', () => done()).then(() => channel1.broadcast('test'));
     });
 
   });
