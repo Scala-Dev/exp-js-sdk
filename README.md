@@ -190,6 +190,21 @@ exp.getExperience('my-experience-uuid').then(experience => {
 
 
 
+## Feeds
+ | Description
+ --- | ---
+`exp.getFeed(uuid)` | Resolves to the feed with given uuid or `null`.
+`exp.findFeeds(params)` | Resolves to an array of feeds matching the given query parameters.
+`exp.createFeed(document)` | Resolves to a newly created feed.
+`feed.document` | The location's underlying document.
+`feed.refresh()` | Resolves when the feed is refreshed. The document is updated in place.
+`feed.save()` | Resolves when the feed is saved. The document is updated in place.
+`feed.getChannel(options)` | Returns the [channel](#channel) for this feed with the given [channel options](#channel-options).
+`feed.fling(payload, options, timeout)` | Sends fling event on feed's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+`feed.getData()` | Resolves to the feeds data. See the [documentation](https://docs.goexp.io).
+
+
+
 ### TESTED TILL HERE
 
 
@@ -197,17 +212,6 @@ exp.getExperience('my-experience-uuid').then(experience => {
 ## Startup Options
 ## Channel Options
 
-
-
-## Feeds
-- ```exp.getFeed(uuid)```: Resolves to the feed with the given uuid.
-- ```exp.findFeeds(params)```: Resolves to an array of matching feeds. Params is a dictionary of query params. See the API docs.
-- ```exp.createFeed(document)```: Resolves to an unsaved feed.
-- ```feed.save()```: Saves or updates the feed.
-- ```feed.refresh()```: Refreshes the feed.
-- ```feed.uuid```
-- ```feed.document```
-- ```feed.getChannel(options)```: Returns a channel for communication about the feed. See [Channels](#channels).
 
 ## Content
 - ```exp.getContent(uuid)```: Resolves to the content with the given uuid.

@@ -65,24 +65,24 @@ module.exports = suite => {
       });
     });
 
-    it.skip('Should be able to communicate on location channel.', done => {
-      exp.findLocations().then(locations => {
-        return locations[0].getChannel().listen('test', () => done()).then(() => {
-          return locations[0].getChannel().broadcast('test');
+    it('Should be able to communicate on feed channel.', done => {
+      exp.findFeeds().then(feeds => {
+        return feeds[0].getChannel().listen('test', () => done()).then(() => {
+          return feeds[0].getChannel().broadcast('test');
         });
       });
     });
 
-    it.skip('Should be able to refresh a location in place.', () => {
+    it('Should be able to refresh a feed in place.', () => {
       const name = Math.random().toString();
-      return exp.findLocations().then(locations => {
-        return exp.getLocation(locations[0].document.uuid).then(location=> {
-          location.document.name = name;
-          return location.save().then(() => {
+      return exp.findFeeds().then(feeds => {
+        return exp.getFeed(feeds[0].document.uuid).then(feed=> {
+          feed.document.name = name;
+          return feed.save().then(() => {
             return new Promise((resolve, reject) => {
               setTimeout(() => {
-                locations[0].refresh().then(() => {
-                  if (locations[0].document.name === name) resolve();
+                feeds[0].refresh().then(() => {
+                  if (feeds[0].document.name === name) resolve();
                 }).catch(reject);
               }, 500);
             });
@@ -91,53 +91,10 @@ module.exports = suite => {
       });
     });
 
-    describe('location.getLayoutUrl()', () => {
-      it.skip('Should return a layout url', () => {
-        return exp.createLocation().then(location => {
-          return location.getLayoutUrl();
-        });
-      });
-    });
-
-    describe('location.getDevices()', () => {
-      it.skip('Should return all devices in location.', () => {
-        return exp.createLocation().then(location => {
-          return exp.createDevice({ subtype: 'scala:device:server' }).then(device => {
-            device.document.location = { uuid: location.document.uuid };
-            return device.save().then(() => {
-              return location.getDevices().then(devices => {
-                if (devices.length !== 1) throw new Error();
-              });
-            });
-          });
-        });
-      });
-    });
-    describe('location.getThings()', () => {
-
-      it.skip('Should return all things in location.', () => {
-        return exp.createLocation().then(location => {
-          return exp.createThing({ subtype: 'scala:thing:rfid', id: 'test23' }).then(thing => {
-            thing.document.location = { uuid: location.document.uuid };
-            return thing.save().then(() => {
-              return location.getThings().then(things => {
-                if (things.length !== 1) throw new Error();
-              });
-            });
-          });
-        });
-      });
-    });
-
-    describe('location.getZones()', () => {
-      it.skip('Should resolve to an array of zones.', () => {
-        const document = generateTestLocation();
-        document.zones = [{ key: '1', name: '1'}, { key: '2', name: '2' }];
-        return exp.createLocation(document).then(location => {
-          return location.getZones().then(zones => {
-            if (zones.length !== 2) throw new Error();
-            if (!(zones[0] instanceof exp._sdk.api.Zone)) throw new Error();
-          });
+    it('Should be able to get data.', () => {
+      return exp.createFeed(generateTestFeed()).then(feed => {
+        return feed.getData().then(data => {
+          if (!data) throw new Error();
         });
       });
     });
