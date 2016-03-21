@@ -10,7 +10,7 @@ class Data extends Resource {
   }
 
   get documentPath () {
-    return this.constructor.path + '/' + encodeURIComponent(this.document.group) + '/' + encodeURIComponent(this.document.key);
+    return Data.path + '/' + encodeURIComponent(this.document.group) + '/' + encodeURIComponent(this.document.key);
   }
 
   get group () {
@@ -31,7 +31,7 @@ class Data extends Resource {
 
   static get (group, key, context) {
     if (!key || !group) return Promise.reject(new Error('Key and group are required.'));
-    let path = this.constructor.path + '/' + encodeURIComponent(group) + '/' + encodeURIComponent(key);
+    let path = Data.path + '/' + encodeURIComponent(group) + '/' + encodeURIComponent(key);
     return api.get(path).then(document => {
       return new this(document, context);
     });
