@@ -36,8 +36,8 @@ bower install exp-sdk
 Then include the sdk in a script tag from the bower_components directory. You can then access the sdk as the window bound global `exp`.
 
 ```html
-<script src="bower_components/exp-sdk.min.js"></script>
-<script>// I have access to exp module!</script>
+<script src="bower_components/exp-sdk/exp-sdk.min.js"></script>
+<script>// I have access to EXP!</script>
 ```
 
 
