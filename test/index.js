@@ -33,11 +33,11 @@ function setup () {
 }
 
 function tearDown () {
-  suite.EXP.stop()
+  suite.EXP.stop();
 }
 
 beforeEach(() => setup());
-afterEach(() => tearDown())
+afterEach(() => tearDown());
 setup();
 
 
@@ -64,7 +64,8 @@ setup();
 //require('./Experience.spec')(suite);
 
 //require('./Location.spec')(suite);
-require('./Zone.spec')(suite);
+//require('./Zone.spec')(suite);
 
-require('./Feed.spec')(suite);
+//require('./Feed.spec')(suite);
+require('./Content.spec')(suite);
 

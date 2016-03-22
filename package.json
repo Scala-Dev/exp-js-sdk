@@ -13,6 +13,7 @@
     "base64url": "1.0.4",
     "crypto": "0.0.3",
     "event-node": "0.1.1",
+    "form-data": "^1.0.0-rc4",
     "isomorphic-fetch": "2.1.0",
     "jsonwebtoken": "5.4.1",
     "lodash": "3.10.1",

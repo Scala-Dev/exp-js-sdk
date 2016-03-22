@@ -204,6 +204,20 @@ exp.getExperience('my-experience-uuid').then(experience => {
 `feed.getData()` | Resolves to the feeds data. See the [documentation](https://docs.goexp.io).
 
 
+## Content
+ | Description
+ --- | ---
+`exp.getContent(uuid)` | Resolves to the content item with given uuid or `null`.
+`exp.findContent(params)` | Resolves to an array of content items matching the given query parameters.
+`content.document` | The location's underlying document.
+`content.getChannel(options)` | Returns the [channel](#channel) for this content with the given [channel options](#channel-options).
+`content.fling(payload, options, timeout)` | Sends fling event on content's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+`content.getUrl()` | Returns the delivery URL for the content.
+`content.getChildren()` | Resolves to an array of the content item's children.
+`content.hasVariant(name)` | Returns `true` if the specified variant is available, and `false` if the variant does not exist.
+`content.getVariantUrl()` | Returns the delivery URL of the variant. Throws an error if variant does not exists.
+`content.subtype` | The subtype of the content.
+
 
 ### TESTED TILL HERE
 
@@ -213,17 +227,7 @@ exp.getExperience('my-experience-uuid').then(experience => {
 ## Channel Options
 
 
-## Content
-- ```exp.getContent(uuid)```: Resolves to the content with the given uuid.
-- ```exp.findContent(params)```: Resolves to an array of matching content. Params is a dictionary of query params. See the API docs. 
-- ```content.refresh()```: Refreshes the content.
-- ```content.uuid```: The content's uuid.
-- ```content.document```: The content's underlying document.
-- ```content.getChannel(options)```: Returns a channel for communication about the content. See [Channels](#channels).
-- ```content.get_url()```: Returns the delivery URL for the content.
-- ```content.get_variant_url(name)```: Returns the delivery URL for a variant.
-- ```content.has_variant(name)```: Returns ```true``` or ```false``` to indicate if the specified variant exists.
-- ```content.subtype```: The subtype of the content.
+
 
 ## Data
 - ```exp.getData(key, group)```: Resolves to the data resource for the given key and group. Group is set to "default" if not specified. 

@@ -13,7 +13,7 @@ const defaults = { host: 'https://api.goexp.io', enableNetwork: true };
 
 class SDK {
 
-  constructor (options) {    
+  constructor (options) {
     this.options = options;
     this.events = new EventNode();
     this.authenticator = new Authenticator(this);
@@ -122,17 +122,15 @@ class EXP {
   findFeeds (params) { return this._sdk.api.Feed.find(params, this._sdk, this._context); }
   createFeed (document) { return this._sdk.api.Feed.create(document, this._sdk, this._context); }
 
-
-  
   /* Data */
   getData (key, group) { return this._sdk.api.Data.get({ key: key, group: group }, this._sdk, this._context); }
   findData (params) { return this._sdk.api.Data.find(params, this._sdk, this._context); }
   createData (document) { return this._sdk.api.Data.create(document, this._sdk, this._context); }
 
   /* Content */
-  getContent (uuid) { return this._sdk.api.Content.get({ uuid: uuid }, this._sdk, this._context); }
+  getContent (uuid) { return this._sdk.api.Content.get(uuid, this._sdk, this._context); }
   findContent (params) { return this._sdk.api.Content.find(params, this._sdk, this._context); }
-  
+
 }
 
 

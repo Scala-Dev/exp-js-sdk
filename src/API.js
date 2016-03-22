@@ -2,6 +2,7 @@
 
 const fetch = require('isomorphic-fetch');
 const _ = require('lodash');
+const FormDataFill = (typeof window === 'undefined') ? require('form-data') : window.FormData;
 
 
 class Resource {
@@ -17,7 +18,7 @@ class Resource {
   }
 
   static get (uuid, sdk, context) {
-    if (!uuid) return Promise.resolve(null);
+    if (!uuid) return sdk.authenticator.getAuth().then(() => null);
     return sdk.api.get(this.getResourcePath({ uuid: uuid })).then(document => new this(document, sdk, context)).catch(error => {
       if (error && error.status === 404) return null;
       throw error;
@@ -213,7 +214,9 @@ class Data extends Resource {
 
 class Content extends Resource {
 
-  static _encodePath (value) {
+  static getCollectionPath () { return '/api/content'; }
+
+  static encodePath (value) {
     return encodeURI(value)
       .replace('!', '%21')
       .replace('#', '%23')
@@ -230,16 +233,12 @@ class Content extends Resource {
       .replace('~', '%7E');
   }
 
-  static _getPath () {
-    return '/api/content';
+  getChildren () {
+    return this._sdk.api.Content.find({ parent: this.document.uuid }, this._sdk, this._context);
   }
 
-  getChildren () {
-    if (this.document.itemCount !== this._children.length) {
-      return this.refresh().then(() => this.getChildren());
-    } else {
-      return Promise.resolve(this._children.map(child => new this.constructor(child, true, this._sdk, this._context)));
-    }
+  get subtype () {
+    return this.document.subtype;
   }
 
   getUrl () {
@@ -296,7 +295,7 @@ class Api {
   fetch (path, params, options) {
     options = options || {};
     if (params) path += this.encodeQueryString(params);
-    if (typeof options.body === 'object') options.body = JSON.stringify(options.body);
+    if (typeof options.body === 'object' && options.headers && options.headers['Content-Type'] === 'application/json') options.body = JSON.stringify(options.body);
     return this._sdk.authenticator.getAuth().then(auth => {
       options.cors = true;
       options.credentials = 'include';
@@ -325,6 +324,13 @@ class Api {
 
   post (path, body, params) {
     const options = { method: 'post', headers:  { 'Content-Type': 'application/json' }, body: body };
+    return this.fetch(path, params, options);
+  }
+
+  upload (path, data, params) {
+    const formData = new FormDataFill();
+    Object.keys(data).forEach(key => formData.append(key, data[key]));
+    const options = { method: 'post', body: formData };
     return this.fetch(path, params, options);
   }
 

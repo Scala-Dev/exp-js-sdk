@@ -18,7 +18,9 @@ module.exports = suite => {
 
 
     it('Should resolve to null if uuid not specified', () => {
-      return exp.getFeed().then(feed => { if (feed !== null) throw new Error(); });
+      return exp.getFeed().then(feed => {
+        if (feed !== null) throw new Error();
+      });
     });
 
     it('Should resolve to null if uuid does not match existing feed.', () => {
