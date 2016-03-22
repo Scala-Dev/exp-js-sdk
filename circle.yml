@@ -4,6 +4,4 @@ machine:
 
 test:
   override:
-    - chmod +x ./bin/setup-ci-tests.sh
-    - ./bin/setup-ci-tests.sh
-    - npm test
+    - chmod +x ./bin/setup-ci-tests.sh && ./bin/setup-ci-tests.sh && npm test
