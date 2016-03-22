@@ -42,31 +42,31 @@ setup();
 
 
 
-//require('./start.spec')(suite);
-//require('./events.spec')(suite);
-//require('./stop.spec')(suite);
-//require('./clone.spec')(suite);
-//require('./getAuth.spec')(suite);
-//require('./getChannel.spec')(suite);
-//require('./isConnected.spec')(suite);
+require('./start.spec')(suite);
+require('./events.spec')(suite);
+require('./stop.spec')(suite);
+require('./clone.spec')(suite);
+require('./getAuth.spec')(suite);
+require('./getChannel.spec')(suite);
+require('./isConnected.spec')(suite);
 
-//require('./exp1511.spec')(suite);
-//require('./get.spec')(suite);
-//require('./post.spec')(suite);
-//require('./patch.spec')(suite);
-//require('./put.spec')(suite);
-//require('./delete.spec')(suite);
+require('./exp1511.spec')(suite);
+require('./get.spec')(suite);
+require('./post.spec')(suite);
+require('./patch.spec')(suite);
+require('./put.spec')(suite);
+require('./delete.spec')(suite);
 
 
-//require('./Channel.spec')(suite);
-//require('./Device.spec')(suite);
-//require('./Thing.spec')(suite);
-//require('./Experience.spec')(suite);
+require('./Channel.spec')(suite);
+require('./Device.spec')(suite);
+require('./Thing.spec')(suite);
+require('./Experience.spec')(suite);
 
-//require('./Location.spec')(suite);
-//require('./Zone.spec')(suite);
+require('./Location.spec')(suite);
+require('./Zone.spec')(suite);
 
-//require('./Feed.spec')(suite);
-//require('./Content.spec')(suite);
+require('./Feed.spec')(suite);
+require('./Content.spec')(suite);
 require('./Data.spec')(suite);
 
