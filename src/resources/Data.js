@@ -10,7 +10,7 @@ class Data extends Resource {
   }
 
   get documentPath () {
-    return this.constructor.path + '/' + encodeURIComponent(this.document.group) + '/' + encodeURIComponent(this.document.key);
+    return Data.path + '/' + encodeURIComponent(this.document.group) + '/' + encodeURIComponent(this.document.key);
   }
 
   get group () {
@@ -31,7 +31,8 @@ class Data extends Resource {
 
   static get (group, key, context) {
     if (!key || !group) return Promise.reject(new Error('Key and group are required.'));
-    return api.get(this.documentPath).then(document => {
+    let path = Data.path + '/' + encodeURIComponent(group) + '/' + encodeURIComponent(key);
+    return api.get(path).then(document => {
       return new this(document, context);
     });
   }
@@ -40,10 +41,14 @@ class Data extends Resource {
     options = options || {};
     const resource = new this(document, context);
     if (options.save === false) return resource;
-    return api.post(resource.documentPath, null, resource.document).then(document => {
+    return api.put(resource.documentPath, null, resource.document.value).then(document => {
       resource.document = document;
       return resource;
     });
+  }
+
+  save () {
+    return api.put(this.documentPath, null, this.document.value).then(document => this.document = document);
   }
 
   getChannelName () {
