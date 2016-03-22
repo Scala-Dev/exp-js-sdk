@@ -2,7 +2,7 @@
 set -e
 
 cd ..
-git clone git@github.com:scalainc/exp-api.git .
+git clone git@github.com:scalainc/exp-api.git exp-api
 cd exp-api
 git checkout develop
 npm install
@@ -10,7 +10,7 @@ export NODE_ENV=test
 npm start&
 sleep(5)
 cd ..
-git clone git@github.com:scalainc/exp-network.git .
+git clone git@github.com:scalainc/exp-network.git exp-network
 cd exp-network
 npm install
 npm start&
