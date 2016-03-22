@@ -5,9 +5,7 @@
   "main": "./index.js",
   "scripts": {
     "build": "/bin/bash ./bin/build.sh",
-    "test": "/bin/bash ./bin/test.sh",
-    "prepublish": "/bin/bash ./bin/build.sh && /bin/bash ./bin/test.sh",
-    "preversion": "/bin/bash ./bin/build.sh && /bin/bash ./bin/test.sh"
+    "test": "/bin/bash ./bin/test.sh"
   },
   "author": "James Dalessio <james.dalessio@scala.com>",
   "license": "MIT",
