@@ -2,7 +2,6 @@
 
 const fetch = require('isomorphic-fetch');
 const _ = require('lodash');
-const FormDataFill = (typeof window === 'undefined') ? require('form-data') : window.FormData;
 
 
 class Resource {
@@ -348,13 +347,6 @@ class Api {
 
   post (path, body, params) {
     const options = { method: 'post', headers:  { 'Content-Type': 'application/json' }, body: body };
-    return this.fetch(path, params, options);
-  }
-
-  upload (path, data, params) {
-    const formData = new FormDataFill();
-    Object.keys(data).forEach(key => formData.append(key, data[key]));
-    const options = { method: 'post', body: formData };
     return this.fetch(path, params, options);
   }
 
