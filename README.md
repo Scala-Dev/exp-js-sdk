@@ -1,4 +1,7 @@
 
+
+# EXP Javascript SDK
+
 - [Getting Started](#getting-started)
   - [Bower](#bower)
   - [NPM](#npm)
@@ -17,9 +20,6 @@
   - [Data](#data)
   - [Startup Options](#startup-options)
   - [Channel Options](#channel-options)
-
-
-
 
 
 
