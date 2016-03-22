@@ -67,5 +67,6 @@ setup();
 //require('./Zone.spec')(suite);
 
 //require('./Feed.spec')(suite);
-require('./Content.spec')(suite);
+//require('./Content.spec')(suite);
+require('./Data.spec')(suite);
 

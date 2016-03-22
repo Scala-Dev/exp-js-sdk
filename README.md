@@ -12,10 +12,9 @@
   - [Experiences](#experiences)
   - [Locations](#locations)
   - [Zones](#zones)
-
   - [Feeds](#feeds)
-  - [Data](#data)
   - [Content](#content)
+  - [Data](#data)
   - [Startup Options](#startup-options)
   - [Channel Options](#channel-options)
 
@@ -219,206 +218,49 @@ exp.getExperience('my-experience-uuid').then(experience => {
 `content.subtype` | The subtype of the content.
 
 
-### TESTED TILL HERE
+## Data
+ | Description
+ --- | ---
+`exp.getData(key, group)` | Resolves to the data item with given key and group. Group defaults to `default`. If the data item does not exist, resolves to data item with `value` of `null`.
+query parameters.
+`exp.findData(params)` | Resolves to an array of data items matching the given query parameters.
+`exp.createData(key, group, value)` | Resolves to a newly created data item.
+`exp.createData(key, value)` | Resolves to a newly created data item in group `default`.
+`data.refresh()` | Resolves when the data item value is refreshed in place.
+`data.value` | The value of the data item.
+`data.save()` | Resolves when the data item is saved.
+`data.document` | The data item's underlying document.
+`data.getChannel(options)` | Returns the [channel](#channel) for this data item with the given [channel options](#channel-options).
+`data.fling(payload, options, timeout)` | Sends fling event on data item's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
 
 
 
 ## Startup Options
+Name | Description
+--- | ---
+**USER CREDENTIALS** |
+username | Your username.
+password | Your password.
+organization | Organization to authenticate into.
+**Device Credentials** |
+uuid | The device uuid.
+secret | The device secret.
+allowPairing | Whether or not to allow the SDK to run in pairing mode. Defaults to `false`.
+**Consumer App Credentials** |
+uuid | The consumer app uuid.
+apiKey | The consumer app api key.
+**Other Options**
+host | The api server to authenticate with. Defaults to `https://api.goexp.io`.
+enableNetwork | Whether to enable real time network communication. If set to `false` you will be unable to listen on the EXP network. Defaults to `true`.
+
+
+
+
 ## Channel Options
+Name | Description
+--- | ---
+`system` | Whether or not the channel is a system channel. Defaults to `false`.
+`consumer` | Whether or not the channel is a consumer channel. Defaults to `false`. Consumer apps can only use channels with `consumer=true`.
 
 
 
-
-## Data
-- ```exp.getData(key, group)```: Resolves to the data resource for the given key and group. Group is set to "default" if not specified. 
-- ```exp.findData(params)```: Resolves to an array of matching data resources. Params is a dictionary of query params. See the API docs.
-- ```exp.createData(key, value, group)```: Creates an unsaved data object. Group is set to "default" if not specified.
-- ```data.save()```: Save the data object.
-- ```data.refresh()```: Refresh the data.
-- ```data.value```
-- ```data.key```
-- ```data.group```
-
-
-# Examples
-
-
-## Creating a Device and Listening for Updates
-
-Updates to API resources are sent out over a system channel with the event name "update".
-
-```javascript
-exp.createDevice({ 'name': 'my_sweet_device' }).then(device => {
-  return device.save().then(() => {
-    device.getChannel({ system: true }).listen('update', payload => {
-      console.log('Device was updated!');
-    });
-  });
-});
-```
-
-
-## Modifying a Resource in Place
-
-```javascript
-exp.getExperience('[uuid]').then(experience => {
-  experience.document.name = 'new name';
-  return experience.save()
-});
-```
-
-
-## Using The EXP Network
-
-The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
-
-### Channels
-
-All messages on the EXP network are sent over a channel. Channels have a name, and two flags: ```system``` and ```consumer```.
-
-```javascript
-const channel = exp.getChannel('myChannel', { system: false, consumer: false });
-```
-
-Use ```system: true``` to get a system channel. You cannot send messages on a system channels but can listen for system notifications, such as updates to API resources.
-
-Use ```consumer: true``` to get a consumer channel. Consumer devices can only listen or broadcast on consumer channels. When ```consumer: false``` you will not receive consumer device broadcasts and consumer devices will not be able to hear your broadcasts.
-
-Both ```system``` and ```consumer``` default to ```false```. Consumer devices will be unable to broadcast or listen to messages on non-consumer channels.
-
-
-### Broadcasting
-
-Use the broadcast method of a channel object to send a named message containing an optional JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The broadcast will return a promise and resolve approximately after the given timeout (milliseconds) with a ```list``` of response payloads. Each response payload can any JSON serializable type.
-
-```javascript
-exp.getChannel('myChannel').broadcast('myEvent', 'hello', 5000).then(responses => {
-  responses.forEach(response => console.log(response));
-});
-```
-
-### Listening
-
-To listen for broadcasts, call the listen method of a channel object.  Pass in the name of the event you wish to listen for and a callback to handle the broadcast. The callback will receive the broadcast payload. Listen returns a promise that resolves with a listener object when listening on the network has actually started. Calling cancel on the listener object stops the callback from being executed.
-
-
-```javascript
-
-exp.getChannel('myChannel').listen('myEvent', payload => {
-  console.log('Event Received!');
-  console.log(payload);
-}).then(listener => {
-  // Remove the listener after 5 seconds.
-  setTimeout(() => listener.cancel(), 5000);
-});
-
-```
-
-
-### Responding
-
-To respond to a broadcast, call the second argument of the listener callback with your response.
-
-```javascript
-
-exp.getChannel('my_channel').listen('my_event', (payload, respond) => {
-  if (payload === 'hello!') respond('hi there!');
-});
-
-```
-
-
-
-## Starting the SDK
-
-The SDK is started by calling ```exp.start``` and specifying your credentials and configuration options. You may supply user, device, or consumer app credentials. You can also authenticate in pairing mode.
-
-Users must specify their ```username```, ```password```, and ```organization```.
-
-```javascript
-exp.start({ username: 'joe@joemail.com', password: 'JoeRocks42', organization: 'joesorg' });
-```
-
-Devices must specify their ```uuid``` and ```secret``` .
-```javascript
-exp.start({ uuid: '[uuid]', secret: '[secret]' });
-```
-
-Consumer apps must specify their ```uuid``` and ```apiKey```.
-
-```javascript
-exp.start({ uuid: '[uuid]', apiKey: '[api key]');
-```
-
-
-
-## Advanced Options
-
-
-Name | Default | Description
---- | --- | ---
-host | `https://api.goexp.io` | The api server to authenticate with.
-enableNetwork | `true` | Whether to enable real time network communication. If set to `false` you will be unable to listen on the EXP network.
-allowPairing | `false` | Whether or not to allow the SDK to run in pairing mode.
-
-
-# API Resources
-
-# The EXP Network
-
-# Advanced Topics
-
-## Context Based Memory Management
-
-A ```context``` is a string that can be used to track event listener registration. A copy of an instance of the SDK can be created by calling ```clone(context)``` method. This will return a cloned instance of the SDK bound to the given context. Calling ```clear(context)``` on any SDK instance derived from the original would remove all event listeners registered by the SDK instance bound to that context. This feature is generally intended for use by player apps, but it provides a simple interface to memory management of event listeners and can help reduce the chances of memory leaks due to orphaned event listener registrations in complex or long lived applications.
-
-In this example, a module starts the SDK, and exports two cloned instances of the SDK bound to different contexts. After some interval, we clear all the event listeners bound to one of the context:
-
-```javascript
-const exp = require('exp-sdk');
-
-exp.start(options);
-exp1 = exp.clone('context 1')
-exp2 = exp.clone('context 2');
-
-exp1.getChannel('myChannelName').listen('myEventName', () => {});
-exp2.getChannel('myChannelName').listen('myEventName', () => {});
-
-exp2.clear(); // Unregisters all callbacks and listerers attached by exp2.
-
-```
-
-Note that calling ```stop``` on a cloned SDK instance or the original sdk instance stops the sdk for the original and all derived clones.
-
-
-## Using Multiple Instances of the SDK
-
-Calling ```exp.fork()``` will return an unstarted instance of the sdk.
-
-```javascript
-
-const exp = require('exp-sdk');
-const exp2 = exp.fork();
-
-exp.start(options1);
-exp2.start(options2)
-
-exp.stop();
-exp2.stop();
-
-```
-
-
-Context based memory management is also supported when using multiple instances of the SDK, but unique names must be used for each context as event listeners are registered in a global pool.
-
-```javascript
-const exp = require('exp-sdk');
-const sdk1 = exp.start(options1);
-const sdk2 = exp.start(options2);
-sdk1A = sdk1.clone('A');
-sdk1B = sdk1.clone('B');
-sdk2A = sdk2.clone('A');
-
-sdk2.clear('A'); // Also clears sdk1A!
-
-```

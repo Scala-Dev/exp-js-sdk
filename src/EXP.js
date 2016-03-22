@@ -78,13 +78,14 @@ class EXP {
   static start (options) { const sdk = SDK.start(options); return new this(sdk); }
   static stop () { return SDK.stop(); }
 
-
   /* Runtime */
   stop () { this._sdk.stop(); delete this.__sdk; }
-  clone (context) { return new this.constructor(this._sdk, context); }
-  clear (context) { return EventNode.clear(this._context); }
   getAuth () { return this._sdk.authenticator.getAuth(); }
   on (name, callback) { return this._sdk.events.on(name, callback, this._context); }
+
+  /* Undocumented Memory Management */
+  clone (context) { return new this.constructor(this._sdk, context); }
+  clear () { return EventNode.clear(this._context); }
 
   /* Network */
   getChannel (name, options) { return this._sdk.network.getChannel(name, options, this._context); }
@@ -122,14 +123,14 @@ class EXP {
   findFeeds (params) { return this._sdk.api.Feed.find(params, this._sdk, this._context); }
   createFeed (document) { return this._sdk.api.Feed.create(document, this._sdk, this._context); }
 
-  /* Data */
-  getData (key, group) { return this._sdk.api.Data.get({ key: key, group: group }, this._sdk, this._context); }
-  findData (params) { return this._sdk.api.Data.find(params, this._sdk, this._context); }
-  createData (document) { return this._sdk.api.Data.create(document, this._sdk, this._context); }
-
   /* Content */
   getContent (uuid) { return this._sdk.api.Content.get(uuid, this._sdk, this._context); }
   findContent (params) { return this._sdk.api.Content.find(params, this._sdk, this._context); }
+
+  /* Data */
+  getData (key, group) { return this._sdk.api.Data.get(key, group, this._sdk, this._context); }
+  findData (params) { return this._sdk.api.Data.find(params, this._sdk, this._context); }
+  createData (key, group, value) { return this._sdk.api.Data.create(key, group, value, this._sdk, this._context); }
 
 }
 

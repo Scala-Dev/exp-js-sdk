@@ -198,15 +198,39 @@ class Data extends Resource {
   static getCollectionPath () { return '/api/data'; }
 
   static getResourcePath (document) {
-    return this.constructor.getCollectionPath() + '/' + encodeURIComponent(document.group || 'default') + '/' + encodeURIComponent(document.key);
+    return this.getCollectionPath() + '/' + encodeURIComponent(document.group) + '/' + encodeURIComponent(document.key);
+  }
+
+  static get (key, group, sdk, context) {
+    group = group || 'default';
+    if (!key) return Promise.resolve(new this({ key: key, group: group, value: null }));
+    return sdk.api.get(this.getResourcePath({ key: key, group: group })).then(document => new this(document, sdk, context)).catch(error => {
+      if (error && error.status === 404) return new this({ key: key, group: group, value: null }, sdk, context);
+      throw error;
+    });
+  }
+
+  get value () {
+    return this.document.value;
+  }
+
+  set value (value) {
+    this.document.value = value;
+  }
+
+  static create (key, group, value, sdk, context) {
+    if (!key) throw new Error('Please specify a key.');
+    if (!value) { value = group; group = 'default'; }
+    const data = new this({ key: key, group: group, value: value }, sdk, context);
+    return data.save(() => data);
   }
 
   save () {
-    return this._sdk.api.put(this.getResourcePath(this.document), null, this.document).then(document => this.document = document);
+    return this._sdk.api.put(this.constructor.getResourcePath(this.document), this.document.value);
   }
 
   getChannelName () {
-    return 'data' + ':' + this.document.key + ':' + this.document.group || 'default';
+    return 'data' + ':' + this.document.key + ':' + this.document.group;
   }
 
 }
