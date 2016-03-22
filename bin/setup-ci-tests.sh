@@ -2,17 +2,16 @@
 set -e
 
 cd ..
-mkdir exp-api
+git clone git@github.com:scalainc/exp-api.git .
 cd exp-api
-git archive --format=tar --remote=git@github.com:scalainc/exp-api.git develop | tar xf -
+git checkout develop
 npm install
 export NODE_ENV=test
 npm start&
 sleep(5)
 cd ..
-mkdir exp-network
+git clone git@github.com:scalainc/exp-network.git .
 cd exp-network
-git archive --format=tar --remote=git@github.com:scalainc/exp-network.git develop | tar xf -
 npm install
 npm start&
 sleep(5)
