@@ -222,7 +222,6 @@ exp.getExperience('my-experience-uuid').then(experience => {
  | Description
  --- | ---
 `exp.getData(key, group)` | Resolves to the data item with given key and group. Group defaults to `default`. If the data item does not exist, resolves to data item with `value` of `null`.
-query parameters.
 `exp.findData(params)` | Resolves to an array of data items matching the given query parameters.
 `exp.createData(key, group, value)` | Resolves to a newly created data item.
 `exp.createData(key, value)` | Resolves to a newly created data item in group `default`.
@@ -238,7 +237,7 @@ query parameters.
 ## Startup Options
 Name | Description
 --- | ---
-**USER CREDENTIALS** |
+**User Credentials** |
 username | Your username.
 password | Your password.
 organization | Organization to authenticate into.
@@ -249,7 +248,7 @@ allowPairing | Whether or not to allow the SDK to run in pairing mode. Defaults 
 **Consumer App Credentials** |
 uuid | The consumer app uuid.
 apiKey | The consumer app api key.
-**Other Options**
+**Other Options** |
 host | The api server to authenticate with. Defaults to `https://api.goexp.io`.
 enableNetwork | Whether to enable real time network communication. If set to `false` you will be unable to listen on the EXP network. Defaults to `true`.
 
