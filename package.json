@@ -1,29 +1,29 @@
 {
-  "name": "exp-js-sdk",
-  "version": "1.0.0-beta.0",
-  "description": "Scala EXP Javascript SDK",
+  "name": "exp-sdk",
+  "version": "1.0.0-rc1",
+  "description": "EXP Javascript SDK",
   "main": "./index.js",
   "scripts": {
-    "postinstall": "/bin/bash ./scripts/build.sh",
-    "build": "/bin/bash ./scripts/build.sh",
-    "test": "/bin/bash ./scripts/test.sh"
+    "build": "/bin/bash ./bin/build.sh",
+    "test": "/bin/bash ./bin/test.sh"
   },
-  "author": "James Dalessio <jrd261@gmail.com>",
+  "author": "James Dalessio <james.dalessio@scala.com>",
   "license": "MIT",
   "dependencies": {
+    "base64url": "1.0.4",
+    "crypto": "0.0.3",
+    "event-node": "0.1.2",
+    "isomorphic-fetch": "2.1.0",
+    "jsonwebtoken": "5.4.1",
+    "lodash": "3.10.1",
+    "socket.io-client": "1.3.5"
+  },
+  "devDependencies": {
     "babel-cli": "^6.3.17",
     "babel-preset-es2015": "^6.3.13",
     "babelify": "^7.2.0",
-    "base64url": "^1.0.4",
     "browserify": "^10.2.6",
-    "crypto": "0.0.3",
-    "event-node": "git+https://github.com/jrd261/event-node.git#master",
-    "isomorphic-fetch": "^2.1.0",
-    "jsonwebtoken": "^5.4.1",
-    "lodash": "^3.10.1",
-    "socket.io-client": "^1.3.5"
-  },
-  "devDependencies": {
-    "mocha": "^2.3.4"
+    "mocha": "^2.3.4",
+    "uglifyjs": "^2.4.10"
   }
 }
