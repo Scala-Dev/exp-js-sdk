@@ -94,7 +94,17 @@ exp.getExperience('my-experience-uuid').then(experience => {
 `exp.on('online',callback)` | Callback is called when connection to the network is established. Returns a [listener](#listener).
 `exp.on('update',callback)` | Callback is called when authentication payload is updated. Returns a [listener](#listener).
 `exp.on('offline',callback)` | Callback is called when connection to the network is lost. Returns a [listener](#listener).
-`exp.on('error',callback)` | Callback is called with an error when a critical error occurs and the SDK cannot continue. Returns a [listener](#listener).
+
+
+### `exp.on('error',callback)` 
+Register a callback for when the sdk instance encounters a critical error and cannot continue. The callback is called with the error as the first argument. This is generally due to authentication failure. Returns a [listener](#listeners).
+
+```javascript
+
+const exp = EXP.start(options)
+exp.on('error', error => console.error('Uhoh, the sdk instance died.', error));
+
+```
 
 
 ## Channels
