@@ -1,1 +1,0 @@
-node --harmony ./test.js

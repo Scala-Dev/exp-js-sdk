@@ -1,350 +1,529 @@
-# Getting Started
 
-If you are using NPM add the JavaScript SDK to your node.js project as an NPM dependency, by adding the following to the `dependencies` section of your `package.json`
+
+
+
+# Installation
+
+## Bower
+
+The easiest way to get the SDK for standalone browser usage is using `bower`.
+
 ```
-"exp-js-sdk": "git+https://github.com/scalainc/exp-js-sdk.git#develop",
+bower install exp-sdk
 ```
 
-Or to use a specific release:
+Then include the sdk in a script tag from the bower_components directory. You can then access the sdk as the window bound global `EXP`.
+
+
+```html
+<script src="bower_components/exp-sdk/exp-sdk.min.js"></script>
+<script>// I have access to EXP!</script>
 ```
-"exp-js-sdk": "git+https://github.com/scalainc/exp-js-sdk.git#v0.0.1",
+
+
+## NPM
+
+To use the EXP SDK with NodeJS, install using `npm`:
+
+```
+npm install exp-sdk
 ```
 
-For use in a node.js application v0.12.7 and npm@2.14.0 are recommended - see the [embedded boilerplate](https://github.com/ScalaInc/exp-embedded-boilerplate) project.
+and require in the `exp` module.
 
-For use in a web app, browserify is recommended.
-
-# exp.runtime
-
-## exp.runtime.start(options)
-Initialize the SDK and connect to EXP.
-To authenticate on a consumer network call start():
 ```javascript
-exp.runtime.start({
-  networkUuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Network uuid
-  apiKey: 'abc123' // Network API Key
-}).then(() => {}); // sdk is initialized and connected to EXP
+const EXP = require('exp-sdk');
 ```
 
-Device authentication is also supported:
+
+
+# Runtime
+
+## Starting the SDK
+
+**`EXP.start(options)`**
+
+Starts and returns an sdk instance. Can be called multiple times to start multiple independent instances of the sdk. The sdk can be started using user, device, or consumer app credentials. `options` is an object that supports the following properties:
+
+- `username` The username used to log in to EXP. Required user credential.
+- `password` The password of the user. Required user credential.
+- `organization` The organization of the user. Required user credential.
+- `uuid` The uuid of the device or consumer app. Required consumer app credential and required device credential unless `allowPairing` is `true`.
+- `secret` The device secret. Required device credential unless `allowPairing` is `true`.
+- `api_key` The consumer app api key. Required consumer app credential.
+- `allowPairing` Whether or not to allow authentication to fallback to pairing mode. If `true`, invalid or missing device credentials will start the sdk in pairing mode. Defaults to `false`.
+- `host` The api host to authenticate with. Defaults to `https://api.goexp.io`.
+- `enableNetwork` Whether or not to establish a socket connection with the EXP network. If `false` you will not be able to listen for broadcasts. Defaults to `true`.
+
 ```javascript
-exp.runtime.start({
-  host: 'https://api.exp.scala.com',
-  deviceUuid: 'ee146ed3-437a-46cd-89e1-f91ce8bbb942', // Device uuid.
-  secret: 'mashed potatoes' // Device secret
-}).then(() => {}); // sdk is initialized and connected to EXP
+# Authenticating as a user.
+exp = EXP.start({ username: 'joe@scala.com', password: 'joeIsAwes0me', organization: 'joeworld' })
+
+# Authenticating as a device.
+exp = EXP.start({ uuid: '[uuid]', secret: '[secret]' });
+
+# Authenticating as a consumer app.
+exp = EXP.start({ uuid: '[uuid]', api_key: '[api-key]' });
 ```
 
-User authentication is also supported:
+## Stopping the SDK
+
+**`EXP.stop()`** 
+
+Stops all running instance of the sdk, cancels all listeners and network connections.
+
 ```javascript
-exp.runtime.start({
-  username: "joe@joerocks.com",
-  password: "123456",
-  organization: "joerocks"
+exp1 = EXP.start(options1)
+exp2 = EXP.start(options2)
+
+EXP.stop()
+exp1.createDevice()  // Error
+```
+
+New instance can still be started by calling `EXP.start()`.
+
+
+**`exp.stop()`**
+
+Stops the the SDK instance and clears all event listeners. Sdk instance cannot be restarted and any invokation on the instance will result in an Error being thrown.
+
+## Authentication
+
+**`exp.getAuth()`**
+
+Resolves to the current authentication payload. The authentication payload may be updated by performing this request.
+
+**`exp.on('update',callback)`** 
+
+Callback is called when authentication payload is updated. Returns a [listener](#listener).
+
+
+**`exp.on('error',callback)`**
+
+Register a callback for when the sdk instance encounters a critical error and cannot continue. The callback is called with the error as the first argument. This is generally due to authentication failure. Returns a [listener](#listeners).
+
+```javascript
+const exp = EXP.start(options)
+exp.on('error', error => console.error('Uhoh, the sdk instance died.', error));
+```
+
+
+
+## Listeners
+
+**listener.cancel()**
+
+Cancels the registered callback. This operation cannot be undone.
+
+
+# Network
+
+## Status
+
+
+**`exp.on('offline',callback)`** 
+
+Callback is called when connection to the network is lost. Returns a [listener](#listener).
+
+
+**`exp.on('online',callback)`**
+
+Callback is called when connection to the network is established. Returns a [listener](#listeners).
+
+**`exp.isConnected`**
+
+Whether or not you are connected to the network.
+
+
+## Channels
+ 
+ **`exp.getChannel(name, options)`** 
+ 
+ Returns a channel with the given name and options. Options is a javascript object with two flags: `consumer` and `system`. Consumer devices can only listen and broadcast on consumer channels. System channels are listen only and can receive broadcasts about system events.
+ 
+```javascript
+channel = exp.getChannel('my-consumer-channel', { consumer: true })
+```
+ 
+ 
+**`channel.broadcast(name, payload, timeout)`** 
+
+Sends a broadcast with given `name` and `payload` on the channel. Waits for responses for `timeout` milliseconds and resolves with an array of responses.
+
+```javascript
+channel.broadcast('hi!', { test: 'nice to meet you!' }).then(responses => {
+  responses.forEach(response => console.log(response));
 });
 ```
-## exp.runtime.stop()
-Disconnect from EXP and clears your credentials.
-
-## exp.runtime.on(name, callback)
-Attaches a listener for runtime events. The possible events are `online` (when a connection is established to EXP) and `offline` (when the connection to EXP is lost).
-
-```javascript
-exp.runtime.on('online', () => {
-  // do something now that a connection has been established.
-});
-exp.runtime.on('offline', () => {
-  // do something now that there is no connection
-});
-```
-
-# exp.config
-
-Name | Description
---- | ---
-host | The host name of EXP.
 
 
-# exp.channels
+**`channel.listen(name, callback)`** 
 
-There are four channels available:
-- "system": Messages to/from the system.
-- "organization": Messages to/from devices across the organization.
-- "experience": Messages to/from devices in the current experience.
-- "location": Messages to/from devices in the current location.
+Registers a [listener](#listeners) callback for events on the channel with the given `name`. Resolves to a [listener](#listeners) when the callback is registered and the network connection has subscribed to the channel.
 
-### exp.channels.[channel].fling(uuid)
-Fling content on a channel. UUID is the UUID of the content object you are flinging.
-
-### exp.channels.[channel].listen(options, callback)
-Register a callback for a message on this channel.
+The callback is called with the broadcast payload as the first argument and a `respond` method as the second argument. Call the `respond` method to send a response back to the broadcaster.
 
 ```javascript
-exp.channels.location.listen({ name: 'joke72' }, payload => {
-  // do something with payload.
+channel = exp.getChannel('my-channel')
+channel.listen('myEvent', (payload, respond) => {
+  if (payload && payload.text === 'hi') respond({ text: 'hi to you too!' });
 });
 ```
 
-### exp.channels.[channel].broadcast(options)
-Broadcast a message out on this channel.
+
+**`channel.fling(payload)`** 
+
+Fling an app launch payload on the channel.
 ```javascript
-exp.channels.location.broadcast({
-  name: 'joke72',
-  payload: {
-    opening: 'knock knock?'
-  },
+channel.fling({ appTemplate: { uuid: '[uuid]' } });
+```
+
+**`channel.identify()`**
+
+Requests that [devices](#device) listening for this event on this channel visually identify themselves. Implementation is device specific; this is simply a convience method.
+
+
+# API
+
+## Devices
+
+Devices inherit all [common resource methods and attributes](#resources).
+
+**`exp.getDevice(uuid)`** 
+
+Resolves to the device with the given uuid or `null` if the device could be found.
+
+**`exp.createDevice(document)`** 
+
+Resolves to a device created based on the supplied document.
+
+**`exp.findDevices(params)`** 
+
+Resolves to an array of devices matching the given query parameters. `params` is a map of query parameters.
+
+```javascript
+exp.createDevice({ subtype: 'scala:device:player' }).then(device => {});
+```
+
+**`device.getLocation()`**
+
+Resolves to the device's [location](#locations) or `null`.
+
+**`device.getZones()`**
+
+Resolves to an array of the device's [zones](#zones).
+
+**`device.getExperience()`**
+
+Resolves to the device's [experience](#experiences) or `null`
+
+
+## Things
+
+Things inherit all [common resource methods and attributes](#resources).
+
+**`exp.getThing(uuid)`**
+
+Resolves to the thing with the given uuid or `None` if no things could be found.
+
+**`exp.create_thing(document=None)`**
+
+Resolves to a thing created based on the supplied document.
+
+```javascript
+exp.createThing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name': 'my-rfid-tag' }).then(thing => {});
+```
+
+**`exp.findThings(params)`**
+
+Resolves to an array of things matching the given query parameters. `params` is a map of query parameters.
+
+**`thing.getLocation()`**
+
+Resolves to the thing's [location](#locations) or `null`.
+
+**`thing.getZones()`**
+
+Resolves to a list of the thing's [#zones](#zones).
+
+**`thing.getExperience()`**
+
+Resolves to the the device's [experience](#experiences) or `null`
+
+
+## Experiences
+
+Experiences inherit all [common resource methods and attributes](#resources).
+
+**`exp.getExperience(uuid)`**
+
+Resolves to the experience with the given uuid or `null` if no experience could be found.
+
+**`exp.createExperience(document)`**
+
+Resolves to an experience created based on the supplied document.
+
+**`exp.findExperiences(params)`**
+
+Returns a list of experiences matching the given query parameters. `params` is a map of query parameters.
+
+**`experience.getDevices()`**
+
+Resolves to an array of [devices](#devices) that are part of this experience.
+
+
+## Locations
+
+Locations inherit all [common resource methods and attributes](#resources).
+
+**`exp.getLocation(uuid)`**
+
+Resolves to the location with the given uuid or `null` if no location could be found.
+
+**`exp.createLocation(document)`**
+
+Resolves to a location created based on the supplied document.
+
+**`exp.findLocations(params)`**
+
+Resolves to an array of locations matching the given query parameters. `params` is a dictionary of query parameters.
+
+
+**`location.getDevices()`**
+
+Resolves to an array of [devices](#devices) that are part of this location.
+
+**`location.getThings()`**
+
+Resolves to an array of [things](#things) that are part of this location.
+
+**`location.getZones()`**
+
+Resolves to an array of [zones](#zones) that are part of this location.
+
+**`location.getLayoutUrl()`**
+
+Returns a url pointing to the location's layout image.
+
+
+## Zones
+
+Zones inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `getChannel()`.
+
+**`zone.key`**
+
+The zone's key.
+
+**`zone.name`**
+
+The zone's name.
+
+**`zone.getDevices()`**
+
+Resolves to an array of [devices](#devices) that are members of this zone.
+
+**`zone.getThings()`**
+
+Resolves to an array of [things](#things) that are members of this zone.
+
+**`zone.getLocation()`**
+
+Resolves to the zone's [location](#locations)
+
+
+## Feeds
+Feeds inherit all [common resource methods and attributes](#resources).
+
+**`exp.getFeed(uuid)`**
+
+Resolves to the feed with the given uuid or `null` if no feed could be found.
+
+**`exp.createFeed(document)`**
+
+Resolves to a feed created based on the supplied document.
+
+```javascript
+exp.createFeed({ subtype: 'scala:feed:weather', searchValue: '16902', name: 'My Weather Feed'  }).then(feed => {});
+```
+
+**`exp.findFeeds(params)`**
+
+Resolves to an array of feeds matching the given query parameters. `params` is a dictionary of query parameters.
+
+```javascript
+exp.findFeeds({ subtype: 'scala:feed:facebook' }).then(feeds => {})
+```
+
+**`feed.getData()`**
+
+Resolves to the feed's data.
+
+
+## Data
+
+Data items inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `getChannel()`.
+
+**`exp.getData(group, key)`**
+
+Resolves to the data item with the given group and key or `null` if the data item could not be found.
+
+```python
+exp.getData('cats', 'fluffy').then(data => {});
+```
+
+**`exp.createData(groupr, key, value)`**
+
+Resolves to a data item created based on the supplied group, key, and value.
+
+```javascript
+exp.createData('cats', 'fluffy', { 'color': 'brown'}).then(data => {});
+```
+
+**`exp.findData(params)`**
+
+Resolves to an array of data items matching the given query parameters. `params` is a dictionary of query parameters.
+
+```python
+exp.findData({ group: 'cats' }).then(items => {});
+```
+
+**`data.key`**
+
+The data item's key. Settable.
+
+**`data.group`**
+
+The data item's group. Settable
+
+**`data.value`**
+
+The data item's value. Settable.
+
+## Content
+
+Content items inherit all [common resource methods and attributes](#resources) except `save()`.
+
+**`exp.getContent(uuid)`**
+
+Resolves to the content item with the given uuid or `null` if no content item could be found.
+
+**`exp.findContent(params)`**
+
+Resolves to an array of content items matching the given query parameters. `params` is a dictionary of query parameters.
+
+**`content.subtype`**
+
+The content item's subtype. Not settable.
+
+**`content.getUrl()`**
+
+Returns the delivery url for this content item.
+
+**`content.hasVariant(name)`**
+
+Returns a boolean indicating whether or not this content item has a variant with the given name.
+
+**`content.getVariantUrl(name)`**
+
+Returns the delivery url for a variant of this content item.
+
+
+**`content.getChildren()`**
+
+Resolves to an array of the content items children.
+
+
+## Resources
+
+These methods and attributes are shared by many of the abstract API resources.
+
+**`resource.uuid`**
+
+The uuid of the resource. Cannot be set.
+
+**`resource.name`**
+
+The name of the resource. Can be set directly.
+
+**`resource.document`**
+
+The resource's underlying document
+
+**`resource.save()`**
+
+Saves the resource and updates the document in place. Returns a promise to the save operation.
+
+```javascript
+exp.getDevice('[uuid]').then(device => {
+  device.name = 'newName';
+  device.save().then(() => console.log('Saved it!'));
 });
 ```
-Broadcasts can be recieved by any device that is connected to the same organization/experience/location on the given channel.
 
-### exp.channels.[channel].request(options)
-Send a request to another device. Returns a promise.
+**`resource.refresh()`**
+
+Refreshes the resource's underlying document in place. Returns a promise to refresh operation.
+
 ```javascript
-exp.channels.organization.request({
-  target: Device3,
-  name: 'joke',
-  payload: 'knock knock'
-}).then(response => {
-  console.log(response);
-}).catch(error => {
-  // I guess they didn't like the joke.
+exp.createDevice().then(device => {
+  exp.getDevice(device.uuid).then(device2 => {
+    device.name = 'newName';
+    device.save().then(() => {
+      device2.refresh().then(() => {
+        // device2 name is now updated.
+      });
+    });
+  });
 });
 ```
-For non-system channels, the target should be a [Device Object](#device-object). For the system channel, no target is necessary.
 
-Requests can only reach devices that share the same organization/experience/location for the given channel.
+**`resource.getChannel(channelOptions)`**
+
+Returns the [channel](#channels) whose name is contextually associated with this resource.
 
 
-### exp.channels.[channel].respond(options, callback)
-Respond to a request. The callback can throw an error to respond with an error. The callback can also return a promise.
+## Custom Requests
+
+These methods send custom authenticated API calls. `params` is a map of url params and `body` is a JSON serializable document. in seconds, to wait for the request to complete. `path` is relative to the api host root. All methods will return a promise to the response document.
+
+**`exp.get(path, params)`**
+
+Send a GET request.
+
 ```javascript
-exp.channels.organization.respond({
-  name: 'joke'
-}, payload => {
-  if (payload === 'knock knock') {
-    return 'who\'s there?';
-  }
-  else {
-    throw new Error('no thanks');
-  }
-});
-```
-Response callbacks will only be triggered when the request was sent on the same channel.
-
-# exp.api
-
-### exp.api.getContent(uuid)
-Get a content object by UUID. Resolves to a [Content Object](#content-object). Note: The UUID value of 'root' will return the contents of the root folder of the current organization.
-```javascript
-exp.api.getContent('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(content => {});
+exp.get('/api/devices', { 'name': 'my-name' }).then(result => {});
 ```
 
-### exp.api.findContent(uuid)
-Query for multiple content nodes. Resolves to an object with a `results` array of [Content Objects](#content-object).
+**`exp.post(path, body, params)`**
+
+Send a POST request.
+
 ```javascript
-exp.api.findContent({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
-    sort: 'field1', // The field to sort by.
-  }).then(results => {});
+exp.post('/api/experiences', {}).then(document => {});
+```
+
+**`exp.patch(path, body, params)`**
+
+Send a PATCH request.
+
+```javascript
+exp.patch('/api/experiences/[uuid]', { name: 'new-name' }).then(document => {});
 ```
 
 
-### exp.api.getCurrentDevice()
-Get the current device. Resolves to a [Device Object](#device-object).
+**`exp.put(path, body, params)`**
+
+Send a PUT request.
+
 ```javascript
-exp.api.getCurrentDevice().then(device => {});
+ exp.put('/api/data/cats/fluffy', { eyes: 'blue'}).then(document => {});
 ```
 
-### exp.api.getDevice(uuid)
-Get a single device by UUID. Resolves to a [Device Object](#device-object).
+**`exp.delete(path, params)`**
+
+Send a DELETE request.
+
 ```javascript
-exp.api.getDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(device => {});
+exp.delete('/api/location/[uuid]').then(() => {});
 ```
 
-### exp.api.findDevices(params)
-Query for multiple devices. Resolves to an object with a `results` array of [Device Objects](#device-object).
-```javascript
-exp.api.findDevices({
-    limit: 20, // The number of devices to retrieve at most
-    skip: 5, // The number of devices to skip
-    sort: 'field1', // The field to sort by.
-  }).then(devices => {});
-```
-
-### exp.api.getThing(uuid)
-Get a single device by UUID. Resolves to a [Thing Object](#thing-object).
-```javascript
-exp.api.getThing('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(thing => {});
-```
-
-### exp.api.findThings(params)
-Query for multiple things. Resolves to an object with a `results` array of [Thing Objects](#thing-object).
-```javascript
-exp.api.findThing({
-    limit: 20, // The number of things to retrieve at most
-    skip: 5, // The number of things to skip
-    sort: 'name', // The field to sort by.
-  }).then(things => {});
-```
-
-### exp.api.getCurrentExperience()
-Get the current experience. Resolves to an [Experience Object](#experience-object).
-```javascript
-exp.api.getCurrentExperience().then(experience => {});
-```
-
-### exp.api.getExperience(uuid)
-Get a single experience by UUID. Resolves to a [Experience Object](#experience-object).
-```javascript
-exp.api.getExperience('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(experience => {});
-```
-
-### exp.api.findExperiences(params)
-Query for multiple experiences. Resolves to an object with a `results` array of [Experience Objects](#experience-object).
-```javascript
-exp.api.findExperiences({
-    limit: 20, // The number of experiences to retrieve at most
-    skip: 5, // The number of experiences to skip
-    sort: 'field1', // The field to sort by.
-  }).then(experiences => {});
-```
-
-### exp.api.getLocation(uuid)
-Get a single location by UUID. Resolves to a [Location Object](#location-object).
-```javascript
-exp.api.getLocation('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(location => {});
-```
-
-### exp.api.findLocations(params)
-Query for multiple locations. Resolves to an object with a `results` array of [Location Objects](#location-object).
-```javascript
-exp.api.findLocations({
-    limit: 20, // The number of locations to retrieve at most
-    skip: 5, // The number of locations to skip
-    sort: 'field1', // The field to sort by.
-  }).then(locations => {});
-```
-
-### exp.api.identifyDevice(deviceUuid)
-Request a device to identify itself. Resolve to response from targeted device
-```javascript
-exp.api.identifyDevice('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(rsp => {});
-```
-
-### exp.api.getData(key, group)
-Get data by key and group. Resolves to a [Data Object](#data-object).
-```javascript
-exp.api.getData("fluffy", "cats").then(data => {});
-```
-
-### exp.api.findData(params)
-Query for multiple data objects. Resolve to an object with a `results` array of [Data Objects](#data-object).
-```javascript
-exp.api.findData({
-  group: 'cats'
-}).then(cats => {});
-```
-
-### exp.api.getFeed(uuid)
-Get a single feed by UUID. Resolves to a [Feed Object](#feed-object).
-```javascript
-exp.api.getFeed('ee146ed3-437a-46cd-89e1-f91ce8bbb942').then(feed => {});
-```
-
-### exp.api.findFeeds(params)
-Query for multiple feeds. Resolves to an object with a `results` array of [Feed Objects](#feed-object).
-```javascript
-exp.api.findFeeds({
-    limit: 20, // The number of feeds to retrieve at most
-    skip: 5, // The number of feeds to skip
-    sort: 'field1', // The field to sort by.
-  }).then(results => {});
-```
-
-# Abstract API Objects
-
-
-### ContentNode Object
-
-##### content.uuid
-The content's UUID.
-
-##### content.getChildren()
-Get the immediate children of this content node. Resolves to an array of [ContentNode Objects](#content-object).
-```javascript
-content.getChildren().then(children => {});
-```
-
-##### content.getUrl()
-Get the absolute url to the content node data. Useful for image/video tags or to download a content file.
-```javascript
-const url = content.getUrl();
-```
-
-##### content.getVariantUrl(variantName)
-Get the url to the content nodes variant data.
-```javascript
-const url = content.getVariantUrl('320.png');
-```
-
-
-### Device Object
-
-##### device.uuid
-The device's UUID
-
-##### device.getExperience()
-Get the device's experience. Resolves to an [Experience Object](#experience-object).
-```javascript
-device.getExperience().then(experience => {});
-```
-
-##### device.identify()
-Request the device to identify itself. Resolve to the response from targeted device.
-```javascript
-device.identify().then(rsp => {});
-```
-
-
-### Thing Object
-
-##### thing.uuid
-The thing's UUID
-
-
-### Experience Object
-
-#### experience.uuid
-The experience's UUID.
-
-#### experience.raw
-Temporary. The raw experience object.
-
-
-### Location Object
-
-##### location.uuid
-The location's UUID.
-
-
-### Data Object
-#### data.key
-The data item's key.
-
-#### data.value
-An arbitrary object that contains any data you want.
-
-#### data.group
-The data item's group.
-
-### Feed Object
-
-##### feed.uuid
-The feed's UUID
-
-##### feed.getData()
-Get the feed's data. Resolves to the output of the feed query.
-```javascript
-device.getData().then(data => {});
-```
