@@ -71,12 +71,16 @@ SDK.instances = [];
 
 class EXP {
 
-  constructor (sdk, context) { this.__sdk = sdk; this._context = context || Math.random().toString(); }
+  constructor (sdk, context) {
+    this.__sdk = sdk;
+    this._context = context || Math.random().toString();
+  }
 
   get _sdk () { if (!this.__sdk) throw new Error('SDK was stopped.'); return this.__sdk; }
 
   static start (options) { const sdk = SDK.start(options); return new this(sdk); }
   static stop () { return SDK.stop(); }
+  static get EventNode () { return EventNode }
 
   /* Runtime */
   stop () { this._sdk.stop(); delete this.__sdk; }

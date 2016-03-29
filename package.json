@@ -1,6 +1,6 @@
 {
   "name": "exp-sdk",
-  "version": "1.0.0-rc2",
+  "version": "1.0.0-rc3",
   "description": "EXP Javascript SDK",
   "main": "./index.js",
   "scripts": {
