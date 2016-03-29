@@ -23,7 +23,7 @@ module.exports = suite => {
 
     it('Should be able to create a new experience.', () => {
       return exp.createExperience(generateTestExperience()).then(experience => {
-        return exp.getExperience(experience.document.uuid);
+        return exp.getExperience(experience.uuid);
       });
     });
 
@@ -40,9 +40,9 @@ module.exports = suite => {
     it('Should be able to save changes to a experience.', () => {
       const name = Math.random().toString();
       return exp.createExperience(generateTestExperience()).then(experience => {
-        experience.document.name = name;
-        return experience.save().then(() => exp.getExperience(experience.document.uuid)).then(experience => {
-          if (experience.document.name !== name) throw new Error();
+        experience.name = name;
+        return experience.save().then(() => exp.getExperience(experience.uuid)).then(experience => {
+          if (experience.name !== name) throw new Error();
         });
       });
     });
@@ -55,11 +55,6 @@ module.exports = suite => {
       });
     });
 
-    it('Should be able to fling.', () => {
-      return exp.findExperiences().then(experiences => {
-        return experiences[0].fling({});
-      });
-    });
 
     it('Should be able to communicate on experience channel.', done => {
       exp.findExperiences().then(experiences => {
@@ -72,13 +67,13 @@ module.exports = suite => {
     it('Should be able to refresh a experience in place.', () => {
       const name = Math.random().toString();
       return exp.findExperiences().then(experiences => {
-        return exp.getExperience(experiences[0].document.uuid).then(experience=> {
-          experience.document.name = name;
+        return exp.getExperience(experiences[0].uuid).then(experience=> {
+          experience.name = name;
           return experience.save().then(() => {
             return new Promise((resolve, reject) => {
               setTimeout(() => {
                 experiences[0].refresh().then(() => {
-                  if (experiences[0].document.name === name) resolve();
+                  if (experiences[0].name === name) resolve();
                 }).catch(reject);
               }, 500);
             });

@@ -128,9 +128,9 @@ class EXP {
   findContent (params) { return this._sdk.api.Content.find(params, this._sdk, this._context); }
 
   /* Data */
-  getData (key, group) { return this._sdk.api.Data.get(key, group, this._sdk, this._context); }
+  getData (group, key) { return this._sdk.api.Data.get(group, key, this._sdk, this._context); }
   findData (params) { return this._sdk.api.Data.find(params, this._sdk, this._context); }
-  createData (key, group, value) { return this._sdk.api.Data.create(key, group, value, this._sdk, this._context); }
+  createData (group, key, value) { return this._sdk.api.Data.create(group, key, value, this._sdk, this._context); }
 
 }
 

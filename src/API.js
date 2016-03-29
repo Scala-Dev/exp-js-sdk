@@ -7,45 +7,45 @@ const _ = require('lodash');
 class Resource {
 
   constructor (document, sdk, context) {
-    this.document = document;
+    this._document = document;
     this._sdk = sdk;
     this._context = context;
   }
 
-  static create (document, sdk, context) {
-    return sdk.api.post(this.getCollectionPath(document), document).then(document => new this(document, sdk, context));
+  static _getCollectionPath () {
+    throw new Error('Not implemented.');
   }
 
-  static get (uuid, sdk, context) {
-    if (!uuid) return sdk.authenticator.getAuth().then(() => null);
-    return sdk.api.get(this.getResourcePath({ uuid: uuid })).then(document => new this(document, sdk, context)).catch(error => {
-      if (error && error.status === 404) return null;
-      throw error;
-    });
+  _getChannelName () {
+    throw new Error('Not implemented.');
   }
 
-  static find (params, sdk, context) {
-    return sdk.api.get(this.getCollectionPath(), params).then(query => query.results.map(document => new this(document, sdk, context)));
+  _getResourcePath () {
+    throw new Error('Not implemented.');
   }
 
-  static getCollectionPath () { return '/api/resources'; }
-  static getResourcePath (document) { return this.getCollectionPath() + '/' + encodeURIComponent(document.uuid); }
-  static getChannelName (document) { return document.uuid; }
+  get document () {
+    return this._document || {};
+  }
 
   save () {
-    return this._sdk.api.patch(this.constructor.getResourcePath(this.document), this.document).then(document => this.document = document);
-  }
-
-  fling (payload, options, timeout) {
-    return this.getChannel(options).fling(payload, timeout);
+    return this._sdk.api.patch(this._getResourcePath(), this.document).then(document => this._document = document);
   }
 
   refresh () {
-    return this._sdk.api.get(this.constructor.getResourcePath(this.document)).then(document => this.document = document);
+    return this._sdk.api.get(this._getResourcePath()).then(document => this._document = document);
+  }
+
+  static create (document, sdk, context) {
+    return sdk.api.post(this._getCollectionPath(), document).then(document => new this(document, sdk, context));
+  }
+
+  static find (params, sdk, context) {
+    return sdk.api.get(this._getCollectionPath(), params).then(query => query.results.map(document => new this(document, sdk, context)));
   }
 
   getChannel (options) {
-    return this._sdk.network.getChannel(this.constructor.getChannelName(this.document), options, this._context);
+    return this._sdk.network.getChannel(this._getChannelName(), options, this._context);
   }
 
   clone (context) {
@@ -55,18 +55,52 @@ class Resource {
 }
 
 
+class CommonResource extends Resource {
+
+  get uuid () {
+    return this.document.uuid;
+  }
+
+  get name () {
+    return this.document.name;
+  }
+
+  set name (value) {
+    this.document.name = value;
+  }
+
+  _getChannelName () {
+    return this.uuid;
+  }
+
+  _getResourcePath () {
+    return `${this.constructor._getCollectionPath()}/${this.uuid}`;
+  }
+
+  static get (uuid, sdk, context) {
+    if (!uuid) return sdk.authenticator.getAuth().then(() => null);
+    const path = `${this._getCollectionPath()}/${uuid}`;
+    return sdk.api.get(path).then(document => new this(document, sdk, context)).catch(error => {
+      if (error && error.status === 404) return null;
+      throw error;
+    });
+  }
+
+}
+
+
 /* Devices */
 
-class Device extends Resource {
+class Device extends CommonResource {
 
-  static getCollectionPath () { return '/api/devices'; }
+  static _getCollectionPath () { return '/api/devices'; }
 
   getExperience () {
-    return this._sdk.api.Experience.get(_.get(this, 'document.experience.uuid'), this._sdk, this.context);
+    return this._sdk.api.Experience.get(_.get(this.document, 'experience.uuid'), this._sdk, this.context);
   }
 
   getLocation () {
-    return this._sdk.api.Location.get(_.get(this, 'document.location.uuid'), this._sdk, this.context);
+    return this._sdk.api.Location.get(_.get(this.document, 'location.uuid'), this._sdk, this.context);
   }
 
   getZones () {
@@ -78,62 +112,67 @@ class Device extends Resource {
     });
   }
 
-  identify () {
-    return this.getChannel().broadcast('identify', null, 500);
-  }
-
 }
+
 
 /* Things */
 
-class Thing extends Device {
+class Thing extends CommonResource {
 
-  static getCollectionPath () { return '/api/things'; }
+  static _getCollectionPath () { return '/api/things'; }
+
+  getLocation () {
+    return this._sdk.api.Location.get(_.get(this.document, 'location.uuid'), this._sdk, this.context);
+  }
+
+  getZones () {
+    return this.getLocation().then(location => {
+      if (!location) return [];
+      return location.document.zones.filter(locationZoneDocument => {
+        return this.document.location.zones.find(deviceZoneDocument => deviceZoneDocument.key === locationZoneDocument.key);
+      }).map(document => new this._sdk.api.Zone(document, location, this._sdk, this._context));
+    });
+  }
 
 }
-
-Thing.identify = undefined;
-Thing.getExperience = undefined;
-
 
 
 /* Experiences */
 
-class Experience extends Resource {
+class Experience extends CommonResource {
 
-  static getCollectionPath () { return '/api/experiences'; }
+  static _getCollectionPath () { return '/api/experiences'; }
 
   getDevices () {
-    return this._sdk.api.Device.find({ 'experience.uuid' : this.document.uuid }, this._sdk, this._context);
+    return this._sdk.api.Device.find({ 'experience.uuid' : this.uuid }, this._sdk, this._context);
   }
 
 }
 
 
-
 /* Locations */
 
-class Location extends Resource {
+class Location extends CommonResource {
 
-  static getCollectionPath () { return '/api/locations'; }
+  static _getCollectionPath () { return '/api/locations'; }
 
   getDevices () {
-    return this._sdk.api.Device.find({ 'location.uuid': this.document.uuid }, this._sdk, this._context);
+    return this._sdk.api.Device.find({ 'location.uuid': this.uuid }, this._sdk, this._context);
   }
 
   getThings () {
-    return this._sdk.api.Thing.find({ 'location.uuid': this.document.uuid }, this._sdk, this._context);
+    return this._sdk.api.Thing.find({ 'location.uuid': this.uuid }, this._sdk, this._context);
   }
 
   getZones () {
-    if (!this.document.zones) return Promise.resolve([]);
-    return Promise.resolve(this.document.zones.map(document => {
+    if (!this.document.zones) return Promise.resolve().then(() => []);
+    return Promise.resolve().then(() => this.document.zones.map(document => {
       return new this._sdk.api.Zone(document, this, this._sdk, this._context);
     }));
   }
 
   getLayoutUrl () {
-    return this.constructor.getResourcePath(this.document) + '/layout?_rt=' + this._sdk.authenticator.getAuthSync().restrictedToken;
+    return `${this._getResourcePath()}/layout?_rt=${this._sdk.authenticator.getAuthSync().restrictedToken}`;
   }
 
 }
@@ -147,14 +186,25 @@ class Zone extends Resource {
     this._location = location;
   }
 
+  get key () {
+    return this.document.key;
+  }
+
+  get name () {
+    return this.document.name;
+  }
+
+  set name (value) {
+    this.document.name = value;
+  }
+
   save () {
     return this._location.save();
   }
 
   refresh () {
     return this._location.refresh().then(() => {
-      const key = this.document.key;
-      this.document = (this._location.document.zones || []).find(document => document.key === key);
+      this._document = (this._location.document.zones || []).find(document => document.key === this.key);
     });
   }
 
@@ -163,7 +213,7 @@ class Zone extends Resource {
   }
 
   getDevices () {
-    return this._sdk.api.Device.find({ 'location.uuid' : this._location.document.uuid, 'location.zones.key': this.document.key }, this._sdk, this._context);
+    return this._sdk.api.Device.find({ 'location.uuid' : this._location.uuid, 'location.zones.key': this.key }, this._sdk, this._context);
   }
 
   getThings () {
@@ -171,22 +221,24 @@ class Zone extends Resource {
   }
 
   _getChannelName () {
-    return this._location.document.uuid + ':zone:' + this.document.key;
+    return `${this._location.uuid}:zone:${this.key}`;
   }
 
   clone (context) {
-    return new this.constructor(this.document, this._location, this._exists, this._sdk, context);
+    return new this.constructor(this.document, this._location, this._sdk, context);
   }
 
 }
 
 
 
-class Feed extends Resource {
+class Feed extends CommonResource {
 
-  static getCollectionPath () { return '/api/connectors/feeds'; }
+  static _getCollectionPath () { return '/api/connectors/feeds'; }
 
-  getData () { return this._sdk.api.get(this.constructor.getResourcePath(this.document) + '/data'); }
+  getData () {
+    return this._sdk.api.get(`${this._getResourcePath()}/data`);
+  }
 
 }
 
@@ -194,19 +246,22 @@ class Feed extends Resource {
 
 class Data extends Resource {
 
-  static getCollectionPath () { return '/api/data'; }
+  static _getCollectionPath () { return '/api/data'; }
 
-  static getResourcePath (document) {
-    return this.getCollectionPath() + '/' + encodeURIComponent(document.group) + '/' + encodeURIComponent(document.key);
+  get group () {
+    return this.document.group;
   }
 
-  static get (key, group, sdk, context) {
-    group = group || 'default';
-    if (!key) return Promise.resolve(new this({ key: key, group: group, value: null }));
-    return sdk.api.get(this.getResourcePath({ key: key, group: group })).then(document => new this(document, sdk, context)).catch(error => {
-      if (error && error.status === 404) return new this({ key: key, group: group, value: null }, sdk, context);
-      throw error;
-    });
+  set group (value) {
+    this.document.group = value;
+  }
+
+  get key () {
+    return this.document.key;
+  }
+
+  set key (value) {
+    this.document.key = value;
   }
 
   get value () {
@@ -217,29 +272,42 @@ class Data extends Resource {
     this.document.value = value;
   }
 
-  static create (key, group, value, sdk, context) {
+  _getResourcePath () {
+    return this.constructor._getCollectionPath() + '/' + encodeURIComponent(this.group) + '/' + encodeURIComponent(this.key);
+  }
+
+  static get (group, key, sdk, context) {
+    if (!group || !key) return Promise.resolve(null);
+    const path = this._getCollectionPath() + '/' + encodeURIComponent(group) + '/' + encodeURIComponent(key);
+    return sdk.api.get(path).then(document => new this(document, sdk, context)).catch(error => {
+      if (error && error.status === 404) return null;
+      throw error;
+    });
+  }
+
+  static create (group, key, value, sdk, context) {
     if (!key) throw new Error('Please specify a key.');
-    if (!value) { value = group; group = 'default'; }
-    const data = new this({ key: key, group: group, value: value }, sdk, context);
-    return data.save(() => data);
+    if (!group) throw new Error('Please specify a group');
+    const path = this._getCollectionPath() + '/' + encodeURIComponent(group) + '/' + encodeURIComponent(key);
+    return sdk.api.put(path, value).then(document => new this(document, sdk, context));
   }
 
   save () {
-    return this._sdk.api.put(this.constructor.getResourcePath(this.document), this.document.value);
+    return this._sdk.api.put(this._getResourcePath(), this.value);
   }
 
-  getChannelName () {
-    return 'data' + ':' + this.document.key + ':' + this.document.group;
+  _getChannelName () {
+    return 'data' + ':' + this.key + ':' + this.group;
   }
 
 }
 
 
-class Content extends Resource {
+class Content extends CommonResource {
 
-  static getCollectionPath () { return '/api/content'; }
+  static _getCollectionPath () { return '/api/content'; }
 
-  static encodePath (value) {
+  static _encodePath (value) {
     return encodeURI(value)
       .replace('!', '%21')
       .replace('#', '%23')
@@ -257,7 +325,7 @@ class Content extends Resource {
   }
 
   getChildren () {
-    return this._sdk.api.Content.find({ parent: this.document.uuid }, this._sdk, this._context);
+    return this._sdk.api.Content.find({ parent: this.uuid }, this._sdk, this._context);
   }
 
   get subtype () {
@@ -267,30 +335,24 @@ class Content extends Resource {
   getUrl () {
     const auth = this._sdk.authenticator.getAuthSync();
     if (this.subtype === 'scala:content:file') {
-      return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '?_rt=' + auth.restrictedToken;
+      return auth.api.host + '/api/delivery' + Content._encodePath(this.document.path) + '?_rt=' + auth.restrictedToken;
     } else if (this.subtype === 'scala:content:app') {
-      return auth.config.api.host + '/api/delivery' + Content.encodePath(this.document.path) + '/index.html?_rt=' + auth.restrictedToken;
+      return auth.api.host + '/api/delivery' + Content._encodePath(this.document.path) + '/index.html?_rt=' + auth.restrictedToken;
     } else if (this.subtype === 'scala:content:url') {
       return this.document.url;
     }
-    throw new Error('Content item does not have a url.');
   }
 
   getVariantUrl (name) {
-    const auth = this._sdk.authenticator.getAuthSync();
-    if (this.subtype === 'scala:content:file' && this.hasVariant(name)) {
-      const query = '?variant=' + encodeURIComponent(name) + '&_rt=' + auth.restrictedToken;
-      return auth.api.host + '/api/delivery' + Content.encodePath(this.document.path) + query;
-    }
-    throw new Error('Variant does not exist.');
+    return this.getUrl() + '&variant=' + name;
   }
 
   hasVariant (name) {
-    return this.document.variants && this.document.variants.some(element => {
-      return element.name === name;
-    });
+    return this.document.variants && this.document.variants.some(element => element.name === name);
   }
+
 }
+
 
 class ApiError extends Error {
   constructor (message, code, status) {

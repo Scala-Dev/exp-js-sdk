@@ -36,12 +36,6 @@ module.exports = suite => {
       });
     });
 
-    it('Should be able to fling.', () => {
-      return exp.findDevices().then(devices => {
-        return devices[0].fling({});
-      });
-    });
-
     it('Should be able to save changes to a device.', () => {
       const name = Math.random().toString();
       return exp.createDevice({ subtype: 'scala:device:player' }).then(device => {

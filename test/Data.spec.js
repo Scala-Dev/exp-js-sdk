@@ -13,31 +13,20 @@ module.exports = suite => {
     beforeEach(() => exp = suite.startAsDevice());
 
 
-    describe('exp.getData(key, group)', () => {
-      it('Value should be null if key not specified', () => {
-        return exp.getData().then(data => { if (data.value !== null) throw new Error(); });
-      });
+    describe('exp.getData(group, key)', () => {
 
-
-      it('Value should be null if key does not match existing data.', () => {
-        return exp.getData('fakeuuid').then(data => { if (data.value !== null ) throw new Error(); });
+      it('Should return null if data doesnt exist.', () => {
+        return exp.getData(Math.random().toString(), Math.random().toString()).then(data => { if (data !== null ) throw new Error(); });
       });
 
       it('Should retrieve existing data by key and group', () => {
-        return exp.createData('testkey4', 'testgroup1', { a: 1 }).then(() => {
-          return exp.getData('testkey4', 'testgroup1').then(data => {
+        return exp.createData('group4', 'key1', { a: 1 }).then(() => {
+          return exp.getData('group4', 'key1').then(data => {
             if (data.value.a !== 1) throw new Error();
           });
         });
       });
 
-       it('Should retrieve existing data by key', () => {
-        return exp.createData('testkey5', 'default', { a: 1 }).then(() => {
-          return exp.getData('testkey5').then(data => {
-            if (data.value.a !== 1) throw new Error();
-          });
-        });
-      });
     });
 
     describe('exp.createData(key, group, value)', () => {
@@ -49,23 +38,15 @@ module.exports = suite => {
       });
 
       it('Should create data with specified key, value, and group.', () => {
-        return exp.createData('testkey1', 'testgroup1', { a: 1 }).then(() => {
-          return exp.getData('testkey1', 'testgroup1').then(data => {
-            if (data.value.a !== 1) throw new Error();
-          });
-        });
-      });
-
-      it('Should create data into default group.', () => {
-        return exp.createData('testkey2', { a: 1 }).then(data => {
-          return exp.getData('testkey2').then(data => {
+        return exp.createData('group5', 'key7', { a: 1 }).then(() => {
+          return exp.getData('group5', 'key7').then(data => {
             if (data.value.a !== 1) throw new Error();
           });
         });
       });
 
       it('Should be able to write to data twice.', () => {
-        return exp.createData('testkey3', {}).then(() => exp.createData('testkey3', {}));
+        return exp.createData('group3', 'key5', {}).then(() => exp.createData('group3', 'key5', {}));
       });
 
     });
@@ -78,20 +59,13 @@ module.exports = suite => {
       });
     });
 
-    describe('data.fling()', () => {
-      it('Should succeed', () => {
-        return exp.findData().then(items => {
-          return items[0].fling({});
-        });
-      });
-    });
 
     describe('data.save()', () => {
       it('Should save change to value', () => {
         return exp.findData().then(items => {
           items[0].value = { b: 2 };
           return items[0].save().then(() => {
-            return exp.getData(items[0].document.key, items[0].document.group).then(data => {
+            return exp.getData(items[0].group, items[0].key).then(data => {
               if (data.value.b !== 2) throw new Error();
             });
           });
@@ -116,7 +90,7 @@ module.exports = suite => {
     describe('data.refresh()', () => {
       it('Should update value', () => {
         return exp.findData().then(items => {
-          return exp.createData(items[0].document.key, items[0].document.group, { e: 4 }).then(() => {
+          return exp.createData(items[0].group, items[0].key, { e: 4 }).then(() => {
             return items[0].refresh().then(() => {
               if (items[0].value.e !== 4) throw new Error();
             });

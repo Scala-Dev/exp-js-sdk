@@ -55,14 +55,6 @@ module.exports = suite => {
     });
 
 
-     it('Should be able to fling.', () => {
-      return exp.createLocation(generateTestLocation()).then(location => {
-        return location.getZones().then(zones => {
-          zones.forEach(zone => zone.fling({}))
-        });
-      });
-    });
-
     it('Should be able to save changes to a zone.', () => {
       return exp.createLocation(generateTestLocation()).then(location => {
         return location.getZones().then(zones => {

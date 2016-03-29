@@ -43,11 +43,6 @@ module.exports = suite => {
       return exp.findFeeds({ name: 'tootallo' }).then(feeds => { if (feeds.length !== 0) throw new Error(); });
     });
 
-    it('Should be able to fling.', () => {
-      return exp.findFeeds().then(feeds => {
-        return feeds[0].fling({});
-      });
-    });
 
     it('Should be able to save changes to a feed.', () => {
       const name = Math.random().toString();

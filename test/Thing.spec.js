@@ -40,12 +40,6 @@ module.exports = suite => {
       return exp.findThings({ name: 'tootallo' }).then(things => { if (things.length !== 0) throw new Error(); });
     });
 
-     it('Should be able to fling.', () => {
-      return exp.findThings().then(things => {
-        return things[0].fling({});
-      });
-    });
-
     it('Should be able to save changes to a thing.', () => {
       const name = Math.random().toString();
       return exp.createThing(generateTestThing()).then(thing => {

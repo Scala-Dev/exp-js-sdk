@@ -98,16 +98,6 @@ module.exports = suite => {
           if (!url) throw new Error();
         });
       });
-      it('Should throw an error if the variant doesn\'t exist.', () => {
-        return exp.findContent().then(items => {
-          const item = items.find(item => item.document.variants && item.document.variants.length > 0);
-          if (!item) throw new Error('Please add content to root with variants.');
-          try {
-            item.getVariantUrl(item.document.variants[0].name + 'booga');
-          } catch (error) { return; }
-          throw new Error();
-        });
-      });
     });
 
     describe('content.hasVariant(name)', () => {
@@ -144,12 +134,6 @@ module.exports = suite => {
       return exp.getContent('fakeuuid').then(content => { if (content !== null ) throw new Error(); });
     });
 
-
-     it('Should be able to fling.', () => {
-      return exp.findContent().then(items => {
-        return items[0].fling({});
-      });
-    });
 
 
     it('Should be able to communicate on content channel.', done => {

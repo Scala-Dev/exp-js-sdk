@@ -37,12 +37,6 @@ module.exports = suite => {
       return exp.findLocations({ name: 'tootallo' }).then(locations => { if (locations.length !== 0) throw new Error(); });
     });
 
-     it('Should be able to fling.', () => {
-      return exp.findLocations().then(locations => {
-        return locations[0].fling({});
-      });
-    });
-
     it('Should be able to save changes to a location.', () => {
       const name = Math.random().toString();
       return exp.createLocation(generateTestLocation()).then(location => {
