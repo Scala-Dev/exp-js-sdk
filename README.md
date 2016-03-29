@@ -1,29 +1,8 @@
 
 
-# EXP Javascript SDK
-
-- [Getting Started](#getting-started)
-  - [Bower](#bower)
-  - [NPM](#npm)
-- [Example](#example)
-- [Reference](#reference)
-  - [Runtime](#runtime)
-  - [Channels](#channels)
-  - [Listeners](#listeners)
-  - [Devices](#devices)
-  - [Things](#things)
-  - [Experiences](#experiences)
-  - [Locations](#locations)
-  - [Zones](#zones)
-  - [Feeds](#feeds)
-  - [Content](#content)
-  - [Data](#data)
-  - [Startup Options](#startup-options)
-  - [Channel Options](#channel-options)
 
 
-
-# Getting Started
+# Installation
 
 ## Bower
 
@@ -33,7 +12,7 @@ The easiest way to get the SDK for standalone browser usage is using `bower`.
 bower install exp-sdk
 ```
 
-Then include the sdk in a script tag from the bower_components directory. You can then access the sdk as the window bound global `exp`.
+Then include the sdk in a script tag from the bower_components directory. You can then access the sdk as the window bound global `EXP`.
 
 ```html
 <script src="bower_components/exp-sdk/exp-sdk.min.js"></script>
@@ -55,221 +34,495 @@ and require in the `exp` module.
 const EXP = require('exp-sdk');
 ```
 
-# Example
 
-More examples can be found in the [documentation](https://docs.goexp.io).
+
+# Runtime
+
+## Starting the SDK
+
+**`EXP.start(options)`**
+
+Starts and returns an sdk instance. Can be called multiple times to start multiple independent instances of the sdk. The sdk can be started using user, device, or consumer app credentials. `options` is an object that supports the following properties:
+
+- `username` The username used to log in to EXP. Required user credential.
+- `password` The password of the user. Required user credential.
+- `organization` The organization of the user. Required user credential.
+- `uuid` The uuid of the device or consumer app. Required consumer app credential and required device credential unless `allowPairing` is `true`.
+- `secret` The device secret. Required device credential unless `allowPairing` is `true`.
+- `api_key` The consumer app api key. Required consumer app credential.
+- `allowPairing` Whether or not to allow authentication to fallback to pairing mode. If `true`, invalid or missing device credentials will start the sdk in pairing mode. Defaults to `false`.
+- `host` The api host to authenticate with. Defaults to `https://api.goexp.io`.
+- `enableNetwork` Whether or not to establish a socket connection with the EXP network. If `false` you will not be able to listen for broadcasts. Defaults to `true`.
 
 ```javascript
-const EXP = require('exp-sdk');
+# Authenticating as a user.
+exp = EXP.start({ username: 'joe@scala.com', password: 'joeIsAwes0me', organization: 'joeworld' })
 
-// Start the SDK.
-const exp = EXP.start({ uuid: 'my-uuid', secret: 'my-secret'});
+# Authenticating as a device.
+exp = EXP.start({ uuid: '[uuid]', secret: '[secret]' });
 
-// Listen for a hello message on test channel and broadcast message.
-const channel = exp.getChannel('test');
-channel.listen('hello', () => { console.log('I got a message!'); }).then(() => {
-  channel.broadcast('hello!');
-});
-
-// Identify all devices in the given experience.
-exp.getExperience('my-experience-uuid').then(experience => {
-  if (!experience) return;
-  experience.getDevices().then(devices => devices.forEach(device => device.identify()));
-});
-
-
+# Authenticating as a consumer app.
+exp = EXP.start({ uuid: '[uuid]', api_key: '[api-key]' });
 ```
 
+## Stopping the SDK
 
-# Reference
+**`EXP.stop()`** 
 
-## Runtime
- | Description
---- | ---
-`EXP.start(options)` | Starts and returns an sdk instance. `options` is an object containing [startup options](#startup-options). Throws an error if `options` is invalid.
-`EXP.stop()` | Stops all running sdk instances.
-`exp.getAuth()` | Resolves to the current authentication payload.
-`exp.isConnected` | Whether or not you are connected to the network.
-`exp.stop()` | Stops the the instance and clears all event listeners.
-`exp.on('online',callback)` | Callback is called when connection to the network is established. Returns a [listener](#listener).
-`exp.on('update',callback)` | Callback is called when authentication payload is updated. Returns a [listener](#listener).
-`exp.on('offline',callback)` | Callback is called when connection to the network is lost. Returns a [listener](#listener).
+Stops all running instance of the sdk, cancels all listeners and network connections.
+
+```javascript
+exp1 = EXP.start(options1)
+exp2 = EXP.start(options2)
+
+EXP.stop()
+exp1.createDevice()  // Error
+```
+
+New instance can still be started by calling `EXP.start()`.
 
 
-### `exp.on('error',callback)` 
+**`exp.stop()`**
+
+Stops the the SDK instance and clears all event listeners. Sdk instance cannot be restarted and any invokation on the instance will result in an Error being thrown.
+
+## Authentication
+
+**`exp.getAuth()`**
+
+Resolves to the current authentication payload. The authentication payload may be updated by performing this request.
+
+**`exp.on('update',callback)`** 
+
+Callback is called when authentication payload is updated. Returns a [listener](#listener).
+
+
+**`exp.on('error',callback)`**
+
 Register a callback for when the sdk instance encounters a critical error and cannot continue. The callback is called with the error as the first argument. This is generally due to authentication failure. Returns a [listener](#listeners).
 
 ```javascript
-
 const exp = EXP.start(options)
 exp.on('error', error => console.error('Uhoh, the sdk instance died.', error));
-
 ```
 
 
-## Channels
- | Description
- --- | ---
- `exp.getChannel(name, options)` | Returns a channel with the given name and [channel options](#channel-options].
- `channel.broadcast(name, payload, timeout)` | Sends a broadcast with given name and payload on the channel. Waits for responses for timeout milliseconds.
- `channel.listen(name, callback` | Listens for broadcasts with given name on the channel. `callback` will be called with the broadcast payload and the response callback.Resolves to a [listener](#listener) when the channel is registered.
- `channel.fling(payload, timeout)` | Sends a fling broadcast on this channel with the given payload and timeout.
-
 
 ## Listeners
- | Description
- --- | ---
-`listener.cancel()` | Cancels the registered callback associated with the listener.
 
+**listener.cancel()**
+
+Cancels the registered callback. This operation cannot be undone.
+
+
+# Network
+
+## Status
+
+
+**`exp.on('offline',callback)`** 
+
+Callback is called when connection to the network is lost. Returns a [listener](#listener).
+
+
+**`exp.on('online',callback)`**
+
+Callback is called when connection to the network is established. Returns a [listener](#listeners).
+
+**`exp.isConnected`**
+
+Whether or not you are connected to the network.
+
+
+## Channels
+ 
+ **`exp.getChannel(name, options)`** 
+ 
+ Returns a channel with the given name and options. Options is a javascript object with two flags: `consumer` and `system`. Consumer devices can only listen and broadcast on consumer channels. System channels are listen only and can receive broadcasts about system events.
+ 
+```javascript
+channel = exp.getChannel('my-consumer-channel', { consumer: true })
+```
+ 
+ 
+**`channel.broadcast(name, payload, timeout)`** 
+
+Sends a broadcast with given `name` and `payload` on the channel. Waits for responses for `timeout` milliseconds and resolves with an array of responses.
+
+```javascript
+channel.broadcast('hi!', { test: 'nice to meet you!' }).then(responses => {
+  responses.forEach(response => console.log(response));
+});
+```
+
+
+**`channel.listen(name, callback)`** 
+
+Registers a [listener](#listeners) callback for events on the channel with the given `name`. Resolves to a [listener](#listeners) when the callback is registered and the network connection has subscribed to the channel.
+
+The callback is called with the broadcast payload as the first argument and a `respond` method as the second argument. Call the `respond` method to send a response back to the broadcaster.
+
+```javascript
+channel = exp.getChannel('my-channel')
+channel.listen('myEvent', (payload, respond) => {
+  if (payload && payload.text === 'hi') respond({ text: 'hi to you too!' });
+});
+```
+
+
+**`channel.fling(payload)`** 
+
+Fling an app launch payload on the channel.
+```javascript
+channel.fling({ appTemplate: { uuid: '[uuid]' } });
+```
+
+**`channel.identify()`**
+
+Requests that [devices](#device) listening for this event on this channel visually identify themselves. Implementation is device specific; this is simply a convience method.
+
+
+# API
 
 ## Devices
 
- | Description
---- | ---
-`exp.getDevice(uuid)` | Resolves to the device with given uuid or `null`.
-`exp.findDevices(params)` | Resolves to an array of devices matching the given query parameters.
-`exp.createDevice(document)` | Resolves to a newly created device.
-`device.document` | The device's underlying document.
-`device.refresh()` | Resolves when the device is refreshed. The document is updated in place.
-`device.save()` | Resolves when the device is saved. The document is updated in place.
-`device.getChannel(options)` | Returns the [channel](#channel) for this device with the given [channel options](#channel-options).
-`device.fling(payload, options, timeout)` | Sends fling event on device's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
-`device.getExperience()` | Resolves to the device's [experience](#experience) or null.
-`device.getLocation()` | Resolve to the device's [location](#locations) or null.
-`device.getZones()` | Resolves to an array of the device's [zones](#zones).
+Devices inherit all [common resource methods and attributes](#resources).
+
+**`exp.getDevice(uuid)`** 
+
+Resolves to the device with the given uuid or `null` if the device could be found.
+
+**`exp.createDevice(document)`** 
+
+Resolves to a device created based on the supplied document.
+
+**`exp.findDevices(params)`** 
+
+Resolves to an array of devices matching the given query parameters. `params` is a map of query parameters.
+
+```javascript
+exp.createDevice({ subtype: 'scala:device:player' }).then(device => {});
+```
+
+**`device.getLocation()`**
+
+Resolves to the device's [location](#locations) or `null`.
+
+**`device.getZones()`**
+
+Resolves to an array of the device's [zones](#zones).
+
+**`device.getExperience()`**
+
+Resolves to the device's [experience](#experiences) or `null`
+
 
 ## Things
 
- | Description
---- | ---
-`exp.getThing(uuid)` | Resolves to the thing with given uuid or `null`.
-`exp.findThings(params)` | Resolves to an array of things matching the given query parameters.
-`exp.createThing(document)` | Resolves to a newly created thing.
-`thing.document` | The thing's underlying document.
-`thing.refresh()` | Resolves when the thing is refreshed. The document is updated in place.
-`thing.save()` | Resolves when the thing is saved. The document is updated in place.
-`thing.getChannel(options)` | Returns the [channel](#channel) for this thing with the given [channel options](#channel-options).
-`thing.fling(payload, options, timeout)` | Sends fling event on thing's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
-`thing.getLocation()` | Resolve to the thing's [location](#locations) or null.
-`thing.getZones()` | Resolves to an array of the thing's [zones](#zones).
+Things inherit all [common resource methods and attributes](#resources).
+
+**`exp.getThing(uuid)`**
+
+Resolves to the thing with the given uuid or `None` if no things could be found.
+
+**`exp.create_thing(document=None)`**
+
+Resolves to a thing created based on the supplied document.
+
+```javascript
+exp.createThing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name': 'my-rfid-tag' }).then(thing => {});
+```
+
+**`exp.findThings(params)`**
+
+Resolves to an array of things matching the given query parameters. `params` is a map of query parameters.
+
+**`thing.getLocation()`**
+
+Resolves to the thing's [location](#locations) or `null`.
+
+**`thing.getZones()`**
+
+Resolves to a list of the thing's [#zones](#zones).
+
+**`thing.getExperience()`**
+
+Resolves to the the device's [experience](#experiences) or `null`
+
 
 ## Experiences
 
- | Description
---- | ---
-`exp.getExperience(uuid)` | Resolves to the experience with given uuid or `null`.
-`exp.findExperiences(params)` | Resolves to an array of experiences matching the given query parameters.
-`exp.createExperience(document)` | Resolves to a newly created experience.
-`experience.document` | The experience's underlying document.
-`experience.refresh()` | Resolves when the experience is refreshed. The document is updated in place.
-`experience.save()` | Resolves when the experience is saved. The document is updated in place.
-`experience.getChannel(options)` | Returns the [channel](#channel) for this experience with the given [channel options](#channel-options).
-`experience.fling(payload, options, timeout)` | Sends fling event on experience's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
-`experience.getDevices()` | Resolves to an array of [devices](#devices) in the experience.
+Experiences inherit all [common resource methods and attributes](#resources).
 
+**`exp.getExperience(uuid)`**
+
+Resolves to the experience with the given uuid or `null` if no experience could be found.
+
+**`exp.createExperience(document)`**
+
+Resolves to an experience created based on the supplied document.
+
+**`exp.findExperiences(params)`**
+
+Returns a list of experiences matching the given query parameters. `params` is a map of query parameters.
+
+**`experience.getDevices()`**
+
+Resolves to an array of [devices](#devices) that are part of this experience.
 
 
 ## Locations
- | Description
- --- | ---
-`exp.getLocation(uuid)` | Resolves to the location with given uuid or `null`.
-`exp.findLocations(params)` | Resolves to an array of locations matching the given query parameters.
-`exp.createLocation(document)` | Resolves to a newly created location.
-`location.document` | The location's underlying document.
-`location.refresh()` | Resolves when the location is refreshed. The document is updated in place.
-`location.save()` | Resolves when the location is saved. The document is updated in place.
-`location.getChannel(options)` | Returns the [channel](#channel) for this location with the given [channel options](#channel-options).
-`location.fling(payload, options, timeout)` | Sends fling event on location's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
-`location.getDevices()` | Resolves to an array of [devices](#devices) in the location.
-`location.getThings()` | Resolves to an array of [things](#things) in the location.
-`location.getZones()` | Resolves to an array of [zones](#zones) in the location.
-`location.getLayoutUrl()` | Returns url to location layout image.
+
+Locations inherit all [common resource methods and attributes](#resources).
+
+**`exp.getLocation(uuid)`**
+
+Resolves to the location with the given uuid or `null` if no location could be found.
+
+**`exp.createLocation(document)`**
+
+Resolves to a location created based on the supplied document.
+
+**`exp.findLocations(params)`**
+
+Resolves to an array of locations matching the given query parameters. `params` is a dictionary of query parameters.
+
+
+**`location.getDevices()`**
+
+Resolves to an array of [devices](#devices) that are part of this location.
+
+**`location.getThings()`**
+
+Resolves to an array of [things](#things) that are part of this location.
+
+**`location.getZones()`**
+
+Resolves to an array of [zones](#zones) that are part of this location.
+
+**`location.getLayoutUrl()`**
+
+Returns a url pointing to the location's layout image.
 
 
 ## Zones
- | Description
- --- | ---
-`zone.document` | The zone's underlying document.
-`zone.refresh()` | Resolves when the zone is refreshed. The document is updated in place.
-`zone.save()` | Resolves when the zone is saved. The document is updated in place.
-`zone.getChannel(options)` | Returns the [channel](#channel) for this zone with the given [channel options](#channel-options).
-`zone.fling(payload, options, timeout)` | Sends fling event on zone's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
-`zone.getDevices()` | Resolves to an array of [devices](#devices) in the zone.
-`zone.getThings()` | Resolves to an array of [things](#things) in the zone.
 
+Zones inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `getChannel()`.
+
+**`zone.key`**
+
+The zone's key.
+
+**`zone.name`**
+
+The zone's name.
+
+**`zone.getDevices()`**
+
+Resolves to an array of [devices](#devices) that are members of this zone.
+
+**`zone.getThings()`**
+
+Resolves to an array of [things](#things) that are members of this zone.
+
+**`zone.getLocation()`**
+
+Resolves to the zone's [location](#locations)
 
 
 ## Feeds
- | Description
- --- | ---
-`exp.getFeed(uuid)` | Resolves to the feed with given uuid or `null`.
-`exp.findFeeds(params)` | Resolves to an array of feeds matching the given query parameters.
-`exp.createFeed(document)` | Resolves to a newly created feed.
-`feed.document` | The location's underlying document.
-`feed.refresh()` | Resolves when the feed is refreshed. The document is updated in place.
-`feed.save()` | Resolves when the feed is saved. The document is updated in place.
-`feed.getChannel(options)` | Returns the [channel](#channel) for this feed with the given [channel options](#channel-options).
-`feed.fling(payload, options, timeout)` | Sends fling event on feed's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
-`feed.getData()` | Resolves to the feeds data. See the [documentation](https://docs.goexp.io).
+Feeds inherit all [common resource methods and attributes](#resources).
 
+**`exp.getFeed(uuid)`**
 
-## Content
- | Description
- --- | ---
-`exp.getContent(uuid)` | Resolves to the content item with given uuid or `null`.
-`exp.findContent(params)` | Resolves to an array of content items matching the given query parameters.
-`content.document` | The location's underlying document.
-`content.getChannel(options)` | Returns the [channel](#channel) for this content with the given [channel options](#channel-options).
-`content.fling(payload, options, timeout)` | Sends fling event on content's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
-`content.getUrl()` | Returns the delivery URL for the content.
-`content.getChildren()` | Resolves to an array of the content item's children.
-`content.hasVariant(name)` | Returns `true` if the specified variant is available, and `false` if the variant does not exist.
-`content.getVariantUrl()` | Returns the delivery URL of the variant. Throws an error if variant does not exists.
-`content.subtype` | The subtype of the content.
+Resolves to the feed with the given uuid or `null` if no feed could be found.
+
+**`exp.createFeed(document)`**
+
+Resolves to a feed created based on the supplied document.
+
+```javascript
+exp.createFeed({ subtype: 'scala:feed:weather', searchValue: '16902', name: 'My Weather Feed'  }).then(feed => {});
+```
+
+**`exp.findFeeds(params)`**
+
+Resolves to an array of feeds matching the given query parameters. `params` is a dictionary of query parameters.
+
+```javascript
+exp.findFeeds({ subtype: 'scala:feed:facebook' }).then(feeds => {})
+```
+
+**`feed.getData()`**
+
+Resolves to the feed's data.
 
 
 ## Data
- | Description
- --- | ---
-`exp.getData(key, group)` | Resolves to the data item with given key and group. Group defaults to `default`. If the data item does not exist, resolves to data item with `value` of `null`.
-`exp.findData(params)` | Resolves to an array of data items matching the given query parameters.
-`exp.createData(key, group, value)` | Resolves to a newly created data item.
-`exp.createData(key, value)` | Resolves to a newly created data item in group `default`.
-`data.refresh()` | Resolves when the data item value is refreshed in place.
-`data.value` | The value of the data item.
-`data.save()` | Resolves when the data item is saved.
-`data.document` | The data item's underlying document.
-`data.getChannel(options)` | Returns the [channel](#channel) for this data item with the given [channel options](#channel-options).
-`data.fling(payload, options, timeout)` | Sends fling event on data item's [channel](#channel) with given [channel options](#channel-options) and broadcast `timeout`.
+
+Data items inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `getChannel()`.
+
+**`exp.getData(group, key)`**
+
+Resolves to the data item with the given group and key or `null` if the data item could not be found.
+
+```python
+exp.getData('cats', 'fluffy').then(data => {});
+```
+
+**`exp.createData(groupr, key, value)`**
+
+Resolves to a data item created based on the supplied group, key, and value.
+
+```javascript
+exp.createData('cats', 'fluffy', { 'color': 'brown'}).then(data => {});
+```
+
+**`exp.findData(params)`**
+
+Resolves to an array of data items matching the given query parameters. `params` is a dictionary of query parameters.
+
+```python
+exp.findData({ group: 'cats' }).then(items => {});
+```
+
+**`data.key`**
+
+The data item's key. Settable.
+
+**`data.group`**
+
+The data item's group. Settable
+
+**`data.value`**
+
+The data item's value. Settable.
+
+## Content
+
+Content items inherit all [common resource methods and attributes](#resources) except `save()`.
+
+**`exp.getContent(uuid)`**
+
+Resolves to the content item with the given uuid or `null` if no content item could be found.
+
+**`exp.findContent(params)`**
+
+Resolves to an array of content items matching the given query parameters. `params` is a dictionary of query parameters.
+
+**`content.subtype`**
+
+The content item's subtype. Not settable.
+
+**`content.getUrl()`**
+
+Returns the delivery url for this content item.
+
+**`content.hasVariant(name)`**
+
+Returns a boolean indicating whether or not this content item has a variant with the given name.
+
+**`content.getVariantUrl(name)`**
+
+Returns the delivery url for a variant of this content item.
 
 
+**`content.getChildren()`**
 
-## Startup Options
-Name | Description
---- | ---
-**User Credentials** |
-username | Your username.
-password | Your password.
-organization | Organization to authenticate into.
-**Device Credentials** |
-uuid | The device uuid.
-secret | The device secret.
-allowPairing | Whether or not to allow the SDK to run in pairing mode. Defaults to `false`.
-**Consumer App Credentials** |
-uuid | The consumer app uuid.
-apiKey | The consumer app api key.
-**Other Options** |
-host | The api server to authenticate with. Defaults to `https://api.goexp.io`.
-enableNetwork | Whether to enable real time network communication. If set to `false` you will be unable to listen on the EXP network. Defaults to `true`.
+Resolves to an array of the content items children.
 
 
+## Resources
+
+These methods and attributes are shared by many of the abstract API resources.
+
+**`resource.uuid`**
+
+The uuid of the resource. Cannot be set.
+
+**`resource.name`**
+
+The name of the resource. Can be set directly.
+
+**`resource.document`**
+
+The resource's underlying document
+
+**`resource.save()`**
+
+Saves the resource and updates the document in place. Returns a promise to the save operation.
+
+```javascript
+exp.getDevice('[uuid]').then(device => {
+  device.name = 'newName';
+  device.save().then(() => console.log('Saved it!'));
+});
+```
+
+**`resource.refresh()`**
+
+Refreshes the resource's underlying document in place. Returns a promise to refresh operation.
+
+```javascript
+exp.createDevice().then(device => {
+  exp.getDevice(device.uuid).then(device2 => {
+    device.name = 'newName';
+    device.save().then(() => {
+      device2.refresh().then(() => {
+        // device2 name is now updated.
+      });
+    });
+  });
+});
+```
+
+**`resource.getChannel(channelOptions)`**
+
+Returns the [channel](#channels) whose name is contextually associated with this resource.
 
 
-## Channel Options
-Name | Description
---- | ---
-`system` | Whether or not the channel is a system channel. Defaults to `false`.
-`consumer` | Whether or not the channel is a consumer channel. Defaults to `false`. Consumer apps can only use channels with `consumer=true`.
+## Custom Requests
+
+These methods send custom authenticated API calls. `params` is a map of url params and `body` is a JSON serializable document. in seconds, to wait for the request to complete. `path` is relative to the api host root. All methods will return a promise to the response document.
+
+**`exp.get(path, params)`**
+
+Send a GET request.
+
+```javascript
+exp.get('/api/devices', { 'name': 'my-name' }).then(result => {});
+```
+
+**`exp.post(path, body, params)`**
+
+Send a POST request.
+
+```javascript
+exp.post('/api/experiences', {}).then(document => {});
+```
+
+**`exp.patch(path, body, params)`**
+
+Send a PATCH request.
+
+```javascript
+exp.patch('/api/experiences/[uuid]', { name: 'new-name' }).then(document => {});
+```
 
 
+**`exp.put(path, body, params)`**
+
+Send a PUT request.
+
+```javascript
+ exp.put('/api/data/cats/fluffy', { eyes: 'blue'}).then(document => {});
+```
+
+**`exp.delete(path, params)`**
+
+Send a DELETE request.
+
+```javascript
+exp.delete('/api/location/[uuid]').then(() => {});
+```
 
