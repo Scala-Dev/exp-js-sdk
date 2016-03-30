@@ -96,7 +96,7 @@ class Authenticator {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + this.auth.token
+        'Authorization': 'Bearer ' + this._lastAuth.token
       }
     }).then(response => {
       if (response.status === 401) this._login();

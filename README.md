@@ -93,6 +93,10 @@ Stops the the SDK instance and clears all event listeners. Sdk instance cannot b
 
 Resolves to the current authentication payload. The authentication payload may be updated by performing this request.
 
+**`exp.auth`**
+
+Returns the current authentication payload. Will be null if not yet authenticated.
+
 **`exp.on('update',callback)`** 
 
 Callback is called when authentication payload is updated. Returns a [listener](#listener).

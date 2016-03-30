@@ -74,18 +74,21 @@ class EXP {
   constructor (sdk, context) {
     this.__sdk = sdk;
     this._context = context || Math.random().toString();
+    this.EventNode = EventNode;
   }
 
   get _sdk () { if (!this.__sdk) throw new Error('SDK was stopped.'); return this.__sdk; }
 
   static start (options) { const sdk = SDK.start(options); return new this(sdk); }
   static stop () { return SDK.stop(); }
-  static get EventNode () { return EventNode }
+  static get EventNode () { return EventNode; }
+  static clear (context) { return this.EventNode.clear(context); }
 
   /* Runtime */
   stop () { this._sdk.stop(); delete this.__sdk; }
   getAuth () { return this._sdk.authenticator.getAuth(); }
   on (name, callback) { return this._sdk.events.on(name, callback, this._context); }
+  get auth () { return this._sdk.authenticator.getAuthSync(); }
 
   /* Undocumented Memory Management */
   clone (context) { return new this.constructor(this._sdk, context); }
