@@ -101,7 +101,7 @@ class Authenticator {
     }).then(response => {
       if (response.status === 401) this._login();
       else if (!response.ok) throw new Error();
-      else return response.json().then(auth => this._update(auth));
+      else return response.json().then(auth => this._onSuccess(auth));
     }).catch(error => {
       this._onError(error);
       this._timeout = setTimeout(() => this._refresh(), 5000);
