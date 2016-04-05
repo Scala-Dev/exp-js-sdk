@@ -10,5 +10,12 @@ module.exports = suite => {
       suite.credentials.device.uuid = 'WRONG UUID';
       suite.startAsDevice().getAuth().then(() => done(new Error()), () => done());
     });
+    it('Should be able to refresh auth.', () => {
+      const exp = suite.startAsDevice();
+      return exp.getAuth().then(() => {
+        exp._sdk.authenticator._refresh();
+        return exp.getAuth();
+      });
+    });
   });
 };
