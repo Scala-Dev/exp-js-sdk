@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports = require('./build/node/scala');
+module.exports = require('./dist/node/EXP');

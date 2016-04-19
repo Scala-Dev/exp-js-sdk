@@ -73,6 +73,7 @@
       "queryCss": true,
       "SVGInjector": true,
       "before": true,
+      "after": true,
       "require": true
     },
     "predef"        : [
