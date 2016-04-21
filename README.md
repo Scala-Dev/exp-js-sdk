@@ -230,7 +230,7 @@ Things inherit all [common resource methods and attributes](#resources).
 
 Resolves to the thing with the given uuid or `None` if no things could be found.
 
-**`exp.create_thing(document=None)`**
+**`exp.createThing(document=None)`**
 
 Resolves to a thing created based on the supplied document.
 
