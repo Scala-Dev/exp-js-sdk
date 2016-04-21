@@ -50,7 +50,7 @@ Starts and returns an sdk instance. Can be called multiple times to start multip
 - `organization` The organization of the user. Required user credential.
 - `uuid` The uuid of the device or consumer app. Required consumer app credential and required device credential unless `allowPairing` is `true`.
 - `secret` The device secret. Required device credential unless `allowPairing` is `true`.
-- `api_key` The consumer app api key. Required consumer app credential.
+- `apiKey` The consumer app api key. Required consumer app credential.
 - `allowPairing` Whether or not to allow authentication to fallback to pairing mode. If `true`, invalid or missing device credentials will start the sdk in pairing mode. Defaults to `false`.
 - `host` The api host to authenticate with. Defaults to `https://api.goexp.io`.
 - `enableNetwork` Whether or not to establish a socket connection with the EXP network. If `false` you will not be able to listen for broadcasts. Defaults to `true`.
@@ -63,7 +63,7 @@ exp = EXP.start({ username: 'joe@scala.com', password: 'joeIsAwes0me', organizat
 exp = EXP.start({ uuid: '[uuid]', secret: '[secret]' });
 
 # Authenticating as a consumer app.
-exp = EXP.start({ uuid: '[uuid]', api_key: '[api-key]' });
+exp = EXP.start({ uuid: '[uuid]', apiKey: '[api-key]' });
 ```
 
 ## Stopping the SDK
