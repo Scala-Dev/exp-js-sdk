@@ -53,7 +53,7 @@ Starts and returns an sdk instance. Can be called multiple times to start multip
 - `apiKey` The consumer app api key. Required consumer app credential.
 - `allowPairing` Whether or not to allow authentication to fallback to pairing mode. If `true`, invalid or missing device credentials will start the sdk in pairing mode. Defaults to `false`.
 - `host` The api host to authenticate with. Defaults to `https://api.goexp.io`.
-- `enableNetwork` Whether or not to establish a socket connection with the EXP network. If `false` you will not be able to listen for broadcasts. Defaults to `true`.
+- `enableNetwork` Whether or not to establish a socket connection with the network for real time communication. If `false` you will not be able to listen for broadcasts. Defaults to `true`.
 
 ```javascript
 # Authenticating as a user.
@@ -70,7 +70,7 @@ exp = EXP.start({ uuid: '[uuid]', apiKey: '[api-key]' });
 
 **`EXP.stop()`** 
 
-Stops all running instance of the sdk, cancels all listeners and network connections.
+Stops all running instance of the sdk, cancels all listeners and closes socket connections.
 
 ```javascript
 exp1 = EXP.start(options1)
@@ -120,23 +120,23 @@ exp.on('error', error => console.error('Uhoh, the sdk instance died.', error));
 Cancels the registered callback. This operation cannot be undone.
 
 
-# Network
+# Real Time Communication
 
 ## Status
 
 
 **`exp.on('offline',callback)`** 
 
-Callback is called when connection to the network is lost. Returns a [listener](#listener).
+Callback is called when connection to EXP is lost. Returns a [listener](#listener).
 
 
 **`exp.on('online',callback)`**
 
-Callback is called when connection to the network is established. Returns a [listener](#listeners).
+Callback is called when connection to EXP is established. Returns a [listener](#listeners).
 
 **`exp.isConnected`**
 
-Whether or not you are connected to the network.
+Whether or not you are connected to EXP.
 
 
 ## Channels
@@ -163,7 +163,7 @@ channel.broadcast('hi!', { test: 'nice to meet you!' }).then(responses => {
 
 **`channel.listen(name, callback)`** 
 
-Registers a [listener](#listeners) callback for events on the channel with the given `name`. Resolves to a [listener](#listeners) when the callback is registered and the network connection has subscribed to the channel.
+Registers a [listener](#listeners) callback for events on the channel with the given `name`. Resolves to a [listener](#listeners) when the callback is registered and the connection has subscribed to the channel.
 
 The callback is called with the broadcast payload as the first argument and a `respond` method as the second argument. Call the `respond` method to send a response back to the broadcaster.
 
