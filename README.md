@@ -213,10 +213,6 @@ exp.createDevice({ subtype: 'scala:device:player' }).then(device => {});
 
 Resolves to the current device or null if not a device.
 
-```javascript
-exp.createDevice({ subtype: 'scala:device:player' }).then(device => {});
-```
-
 **`device.getLocation()`**
 
 Resolves to the device's [location](#locations) or `null`.
