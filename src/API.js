@@ -95,6 +95,12 @@ class Device extends CommonResource {
 
   static _getCollectionPath () { return '/api/devices'; }
 
+  static getCurrent (sdk, context) {
+    return sdk.authenticator.getAuth().then(auth => {
+      return this.get(auth.identity.uuid, sdk, context);
+    });
+  }
+
   getExperience () {
     return this._sdk.api.Experience.get(_.get(this.document, 'experience.uuid'), this._sdk, this.context);
   }
@@ -143,6 +149,13 @@ class Experience extends CommonResource {
 
   static _getCollectionPath () { return '/api/experiences'; }
 
+  static getCurrent (sdk, context) {
+    return Device.getCurrent(sdk, context).then(device => {
+      if (!device || !device.document.experience || !device.document.experience.uuid) return null;
+      return this.get(device.document.experience.uuid, sdk, context);
+    });
+  }
+
   getDevices () {
     return this._sdk.api.Device.find({ 'experience.uuid' : this.uuid }, this._sdk, this._context);
   }
@@ -155,6 +168,13 @@ class Experience extends CommonResource {
 class Location extends CommonResource {
 
   static _getCollectionPath () { return '/api/locations'; }
+
+  static getCurrent (sdk, context) {
+    return Device.getCurrent(sdk, context).then(device => {
+      if (!device || !device.document.location || !device.document.location.uuid) return null;
+      return this.get(device.document.location.uuid, sdk, context);
+    });
+  }
 
   getDevices () {
     return this._sdk.api.Device.find({ 'location.uuid': this.uuid }, this._sdk, this._context);
@@ -184,6 +204,13 @@ class Zone extends Resource {
   constructor (document, location, sdk, context) {
     super(document, sdk, context);
     this._location = location;
+  }
+
+  static getCurrent (sdk, context) {
+    return Device.getCurrent(sdk, context).then(device => {
+      if (!device) return [];
+      return device.getZones()
+    });
   }
 
   get key () {

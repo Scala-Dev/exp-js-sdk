@@ -103,6 +103,59 @@ module.exports = suite => {
         });
       });
     });
+
+    describe('exp.getCurrentLocation()', () => {
+      describe('when device has an location', () => {
+        const name = Math.random().toString();
+        beforeEach(() => {
+          return exp.getCurrentDevice().then(device => {
+            return exp.createLocation({ name: name }).then(location => {
+              device.document.location = location.document;
+              return device.save();
+            });
+          });
+        });
+        afterEach(() => {
+          return exp.getCurrentDevice().then(device => {
+            device.document.location.uuid = null;
+            return device.save();
+          });
+        });
+
+        it('should resolve to the current location', () => {
+          return exp.getCurrentLocation().then(location => {
+            if (location.name !== name) throw new Error();
+          });
+        });
+      });
+      
+      describe('when device has no location', () => {
+        beforeEach(() => {
+          return exp.getCurrentDevice().then(device => {
+            device.document.location = {};
+            device.document.location.uuid = null;
+            return device.save();
+          });
+        });
+        it('should resolve to null', () => {
+          return exp.getCurrentLocation().then(location => {
+            if (location !== null) throw new Error();
+          });
+        });
+      });
+
+      describe('when not a device', () => {
+        const exp = suite.startAsUser();
+        it('should resolve to null', () => {
+          return exp.getCurrentLocation().then(location => {
+            if (location !== null) throw new Error();
+          });
+        });
+      });
+
+
+    });
+
     describe('location.getThings()', () => {
 
       it('Should return all things in location.', () => {

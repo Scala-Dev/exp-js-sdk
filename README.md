@@ -209,6 +209,14 @@ Resolves to an array of devices matching the given query parameters. `params` is
 exp.createDevice({ subtype: 'scala:device:player' }).then(device => {});
 ```
 
+**`exp.getCurrentDevice()`** 
+
+Resolves to the current device or null if not a device.
+
+```javascript
+exp.createDevice({ subtype: 'scala:device:player' }).then(device => {});
+```
+
 **`device.getLocation()`**
 
 Resolves to the device's [location](#locations) or `null`.
@@ -220,6 +228,8 @@ Resolves to an array of the device's [zones](#zones).
 **`device.getExperience()`**
 
 Resolves to the device's [experience](#experiences) or `null`
+
+
 
 
 ## Things
@@ -271,6 +281,10 @@ Resolves to an experience created based on the supplied document.
 
 Returns a list of experiences matching the given query parameters. `params` is a map of query parameters.
 
+**`exp.getCurrentExperience()`** 
+
+Resolves to the current experience or null.
+
 **`experience.getDevices()`**
 
 Resolves to an array of [devices](#devices) that are part of this experience.
@@ -292,6 +306,9 @@ Resolves to a location created based on the supplied document.
 
 Resolves to an array of locations matching the given query parameters. `params` is a dictionary of query parameters.
 
+**`exp.getCurrentLocation()`** 
+
+Resolves to the current location or null.
 
 **`location.getDevices()`**
 
@@ -313,6 +330,10 @@ Returns a url pointing to the location's layout image.
 ## Zones
 
 Zones inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `getChannel()`.
+
+**`exp.getCurrentZones()`** 
+
+Resolves to the current zones or an empty array.
 
 **`zone.key`**
 

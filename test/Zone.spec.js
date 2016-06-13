@@ -15,6 +15,71 @@ module.exports = suite => {
   describe('Zones', () => {
     beforeEach(() => exp = suite.startAsDevice());
 
+    describe('exp.getCurrentZones()', () => {
+      describe('when not a device', () => {
+        beforeEach(() => exp = suite.startAsUser());
+        it('should resolve to empty array', () => {
+          return exp.getCurrentZones().then(zones => {
+            if (!Array.isArray(zones) || zones.length > 0) throw new Error();
+          });
+        });
+      });
+      describe('when device has location', () => {
+        beforeEach(() => {
+          return exp.createLocation({}).then(location => {
+            return exp.getCurrentDevice().then(device => {
+              device.document.location = location.document;
+              return device.save();
+            });
+          });
+        });
+        afterEach(() => {
+          return exp.getCurrentDevice().then(device => {
+            device.document.location = { uuid: null };
+            return device.save();
+          });
+        });
+        describe('when device has zones', () => {
+          beforeEach(() => {
+            return exp.getCurrentLocation().then(location => {
+              return exp.getCurrentDevice().then(device => {
+                location.document.zones = [{ key: 'zone1' }, { key: 'zone2' }, { key: 'zone3' }];
+                return location.save().then(() => {
+                  device.document.location.zones = [{ key: 'zone1' }, { key: 'zone2' }];
+                  return device.save();
+                });
+              });
+            });
+          });
+          it('should resolve to zones', () => {
+            return exp.getCurrentZones().then(zones => {
+              if (zones.length !== 2) throw new Error();
+            });
+          });
+        });
+        describe('when device has no zones', () => {
+          it('should resolve to empty array', () => {
+            return exp.getCurrentZones().then(zones => {
+              if (!Array.isArray(zones) || zones.length > 0) throw new Error();
+            });
+          });
+        });
+      });
+      describe('when device has no location', () => {
+        beforeEach(() => {
+          return exp.getCurrentDevice().then(device => {
+            device.document.location = { uuid: null };
+            return device.save();
+          });
+        });
+        it('should resolve to empty array', () => {
+            return exp.getCurrentZones().then(zones => {
+              if (!Array.isArray(zones) || zones.length > 0) throw new Error();
+            });
+        });
+      });      
+    });
+
     it('Should be able to get all devices in the zone.', () => {
       return exp.createLocation(generateTestLocation()).then(location => {
         return exp.createDevice({

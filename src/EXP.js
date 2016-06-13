@@ -109,6 +109,7 @@ class EXP {
   getDevice (uuid) { return this._sdk.api.Device.get(uuid, this._sdk, this._context); }
   findDevices (params) { return this._sdk.api.Device.find(params, this._sdk, this._context); }
   createDevice (document) { return this._sdk.api.Device.create(document, this._sdk, this._context); }
+  getCurrentDevice () { return this._sdk.api.Device.getCurrent(this._sdk, this._context); }
 
   /* Things */
   getThing (uuid) { return this._sdk.api.Thing.get(uuid, this._sdk, this._context); }
@@ -119,11 +120,16 @@ class EXP {
   getExperience (uuid) { return this._sdk.api.Experience.get(uuid, this._sdk, this._context); }
   findExperiences (params) { return this._sdk.api.Experience.find(params, this._sdk, this._context); }
   createExperience (document) { return this._sdk.api.Experience.create(document, this._sdk, this._context); }
+  getCurrentExperience () { return this._sdk.api.Experience.getCurrent(this._sdk, this._context); }
 
   /* Locations */
   getLocation (uuid) { return this._sdk.api.Location.get(uuid, this._sdk, this._context); }
   findLocations (params) { return this._sdk.api.Location.find(params, this._sdk, this._context); }
   createLocation (document) { return this._sdk.api.Location.create(document, this._sdk, this._context); }
+  getCurrentLocation () { return this._sdk.api.Location.getCurrent(this._sdk, this._context); }
+
+  /* Zones */
+  getCurrentZones () { return this._sdk.api.Zone.getCurrent(this._sdk, this._context); }
 
   /* Feeds */
   getFeed (uuid) { return this._sdk.api.Feed.get(uuid, this._sdk, this._context); }
