@@ -82,6 +82,59 @@ module.exports = suite => {
       });
     });
 
+    describe('exp.getCurrentExperience()', () => {
+      describe('when device has an experience', () => {
+        const name = Math.random().toString();
+        beforeEach(() => {
+          return exp.getCurrentDevice().then(device => {
+            return exp.createExperience({ name: name }).then(experience => {
+              device.document.experience = experience.document;
+              return device.save();
+            });
+          });
+        });
+        afterEach(() => {
+          return exp.getCurrentDevice().then(device => {
+            device.document.experience.uuid = null;
+            return device.save();
+          });
+        });
+
+        it('should resolve to the current experience', () => {
+          return exp.getCurrentExperience().then(experience => {
+            if (experience.name !== name) throw new Error();
+          });
+        });
+      });
+      
+      describe('when device has no experience', () => {
+        beforeEach(() => {
+          return exp.getCurrentDevice().then(device => {
+            device.document.experience = {};
+            device.document.experience.uuid = null;
+            return device.save();
+          });
+        });
+        it('should resolve to null', () => {
+          return exp.getCurrentExperience().then(experience => {
+            if (experience !== null) throw new Error();
+          });
+        });
+      });
+
+      describe('when not a device', () => {
+        const exp = suite.startAsUser();
+        it('should resolve to null', () => {
+          return exp.getCurrentExperience().then(experience => {
+            if (experience !== null) throw new Error();
+          });
+        });
+      });
+
+
+    });
+
+
     describe('experience.getDevices()', () => {
       it('Should return a list of devices in the experience.', () => {
         return exp.createExperience({}).then(experience => {

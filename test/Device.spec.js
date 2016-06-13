@@ -113,6 +113,23 @@ module.exports = suite => {
       });
     });
 
+    describe('device.getCurrent()', () => {
+      it('should resolve to the current device', () => {
+        return exp.getCurrentDevice().then(device => {
+          if (device.uuid !== exp.auth.identity.uuid) throw new Error();
+        });
+      });
+
+      it('should resolve to null if not a device', () => {
+        const exp = suite.startAsUser();
+        return exp.getAuth();
+        return exp.getCurrentDevice().then(device => {
+          if (device !== null) throw new Error();
+        });
+      });
+
+    });
+
     describe('device.getZones()', () => {
       it('Should resolve to the device\'s zones.', () => {
         return exp.createLocation({ zones: [{ key: '1', name: '1' }, { key: '2', name: '2' }, { key: '3', name: '3' }]}).then(location => {
