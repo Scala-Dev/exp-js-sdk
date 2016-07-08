@@ -43,7 +43,7 @@ const EXP = require('exp-sdk');
 
 **`EXP.start(options)`**
 
-Starts and returns an sdk instance. Can be called multiple times to start multiple independent instances of the sdk. The sdk can be started using user, device, or consumer app credentials. `options` is an object that supports the following properties:
+Starts and returns an sdk instance. Can be called multiple times to start multiple independent instances of the sdk. The sdk can be started using user, device, or consumer app credentials, or directly with an authentication payload. `options` is an object that supports the following properties:
 
 - `username` The username used to log in to EXP. Required user credential.
 - `password` The password of the user. Required user credential.
@@ -54,6 +54,7 @@ Starts and returns an sdk instance. Can be called multiple times to start multip
 - `allowPairing` Whether or not to allow authentication to fallback to pairing mode. If `true`, invalid or missing device credentials will start the sdk in pairing mode. Defaults to `false`.
 - `host` The api host to authenticate with. Defaults to `https://api.goexp.io`.
 - `enableNetwork` Whether or not to establish a socket connection with the network for real time communication. If `false` you will not be able to listen for broadcasts. Defaults to `true`.
+- `auth` A valid authentication payload. Can be specified with credentials. SDK will fallback to credentials if auth payload fails.
 
 ```javascript
 # Authenticating as a user.
@@ -64,11 +65,15 @@ exp = EXP.start({ uuid: '[uuid]', secret: '[secret]' });
 
 # Authenticating as a consumer app.
 exp = EXP.start({ uuid: '[uuid]', apiKey: '[api-key]' });
+
+# Authenticating with previous auth payload.
+exp = EXP.start({ uuid: '[uuid]', apiKey: '[api-key]', auth: auth });
+
 ```
 
 ## Stopping the SDK
 
-**`EXP.stop()`** 
+**`EXP.stop()`**
 
 Stops all running instance of the sdk, cancels all listeners and closes socket connections.
 
