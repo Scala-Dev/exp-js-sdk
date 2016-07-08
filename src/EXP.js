@@ -58,6 +58,9 @@ class SDK {
       options.type = 'consumerApp';
       if (!options.uuid) throw new Error('Please specify the uuid.');
       if (!options.apiKey) throw new Error('Please specify the apiKey');
+    } else if (options.type === 'direct' || options.auth) {
+      options.type = 'direct';
+      if (!options.auth) throw new Error('Please specifiy an auth response payload.');
     } else {
       throw new Error('Please specify authentication type.');
     }

@@ -13,10 +13,14 @@ class Authenticator {
     this._reject = null;
     this._reset();
     this._lastAuth = null;
+    this._id = Math.random();
   }
 
   start () {
-    this._login();
+    if (this._sdk.options.auth) {
+      this._reset();
+      setTimeout(() => this._onSuccess(this._sdk.options.auth));
+    } else this._login();
     return this._promise;
   }
 
@@ -75,6 +79,8 @@ class Authenticator {
       payload = { token: jwt.sign({ type: 'device', uuid: options.uuid, allowPairing: options.allowPairing }, options.secret || '_') };
     } else if (options.type === 'consumerApp') {
       payload = { token : jwt.sign({ type: 'consumerApp', uuid: options.uuid }, options.apiKey) };
+    } else if (options.type === 'direct') {
+      return this._onFatal(new Error('Authentication payload is no longer valid and no credentials available to login again.'));
     }
     fetch(options.host + '/api/auth/login', {
       method: 'POST',
