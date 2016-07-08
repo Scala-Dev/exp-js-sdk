@@ -406,7 +406,8 @@ class Api {
 
   fetch (path, params, options) {
     options = options || {};
-    if (params) path += this.encodeQueryString(params);
+    let fullPath = path;
+    if (params) fullPath += this.encodeQueryString(params);
     if (typeof options.body === 'object' && options.headers && options.headers['Content-Type'] === 'application/json') options.body = JSON.stringify(options.body);
     return this._sdk.authenticator.getAuth().then(auth => {
       options.cors = true;
@@ -414,7 +415,11 @@ class Api {
       options.headers = options.headers || {};
       options.headers.Authorization = 'Bearer ' + auth.token;
       options.headers.Accept = 'application/json';
-      return fetch(auth.api.host + path, options).then(response => {
+      return fetch(auth.api.host + fullPath, options).then(response => {
+        if (response && !response.ok && response.status === 401) {
+          this._sdk.authenticator._refresh(); // TODO: Make this method public? Should authenticator handle all requests?
+          return this.fetch(path, params, options);
+        }
         if (options.method === 'delete') return Promise.resolve();
         return response.json().then(body => {
           if (!response.ok) {
