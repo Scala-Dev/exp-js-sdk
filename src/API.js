@@ -416,7 +416,8 @@ class Api {
       options.headers.Authorization = 'Bearer ' + auth.token;
       options.headers.Accept = 'application/json';
       return fetch(auth.api.host + fullPath, options).then(response => {
-        if (response && !response.ok && response.status === 401) {
+        if (response && !response.ok && response.status === 401 && !auth.identity.isPairing) {
+          // Dont refresh pairing devices. They can't do token refreshes. Let them fail when token expires.
           this._sdk.authenticator._refresh(); // TODO: Make this method public? Should authenticator handle all requests?
           return this.fetch(path, params, options);
         }
