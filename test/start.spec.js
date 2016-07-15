@@ -11,7 +11,7 @@ module.exports = suite => {
     });
 
 
-    describe.only('auth parameter', () => {
+    describe('auth parameter', () => {
 
       let auth;
       beforeEach(() => {

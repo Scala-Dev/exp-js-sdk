@@ -179,6 +179,21 @@ channel.listen('myEvent', (payload, respond) => {
 });
 ```
 
+**`channel.listen(callback)`** 
+
+Registers a [listener](#listeners) callback for ALL events on the channel. Resolves to a [listener](#listeners) when the callback is registered and the connection has subscribed to the channel.
+
+The callback is called with the raw message object as the first argument (with `name` and `payload` properties) and a `respond` method as the second argument. Call the `respond` method to send a response back to the broadcaster.
+
+```javascript
+channel = exp.getChannel('my-channel')
+channel.listen('myEvent', (payload, respond) => {
+  if (payload && payload.text === 'hi') respond({ text: 'hi to you too!' });
+});
+```
+
+
+
 
 **`channel.fling(payload)`** 
 

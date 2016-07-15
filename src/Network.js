@@ -45,12 +45,13 @@ class Channel {
         return Promise.resolve().then(() => response).then(response => {
           return this._network.respond(message.id, message.channel, response);
         });
-      });
+      }, message);
     }, context);
   }
 
   receive (message) {
     this._events.trigger(message.name, message.payload, message);
+    this._events.trigger('9fecccbc-78a9-4b58-9313-04e5edd923fe', message.payload, message);
   }
 
   get hasListeners () {
@@ -77,6 +78,10 @@ class ChannelDelegate {
   }
 
   listen (name, callback) {
+    if (!callback) {
+      callback = name;
+      name = '9fecccbc-78a9-4b58-9313-04e5edd923fe';
+    }
     return this._generateId().then(id => {
       return this._sdk.network.listen(name, id, callback, this._context);
     });
