@@ -263,8 +263,8 @@ class Feed extends CommonResource {
 
   static _getCollectionPath () { return '/api/connectors/feeds'; }
 
-  getData () {
-    return this._sdk.api.get(`${this._getResourcePath()}/data`);
+  getData (params) {
+    return this._sdk.api.get(`${this._getResourcePath()}/data`, params);
   }
 
 }
@@ -408,6 +408,7 @@ class Api {
     options = options || {};
     if (params) path += this.encodeQueryString(params);
     if (typeof options.body === 'object' && options.headers && options.headers['Content-Type'] === 'application/json') options.body = JSON.stringify(options.body);
+
     return this._sdk.authenticator.getAuth().then(auth => {
       options.cors = true;
       options.credentials = 'include';
@@ -415,7 +416,7 @@ class Api {
       options.headers.Authorization = 'Bearer ' + auth.token;
       options.headers.Accept = 'application/json';
       return fetch(auth.api.host + path, options).then(response => {
-        if (options.method === 'delete') return Promise.resolve();
+        if (options.method === 'DELETE') return Promise.resolve();
         return response.json().then(body => {
           if (!response.ok) {
             if (body) {
@@ -431,27 +432,27 @@ class Api {
   }
 
   get (path, params) {
-    return this.fetch(path, params, { method: 'get' });
+    return this.fetch(path, params, { method: 'GET' });
   }
 
   post (path, body, params) {
-    const options = { method: 'post', headers:  { 'Content-Type': 'application/json' }, body: body };
+    const options = { method: 'POST', headers:  { 'Content-Type': 'application/json' }, body: body };
     return this.fetch(path, params, options);
   }
 
   put (path, body, params) {
-    const options = { method: 'put', headers:  { 'Content-Type': 'application/json' }, body: body };
+    const options = { method: 'PUT', headers:  { 'Content-Type': 'application/json' }, body: body };
     return this.fetch(path, params, options);
   }
 
   patch (path, body, params) {
-    const options = { method: 'patch', headers:  { 'Content-Type': 'application/json' }, body: body };
+    const options = { method: 'PATCH', headers:  { 'Content-Type': 'application/json' }, body: body };
     return this.fetch(path, params, options);
   }
 
   delete (path, params) {
     if (params) path += this.encodeQueryString(params);
-    return this.fetch(path, null, { method: 'delete' });
+    return this.fetch(path, null, { method: 'DELETE' });
   }
 
   encodeQueryString (params) {

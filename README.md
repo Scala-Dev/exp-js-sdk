@@ -375,9 +375,9 @@ Resolves to an array of feeds matching the given query parameters. `params` is a
 exp.findFeeds({ subtype: 'scala:feed:facebook' }).then(feeds => {})
 ```
 
-**`feed.getData()`**
+**`feed.getData(params)`**
 
-Resolves to the feed's data.
+Resolves to the feed's data. Params is an object of key value query params for dynamic feeds.
 
 
 ## Data
