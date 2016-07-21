@@ -3,9 +3,21 @@
 
 function generateTestFeed () {
   return {
+    integrationUuid: null,
+    metadata: { type: 'static', filter: [], options: '' },
     subtype: 'scala:feed:weather',
     searchValue: '19713',
     name: Math.random().toString()
+  };
+}
+
+function generateDynamicFeed () {
+  return {
+    integrationUuid: null,
+    name: Math.random().toString(),
+    subtype: 'scala:feed:weather',
+    metadata: { type: 'dynamic', options: '', filter: [] },
+    searchValue: ''
   };
 }
 
@@ -92,6 +104,15 @@ module.exports = suite => {
       return exp.createFeed(generateTestFeed()).then(feed => {
         return feed.getData().then(data => {
           if (!data) throw new Error();
+        });
+      });
+    });
+
+
+    it('Should be able to get data from a dynamic feed', () => {
+      return exp.createFeed(generateDynamicFeed()).then(feed => {
+        return feed.getData({ searchValue: '19713' }).then(data => {
+          if (data.search.search !== '19713') throw new Error();
         });
       });
     });
