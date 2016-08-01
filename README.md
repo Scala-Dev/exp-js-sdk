@@ -146,7 +146,8 @@ Whether or not you are connected to EXP.
  Returns a channel with the given name and options. Options is a javascript object with two flags: `consumer` and `system`. Consumer devices can only listen and broadcast on consumer channels. System channels are listen only and can receive broadcasts about system events.
 
 ```javascript
-channel = exp.getChannel('my-consumer-channel', { consumer: true })
+consumerChannel = exp.getChannel('my-consumer-channel', { consumer: true })
+channel = exp.getChannel('my-channel');
 ```
 
 
@@ -169,7 +170,7 @@ The callback is called with the broadcast payload as the first argument and a `r
 
 ```javascript
 channel = exp.getChannel('my-channel')
-channel.listen('myEvent', (payload, respond) => {
+channel.listen('hi!', (payload, respond) => {
   if (payload && payload.text === 'hi') respond({ text: 'hi to you too!' });
 });
 ```
