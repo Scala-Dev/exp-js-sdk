@@ -263,8 +263,8 @@ class Feed extends CommonResource {
 
   static _getCollectionPath () { return '/api/connectors/feeds'; }
 
-  getData () {
-    return this._sdk.api.get(`${this._getResourcePath()}/data`);
+  getData (params) {
+    return this._sdk.api.get(`${this._getResourcePath()}/data`, params);
   }
 
 }
@@ -409,6 +409,7 @@ class Api {
     let fullPath = path;
     if (params) fullPath += this.encodeQueryString(params);
     if (typeof options.body === 'object' && options.headers && options.headers['Content-Type'] === 'application/json') options.body = JSON.stringify(options.body);
+
     return this._sdk.authenticator.getAuth().then(auth => {
       options.cors = true;
       options.credentials = 'include';
