@@ -41,7 +41,11 @@ class Resource {
   }
 
   static find (params, sdk, context) {
-    return sdk.api.get(this._getCollectionPath(), params).then(query => query.results.map(document => new this(document, sdk, context)));
+    return sdk.api.get(this._getCollectionPath(), params).then(query => {
+      const results = query.results.map(document => new this(document, sdk, context));
+      results.total = query.total;
+      return results;
+    });
   }
 
   getChannel (options) {
@@ -156,8 +160,10 @@ class Experience extends CommonResource {
     });
   }
 
-  getDevices () {
-    return this._sdk.api.Device.find({ 'experience.uuid' : this.uuid }, this._sdk, this._context);
+  getDevices (params) {
+    params = params || {};
+    params['experience.uuid'] = this.uuid;
+    return this._sdk.api.Device.find(params, this._sdk, this._context);
   }
 
 }
@@ -176,7 +182,7 @@ class Location extends CommonResource {
     });
   }
 
-  getDevices () {
+  getDevices (params) {
     return this._sdk.api.Device.find({ 'location.uuid': this.uuid }, this._sdk, this._context);
   }
 
@@ -405,20 +411,23 @@ class Api {
   }
 
   fetch (path, params, options) {
+
+    // Wait for auth.
+    // On 401, notify Auth and try again.
+
     options = options || {};
     let fullPath = path;
     if (params) fullPath += this.encodeQueryString(params);
     if (typeof options.body === 'object' && options.headers && options.headers['Content-Type'] === 'application/json') options.body = JSON.stringify(options.body);
-
     return this._sdk.authenticator.getAuth().then(auth => {
+      if (auth.identity.isPairing) throw new Error('Cannot send request when in pairing mode.');
       options.cors = true;
       options.credentials = 'include';
       options.headers = options.headers || {};
       options.headers.Authorization = 'Bearer ' + auth.token;
       options.headers.Accept = 'application/json';
       return fetch(auth.api.host + fullPath, options).then(response => {
-        if (response && !response.ok && response.status === 401 && !auth.identity.isPairing) {
-          // Dont refresh pairing devices. They can't do token refreshes. Let them fail when token expires.
+        if (response && !response.ok && response.status === 401) {
           this._sdk.authenticator._refresh(); // TODO: Make this method public? Should authenticator handle all requests?
           return this.fetch(path, params, options);
         }
