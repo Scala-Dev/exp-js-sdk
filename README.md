@@ -220,7 +220,7 @@ Resolves to a device created based on the supplied document.
 
 **`exp.findDevices(params)`**
 
-Resolves to an array of devices matching the given query parameters. `params` is a map of query parameters.
+Resolves to an array of devices matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 ```javascript
 exp.createDevice({ subtype: 'scala:device:player' }).then(device => {});
@@ -263,7 +263,7 @@ exp.createThing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name': 'my-rfi
 
 **`exp.findThings(params)`**
 
-Resolves to an array of things matching the given query parameters. `params` is a map of query parameters.
+Resolves to an array of things matching the given query parameters. `params` is an optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`thing.getLocation()`**
 
@@ -292,15 +292,16 @@ Resolves to an experience created based on the supplied document.
 
 **`exp.findExperiences(params)`**
 
-Returns a list of experiences matching the given query parameters. `params` is a map of query parameters.
+Returns a list of experiences matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
-**`exp.getCurrentExperience()`**
+
+**`exp.getCurrentExperience(params)`**
 
 Resolves to the current experience or null.
 
-**`experience.getDevices()`**
+**`experience.getDevices(params)`**
 
-Resolves to an array of [devices](#devices) that are part of this experience.
+Resolves to an array of [devices](#devices) that are part of this experience. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 
 ## Locations
@@ -317,23 +318,23 @@ Resolves to a location created based on the supplied document.
 
 **`exp.findLocations(params)`**
 
-Resolves to an array of locations matching the given query parameters. `params` is a dictionary of query parameters.
+Resolves to an array of locations matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`exp.getCurrentLocation()`**
 
 Resolves to the current location or null.
 
-**`location.getDevices()`**
+**`location.getDevices(params)`**
 
-Resolves to an array of [devices](#devices) that are part of this location.
+Resolves to an array of [devices](#devices) that are part of this location. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
-**`location.getThings()`**
+**`location.getThings(params)`**
 
-Resolves to an array of [things](#things) that are part of this location.
+Resolves to an array of [things](#things) that are part of this location. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`location.getZones()`**
 
-Resolves to an array of [zones](#zones) that are part of this location.
+Resolves to an array of [zones](#zones) that are part of this location. 
 
 **`location.getLayoutUrl()`**
 
@@ -356,13 +357,13 @@ The zone's key.
 
 The zone's name.
 
-**`zone.getDevices()`**
+**`zone.getDevices(params)`**
 
-Resolves to an array of [devices](#devices) that are members of this zone.
+Resolves to an array of [devices](#devices) that are members of this zone. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
-**`zone.getThings()`**
+**`zone.getThings(params)`**
 
-Resolves to an array of [things](#things) that are members of this zone.
+Resolves to an array of [things](#things) that are members of this zone. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`zone.getLocation()`**
 
@@ -386,7 +387,7 @@ exp.createFeed({ subtype: 'scala:feed:weather', searchValue: '16902', name: 'My 
 
 **`exp.findFeeds(params)`**
 
-Resolves to an array of feeds matching the given query parameters. `params` is a dictionary of query parameters.
+Resolves to an array of feeds matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 ```javascript
 exp.findFeeds({ subtype: 'scala:feed:facebook' }).then(feeds => {})
@@ -448,7 +449,7 @@ Resolves to the content item with the given uuid or `null` if no content item co
 
 **`exp.findContent(params)`**
 
-Resolves to an array of content items matching the given query parameters. `params` is a dictionary of query parameters.
+Resolves to an array of content items matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`content.subtype`**
 
@@ -467,9 +468,9 @@ Returns a boolean indicating whether or not this content item has a variant with
 Returns the delivery url for a variant of this content item.
 
 
-**`content.getChildren()`**
+**`content.getChildren(params)`**
 
-Resolves to an array of content items children with property total.
+Resolves to an array of content items children with property total. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 ## Resources
 
