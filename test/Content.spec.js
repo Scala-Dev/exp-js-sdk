@@ -1,9 +1,4 @@
 'use strict';
-const fs = require('fs');
-
-function generateTestLocation () {
-  return {};
-}
 
 let exp;
 
@@ -18,6 +13,32 @@ module.exports = suite => {
       });
     });
 
+    // this is broken due to the exp-jcr bug, EXP-2062
+    // it('Return value should have field "total" which is number of items', () => {
+    //   return exp.findContent().then(items => {
+    //     if (items.length !== items.total) throw new Error();
+    //   });
+    // });
+
+    it('should be able to filter children', () => {
+      let ok = false;
+      return exp.findContent({ subtype: 'scala:content:folder' }).then(items => {
+        return Promise.all(items.map(item => {
+          return item.getChildren({ subtype: 'scala:content:folder' }).then(folders => {
+            folders.forEach(folder => {
+              if (folder.document.subtype === 'scala:content:folder') {
+                ok = true;
+              } else {
+                throw new Error();
+              }
+            });
+          });
+        })).then(() => {
+          if (!ok) throw new Error('Need folder inside of folder for test.');
+        });
+      });
+    });
+
     it('Should be able to get content by uuid.', () => {
       return exp.findContent().then(items => {
         return exp.getContent(items[0].document.uuid).then(content => {
@@ -29,7 +50,7 @@ module.exports = suite => {
     it('Should be able to get children.', () => {
       // eek
       let ok = false;
-      return exp.findContent().then(items => {
+      return exp.findContent({ subtype: 'scala:content:folder' }).then(items => {
         return Promise.all(items.map(item => {
           if (ok) return;
           if (item.document.subtype === 'scala:content:folder') {
@@ -55,7 +76,7 @@ module.exports = suite => {
 
     describe('content.getUrl()', () => {
       it('Should be able to get url of files.', done => {
-        exp.findContent().then(items => {
+        exp.findContent({ subtype: 'scala:content:file' }).then(items => {
           items.some(item => {
             if (item.document.subtype === 'scala:content:file') {
               if (!item.getUrl()) done(new Error());
@@ -67,7 +88,7 @@ module.exports = suite => {
       });
 
       it('Should be able to get url of urls!.', done => {
-        exp.findContent().then(items => {
+        exp.findContent({ subtype: 'scala:content:url' }).then(items => {
           items.some(item => {
             if (item.document.subtype === 'scala:content:url') {
               if (!item.getUrl()) done(new Error());
@@ -79,9 +100,9 @@ module.exports = suite => {
       });
 
       it('Should be able to get url of apps!.', () => {
-        return exp.findContent().then(items => {
-          const item = items.find(item => item.subtype === 'scala:content:url');
-          if (!item) throw new Error('Please add a url to root.');
+        return exp.findContent({ subtype: 'scala:content:app' }).then(items => {
+          const item = items.find(item => item.subtype === 'scala:content:app');
+          if (!item) throw new Error('Please add an app to root.');
           const url = item.getUrl();
           if (!url) throw new Error();
         });

@@ -102,6 +102,21 @@ module.exports = suite => {
           });
         });
       });
+
+      it('Return value should have field "total" which is the number of devices in list.', () => {
+        return exp.createLocation().then(location => {
+          return exp.createDevice({ subtype: 'scala:device:server' }).then(device => {
+            device.document.location = { uuid: location.document.uuid };
+            return device.save().then(() => {
+              return location.getDevices({ limit: 0 }).then(devices => {
+                if (devices.length !== 0) throw new Error();
+                if (devices.total !== 1) throw new Error();
+              });
+            });
+          });
+        });
+      });
+
     });
 
     describe('exp.getCurrentLocation()', () => {
@@ -128,7 +143,7 @@ module.exports = suite => {
           });
         });
       });
-      
+
       describe('when device has no location', () => {
         beforeEach(() => {
           return exp.getCurrentDevice().then(device => {
@@ -157,6 +172,19 @@ module.exports = suite => {
     });
 
     describe('location.getThings()', () => {
+      it('Return value should have field "total" which is the number of things in list.', () => {
+        return exp.createLocation().then(location => {
+          return exp.createThing({ subtype: 'scala:thing:rfid', id: 'test23' }).then(thing => {
+            thing.document.location = { uuid: location.document.uuid };
+            return thing.save().then(() => {
+              return location.getThings({ limit: 0 }).then(things => {
+                if (things.length !== 0) throw new Error();
+                if (things.total !== 1) throw new Error();
+              });
+            });
+          });
+        });
+      });
 
       it('Should return all things in location.', () => {
         return exp.createLocation().then(location => {
@@ -173,6 +201,27 @@ module.exports = suite => {
     });
 
     describe('location.getZones()', () => {
+      it('Return value should have field "total" which is number of zones', () => {
+        const document = generateTestLocation();
+        document.zones = [{ key: '1', name: '1'}, { key: '2', name: '2' }];
+        return exp.createLocation(document).then(location => {
+          return location.getZones().then(zones => {
+            if (zones.total !== 2) throw new Error();
+          });
+        });
+      });
+
+      it('should resolve to an empty array with total of 0 if no zones is assigned', () => {
+        const document = generateTestLocation();
+        document.zones = [];
+        return exp.createLocation(document).then(location => {
+          return location.getZones().then(zones => {
+            if (zones.total !== 0) throw new Error();
+            if (zones.length !== 0) throw new Error();
+          });
+        });
+      });
+
       it('Should resolve to an array of zones.', () => {
         const document = generateTestLocation();
         document.zones = [{ key: '1', name: '1'}, { key: '2', name: '2' }];

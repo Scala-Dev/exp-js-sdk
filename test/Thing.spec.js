@@ -116,15 +116,28 @@ module.exports = suite => {
             });
           });
         });
-
       });
-      it('Should resolve to an empty list if no zones match.', () => {
+
+      it('Return value should have field "total" which is number of zones', () => {
+        return exp.createLocation({ zones: [{ key: '1', name: '1' }, { key: '2', name: '2' }, { key: '3', name: '3' }]}).then(location => {
+          const document = generateTestThing();
+          document.location = { uuid: location.document.uuid, zones: [{ key: '1' }]};
+          return exp.createThing(document).then(thing => {
+            return thing.getZones().then(zones => {
+              if (zones.total !== 1) throw new Error();
+            });
+          });
+        });
+      });
+
+      it('Should resolve to an empty list if no zones match with total of 0.', () => {
         return exp.createLocation({ zones: [{ key: '1', name: '1' }, { key: '2', name: '2' }, { key: '3', name: '3' }]}).then(location => {
           const document = generateTestThing();
           document.location = { uuid: location.document.uuid, zones: [{ key: '32' }]};
           return exp.createThing(document).then(thing => {
             return thing.getZones().then(zones => {
               if (zones.length !== 0) throw new Error();
+              if (zones.total !== 0) throw new Error();
             });
           });
         });

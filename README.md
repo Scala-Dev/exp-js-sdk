@@ -1,7 +1,3 @@
-
-
-
-
 # Installation
 
 ## Bower
@@ -43,7 +39,7 @@ const EXP = require('exp-sdk');
 
 **`EXP.start(options)`**
 
-Starts and returns an sdk instance. Can be called multiple times to start multiple independent instances of the sdk. The sdk can be started using user, device, or consumer app credentials. `options` is an object that supports the following properties:
+Starts and returns an sdk instance. Can be called multiple times to start multiple independent instances of the sdk. The sdk can be started using user, device, or consumer app credentials, or directly with an authentication payload. `options` is an object that supports the following properties:
 
 - `username` The username used to log in to EXP. Required user credential.
 - `password` The password of the user. Required user credential.
@@ -54,6 +50,7 @@ Starts and returns an sdk instance. Can be called multiple times to start multip
 - `allowPairing` Whether or not to allow authentication to fallback to pairing mode. If `true`, invalid or missing device credentials will start the sdk in pairing mode. Defaults to `false`.
 - `host` The api host to authenticate with. Defaults to `https://api.goexp.io`.
 - `enableNetwork` Whether or not to establish a socket connection with the network for real time communication. If `false` you will not be able to listen for broadcasts. Defaults to `true`.
+- `auth` A valid authentication payload. Can be specified with credentials. SDK will fallback to credentials if auth payload fails.
 
 ```javascript
 # Authenticating as a user.
@@ -64,6 +61,10 @@ exp = EXP.start({ uuid: '[uuid]', secret: '[secret]' });
 
 # Authenticating as a consumer app.
 exp = EXP.start({ uuid: '[uuid]', apiKey: '[api-key]' });
+
+# Authenticating with previous auth payload.
+exp = EXP.start({ uuid: '[uuid]', apiKey: '[api-key]', auth: auth });
+
 ```
 
 ## Stopping the SDK
@@ -175,6 +176,21 @@ channel.listen('hi!', (payload, respond) => {
 });
 ```
 
+**`channel.listen(callback)`**
+
+Registers a [listener](#listeners) callback for ALL events on the channel. Resolves to a [listener](#listeners) when the callback is registered and the connection has subscribed to the channel.
+
+The callback is called with the raw message object as the first argument (with `name` and `payload` properties) and a `respond` method as the second argument. Call the `respond` method to send a response back to the broadcaster.
+
+```javascript
+channel = exp.getChannel('my-channel')
+channel.listen('myEvent', (payload, respond) => {
+  if (payload && payload.text === 'hi') respond({ text: 'hi to you too!' });
+});
+```
+
+
+
 
 **`channel.fling(payload)`**
 
@@ -204,7 +220,7 @@ Resolves to a device created based on the supplied document.
 
 **`exp.findDevices(params)`**
 
-Resolves to an array of devices matching the given query parameters. `params` is a map of query parameters.
+Resolves to an array of devices matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 ```javascript
 exp.createDevice({ subtype: 'scala:device:player' }).then(device => {});
@@ -247,7 +263,7 @@ exp.createThing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name': 'my-rfi
 
 **`exp.findThings(params)`**
 
-Resolves to an array of things matching the given query parameters. `params` is a map of query parameters.
+Resolves to an array of things matching the given query parameters. `params` is an optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`thing.getLocation()`**
 
@@ -276,15 +292,16 @@ Resolves to an experience created based on the supplied document.
 
 **`exp.findExperiences(params)`**
 
-Returns a list of experiences matching the given query parameters. `params` is a map of query parameters.
+Returns a list of experiences matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
-**`exp.getCurrentExperience()`**
+
+**`exp.getCurrentExperience(params)`**
 
 Resolves to the current experience or null.
 
-**`experience.getDevices()`**
+**`experience.getDevices(params)`**
 
-Resolves to an array of [devices](#devices) that are part of this experience.
+Resolves to an array of [devices](#devices) that are part of this experience. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 
 ## Locations
@@ -301,23 +318,23 @@ Resolves to a location created based on the supplied document.
 
 **`exp.findLocations(params)`**
 
-Resolves to an array of locations matching the given query parameters. `params` is a dictionary of query parameters.
+Resolves to an array of locations matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`exp.getCurrentLocation()`**
 
 Resolves to the current location or null.
 
-**`location.getDevices()`**
+**`location.getDevices(params)`**
 
-Resolves to an array of [devices](#devices) that are part of this location.
+Resolves to an array of [devices](#devices) that are part of this location. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
-**`location.getThings()`**
+**`location.getThings(params)`**
 
-Resolves to an array of [things](#things) that are part of this location.
+Resolves to an array of [things](#things) that are part of this location. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`location.getZones()`**
 
-Resolves to an array of [zones](#zones) that are part of this location.
+Resolves to an array of [zones](#zones) that are part of this location. 
 
 **`location.getLayoutUrl()`**
 
@@ -340,13 +357,13 @@ The zone's key.
 
 The zone's name.
 
-**`zone.getDevices()`**
+**`zone.getDevices(params)`**
 
-Resolves to an array of [devices](#devices) that are members of this zone.
+Resolves to an array of [devices](#devices) that are members of this zone. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
-**`zone.getThings()`**
+**`zone.getThings(params)`**
 
-Resolves to an array of [things](#things) that are members of this zone.
+Resolves to an array of [things](#things) that are members of this zone. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`zone.getLocation()`**
 
@@ -370,7 +387,7 @@ exp.createFeed({ subtype: 'scala:feed:weather', searchValue: '16902', name: 'My 
 
 **`exp.findFeeds(params)`**
 
-Resolves to an array of feeds matching the given query parameters. `params` is a dictionary of query parameters.
+Resolves to an array of feeds matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 ```javascript
 exp.findFeeds({ subtype: 'scala:feed:facebook' }).then(feeds => {})
@@ -390,7 +407,7 @@ There is a limit of 16MB per data document.
 
 Resolves to the data item with the given group and key or `null` if the data item could not be found.
 
-```python
+```javascript
 exp.getData('cats', 'fluffy').then(data => {});
 ```
 
@@ -406,7 +423,7 @@ exp.createData('cats', 'fluffy', { 'color': 'brown'}).then(data => {});
 
 Resolves to an array of data items matching the given query parameters. `params` is a dictionary of query parameters.
 
-```python
+```javascript
 exp.findData({ group: 'cats' }).then(items => {});
 ```
 
@@ -432,7 +449,7 @@ Resolves to the content item with the given uuid or `null` if no content item co
 
 **`exp.findContent(params)`**
 
-Resolves to an array of content items matching the given query parameters. `params` is a dictionary of query parameters.
+Resolves to an array of content items matching the given query parameters. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 **`content.subtype`**
 
@@ -451,10 +468,9 @@ Returns a boolean indicating whether or not this content item has a variant with
 Returns the delivery url for a variant of this content item.
 
 
-**`content.getChildren()`**
+**`content.getChildren(params)`**
 
-Resolves to an array of the content items children.
-
+Resolves to an array of content items children with property total. `params` is a optional object map of query parameters. Array has property `total` which is the total number of items in collection matching the query.
 
 ## Resources
 

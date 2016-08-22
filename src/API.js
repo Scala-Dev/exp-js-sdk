@@ -41,7 +41,11 @@ class Resource {
   }
 
   static find (params, sdk, context) {
-    return sdk.api.get(this._getCollectionPath(), params).then(query => query.results.map(document => new this(document, sdk, context)));
+    return sdk.api.get(this._getCollectionPath(), params).then(query => {
+      const results = query.results.map(document => new this(document, sdk, context));
+      results.total = query.total;
+      return results;
+    });
   }
 
   getChannel (options) {
@@ -111,10 +115,16 @@ class Device extends CommonResource {
 
   getZones () {
     return this.getLocation().then(location => {
-      if (!location) return [];
-      return location.document.zones.filter(locationZoneDocument => {
+      if (!location) {
+        const empty = [];
+        empty.total = 0;
+        return empty;
+      }
+      const zones = location.document.zones.filter(locationZoneDocument => {
         return this.document.location.zones.find(deviceZoneDocument => deviceZoneDocument.key === locationZoneDocument.key);
       }).map(document => new this._sdk.api.Zone(document, location, this._sdk, this._context));
+      zones.total = zones.length;
+      return zones;
     });
   }
 
@@ -133,10 +143,17 @@ class Thing extends CommonResource {
 
   getZones () {
     return this.getLocation().then(location => {
-      if (!location) return [];
-      return location.document.zones.filter(locationZoneDocument => {
+      if (!location) {
+        const empty = [];
+        empty.total = 0;
+        return empty;
+      }
+
+      const zones = location.document.zones.filter(locationZoneDocument => {
         return this.document.location.zones.find(deviceZoneDocument => deviceZoneDocument.key === locationZoneDocument.key);
       }).map(document => new this._sdk.api.Zone(document, location, this._sdk, this._context));
+      zones.total = zones.length;
+      return zones;
     });
   }
 
@@ -156,8 +173,10 @@ class Experience extends CommonResource {
     });
   }
 
-  getDevices () {
-    return this._sdk.api.Device.find({ 'experience.uuid' : this.uuid }, this._sdk, this._context);
+  getDevices (params) {
+    params = params || {};
+    params['experience.uuid'] = this.uuid;
+    return this._sdk.api.Device.find(params, this._sdk, this._context);
   }
 
 }
@@ -176,19 +195,31 @@ class Location extends CommonResource {
     });
   }
 
-  getDevices () {
-    return this._sdk.api.Device.find({ 'location.uuid': this.uuid }, this._sdk, this._context);
+  getDevices (params) {
+    params = params || {};
+    params['location.uuid'] = this.uuid;
+    return this._sdk.api.Device.find(params, this._sdk, this._context);
   }
 
-  getThings () {
-    return this._sdk.api.Thing.find({ 'location.uuid': this.uuid }, this._sdk, this._context);
+  getThings (params) {
+    params = params || {};
+    params['location.uuid'] = this.uuid;
+    return this._sdk.api.Thing.find(params, this._sdk, this._context);
   }
 
   getZones () {
-    if (!this.document.zones) return Promise.resolve().then(() => []);
-    return Promise.resolve().then(() => this.document.zones.map(document => {
-      return new this._sdk.api.Zone(document, this, this._sdk, this._context);
-    }));
+    if (!this.document.zones) return Promise.resolve().then(() => {
+      const empty = [];
+      empty.length = 0;
+      return empty;
+    });
+    return Promise.resolve().then(() => {
+      const zones = this.document.zones.map(document => {
+        return new this._sdk.api.Zone(document, this, this._sdk, this._context);
+      });
+      zones.total = zones.length;
+      return zones;
+    });
   }
 
   getLayoutUrl () {
@@ -209,7 +240,7 @@ class Zone extends Resource {
   static getCurrent (sdk, context) {
     return Device.getCurrent(sdk, context).then(device => {
       if (!device) return [];
-      return device.getZones()
+      return device.getZones();
     });
   }
 
@@ -239,12 +270,18 @@ class Zone extends Resource {
     return Promise.resolve(this._location);
   }
 
-  getDevices () {
-    return this._sdk.api.Device.find({ 'location.uuid' : this._location.uuid, 'location.zones.key': this.key }, this._sdk, this._context);
+  getDevices (params) {
+    params = params || {};
+    params['location.uuid'] = this._location.uuid;
+    params['location.zones.key'] = this.key;
+    return this._sdk.api.Device.find(params, this._sdk, this._context);
   }
 
-  getThings () {
-    return this._sdk.api.Thing.find({ 'location.uuid' : this._location.document.uuid, 'location.zones.key': this.document.key }, this._sdk, this._context);
+  getThings (params) {
+    params = params || {};
+    params['location.uuid'] = this._location.uuid;
+    params['location.zones.key'] = this.key;
+    return this._sdk.api.Thing.find(params, this._sdk, this._context);
   }
 
   _getChannelName () {
@@ -351,8 +388,10 @@ class Content extends CommonResource {
       .replace('~', '%7E');
   }
 
-  getChildren () {
-    return this._sdk.api.Content.find({ parent: this.uuid }, this._sdk, this._context);
+  getChildren (params) {
+    params = params || {};
+    params['parent'] = this.uuid;
+    return this._sdk.api.Content.find(params, this._sdk, this._context);
   }
 
   get subtype () {
@@ -405,17 +444,26 @@ class Api {
   }
 
   fetch (path, params, options) {
-    options = options || {};
-    if (params) path += this.encodeQueryString(params);
-    if (typeof options.body === 'object' && options.headers && options.headers['Content-Type'] === 'application/json') options.body = JSON.stringify(options.body);
 
+    // Wait for auth.
+    // On 401, notify Auth and try again.
+
+    options = options || {};
+    let fullPath = path;
+    if (params) fullPath += this.encodeQueryString(params);
+    if (typeof options.body === 'object' && options.headers && options.headers['Content-Type'] === 'application/json') options.body = JSON.stringify(options.body);
     return this._sdk.authenticator.getAuth().then(auth => {
+      if (auth.identity.isPairing) throw new Error('Cannot send request when in pairing mode.');
       options.cors = true;
       options.credentials = 'include';
       options.headers = options.headers || {};
       options.headers.Authorization = 'Bearer ' + auth.token;
       options.headers.Accept = 'application/json';
-      return fetch(auth.api.host + path, options).then(response => {
+      return fetch(auth.api.host + fullPath, options).then(response => {
+        if (response && !response.ok && response.status === 401) {
+          this._sdk.authenticator._refresh(); // TODO: Make this method public? Should authenticator handle all requests?
+          return this.fetch(path, params, options);
+        }
         if (options.method === 'DELETE') return Promise.resolve();
         return response.json().then(body => {
           if (!response.ok) {

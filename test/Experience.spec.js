@@ -28,10 +28,34 @@ module.exports = suite => {
     });
 
     it('Should be able to get a list of experiences.', () => {
+      return exp.createExperience({}).then(() => {
+        return exp.findExperiences().then(experiences => {
+          if (experiences.length < 1) throw new Error();
+          experiences.forEach(experience => {
+            if (!(experience instanceof exp._sdk.api.Experience)) throw new Error();
+          });
+        });
+      });
+    });
+
+    it('should have total number of experiences', () => {
+      return exp.createExperience({}).then(() => {
+        return exp.createExperience({}).then(() => {
+          return exp.findExperiences({ limit: 1 }).then(experiences => {
+            if (experiences.length !== 1) throw new Error();
+            if (!experiences.total || experiences.total <= 1) throw new Error();
+          });
+        });
+      });
+    });
+
+
+    it('Should be able to get a list of experiences.', () => {
       return exp.findExperiences().then(experiences => experiences.forEach(experience => {
         if (!(experience instanceof exp._sdk.api.Experience)) throw new Error();
       }));
     });
+
 
     it('Should return empty list of experiences for unmatched query.', () => {
       return exp.findExperiences({ name: 'tootallo' }).then(experiences => { if (experiences.length !== 0) throw new Error(); });
@@ -106,7 +130,7 @@ module.exports = suite => {
           });
         });
       });
-      
+
       describe('when device has no experience', () => {
         beforeEach(() => {
           return exp.getCurrentDevice().then(device => {
@@ -145,6 +169,20 @@ module.exports = suite => {
           });
         });
       });
+
+      it('Return value should have field "total" which is the number of devices in list.', () => {
+        return exp.createExperience({}).then(experience => {
+          return exp.createDevice({ subtype: 'scala:device:server', experience: { uuid: experience.document.uuid } }).then(() => {
+            return exp.createDevice({ subtype: 'scala:device:server', experience: { uuid: experience.document.uuid } }).then(() => {
+              return experience.getDevices({ limit: 1 }).then(devices => {
+                if (devices.length !== 1) throw new Error();
+                if (devices.total !== 2) throw new Error();
+              });
+            });
+          });
+        });
+      });
+
     });
 
   });
