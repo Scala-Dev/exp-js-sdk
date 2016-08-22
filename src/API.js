@@ -450,6 +450,7 @@ class Api {
     let fullPath = path;
     if (params) fullPath += this.encodeQueryString(params);
     if (typeof options.body === 'object' && options.headers && options.headers['Content-Type'] === 'application/json') options.body = JSON.stringify(options.body);
+
     return this._sdk.authenticator.getAuth().then(auth => {
       if (auth.identity.isPairing) throw new Error('Cannot send request when in pairing mode.');
       options.cors = true;
