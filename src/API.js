@@ -388,8 +388,10 @@ class Content extends CommonResource {
       .replace('~', '%7E');
   }
 
-  getChildren () {
-    return this._sdk.api.Content.find({ parent: this.uuid }, this._sdk, this._context);
+  getChildren (params) {
+    params = params || {};
+    params['parent'] = this.uuid;
+    return this._sdk.api.Content.find(params, this._sdk, this._context);
   }
 
   get subtype () {

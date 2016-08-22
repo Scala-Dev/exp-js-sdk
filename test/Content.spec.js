@@ -20,6 +20,25 @@ module.exports = suite => {
     //   });
     // });
 
+    it('should be able to filter children', () => {
+      let ok = false;
+      return exp.findContent({ subtype: 'scala:content:folder' }).then(items => {
+        return Promise.all(items.map(item => {
+          return item.getChildren({ subtype: 'scala:content:folder' }).then(folders => {
+            folders.forEach(folder => {
+              if (folder.document.subtype === 'scala:content:folder') {
+                ok = true;
+              } else {
+                throw new Error();
+              }
+            });
+          });
+        })).then(() => {
+          if (!ok) throw new Error('Need folder inside of folder for test.');
+        });
+      });
+    });
+
     it('Should be able to get content by uuid.', () => {
       return exp.findContent().then(items => {
         return exp.getContent(items[0].document.uuid).then(content => {
