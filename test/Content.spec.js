@@ -4,7 +4,7 @@ let exp;
 
 module.exports = suite => {
 
-  describe.only('Content', () => {
+  describe('Content', () => {
     beforeEach(() => exp = suite.startAsDevice());
 
     it('Should be able to find files.', () => {
