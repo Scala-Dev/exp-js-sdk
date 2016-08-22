@@ -1,15 +1,10 @@
 'use strict';
-const fs = require('fs');
-
-function generateTestLocation () {
-  return {};
-}
 
 let exp;
 
 module.exports = suite => {
 
-  describe('Content', () => {
+  describe.only('Content', () => {
     beforeEach(() => exp = suite.startAsDevice());
 
     it('Should be able to find files.', () => {
@@ -36,7 +31,7 @@ module.exports = suite => {
     it('Should be able to get children.', () => {
       // eek
       let ok = false;
-      return exp.findContent().then(items => {
+      return exp.findContent({ subtype: 'scala:content:folder' }).then(items => {
         return Promise.all(items.map(item => {
           if (ok) return;
           if (item.document.subtype === 'scala:content:folder') {
@@ -62,7 +57,7 @@ module.exports = suite => {
 
     describe('content.getUrl()', () => {
       it('Should be able to get url of files.', done => {
-        exp.findContent().then(items => {
+        exp.findContent({ subtype: 'scala:content:file' }).then(items => {
           items.some(item => {
             if (item.document.subtype === 'scala:content:file') {
               if (!item.getUrl()) done(new Error());
@@ -74,7 +69,7 @@ module.exports = suite => {
       });
 
       it('Should be able to get url of urls!.', done => {
-        exp.findContent().then(items => {
+        exp.findContent({ subtype: 'scala:content:url' }).then(items => {
           items.some(item => {
             if (item.document.subtype === 'scala:content:url') {
               if (!item.getUrl()) done(new Error());
@@ -86,9 +81,9 @@ module.exports = suite => {
       });
 
       it('Should be able to get url of apps!.', () => {
-        return exp.findContent().then(items => {
-          const item = items.find(item => item.subtype === 'scala:content:url');
-          if (!item) throw new Error('Please add a url to root.');
+        return exp.findContent({ subtype: 'scala:content:app' }).then(items => {
+          const item = items.find(item => item.subtype === 'scala:content:app');
+          if (!item) throw new Error('Please add an app to root.');
           const url = item.getUrl();
           if (!url) throw new Error();
         });
