@@ -18,6 +18,13 @@ module.exports = suite => {
       });
     });
 
+    // this is broken due to the exp-jcr bug, EXP-2062
+    // it('Return value should have field "total" which is number of items', () => {
+    //   return exp.findContent().then(items => {
+    //     if (items.length !== items.total) throw new Error();
+    //   });
+    // });
+
     it('Should be able to get content by uuid.', () => {
       return exp.findContent().then(items => {
         return exp.getContent(items[0].document.uuid).then(content => {

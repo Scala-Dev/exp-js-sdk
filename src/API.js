@@ -115,10 +115,16 @@ class Device extends CommonResource {
 
   getZones () {
     return this.getLocation().then(location => {
-      if (!location) return [];
-      return location.document.zones.filter(locationZoneDocument => {
+      if (!location) {
+        const empty = [];
+        empty.total = 0;
+        return empty;
+      }
+      const zones = location.document.zones.filter(locationZoneDocument => {
         return this.document.location.zones.find(deviceZoneDocument => deviceZoneDocument.key === locationZoneDocument.key);
       }).map(document => new this._sdk.api.Zone(document, location, this._sdk, this._context));
+      zones.total = zones.length;
+      return zones;
     });
   }
 
@@ -137,10 +143,17 @@ class Thing extends CommonResource {
 
   getZones () {
     return this.getLocation().then(location => {
-      if (!location) return [];
-      return location.document.zones.filter(locationZoneDocument => {
+      if (!location) {
+        const empty = [];
+        empty.total = 0;
+        return empty;
+      }
+
+      const zones = location.document.zones.filter(locationZoneDocument => {
         return this.document.location.zones.find(deviceZoneDocument => deviceZoneDocument.key === locationZoneDocument.key);
       }).map(document => new this._sdk.api.Zone(document, location, this._sdk, this._context));
+      zones.total = zones.length;
+      return zones;
     });
   }
 
@@ -183,18 +196,30 @@ class Location extends CommonResource {
   }
 
   getDevices (params) {
-    return this._sdk.api.Device.find({ 'location.uuid': this.uuid }, this._sdk, this._context);
+    params = params || {};
+    params['location.uuid'] = this.uuid;
+    return this._sdk.api.Device.find(params, this._sdk, this._context);
   }
 
-  getThings () {
-    return this._sdk.api.Thing.find({ 'location.uuid': this.uuid }, this._sdk, this._context);
+  getThings (params) {
+    params = params || {};
+    params['location.uuid'] = this.uuid;
+    return this._sdk.api.Thing.find(params, this._sdk, this._context);
   }
 
   getZones () {
-    if (!this.document.zones) return Promise.resolve().then(() => []);
-    return Promise.resolve().then(() => this.document.zones.map(document => {
-      return new this._sdk.api.Zone(document, this, this._sdk, this._context);
-    }));
+    if (!this.document.zones) return Promise.resolve().then(() => {
+      const empty = [];
+      empty.length = 0;
+      return empty;
+    });
+    return Promise.resolve().then(() => {
+      const zones = this.document.zones.map(document => {
+        return new this._sdk.api.Zone(document, this, this._sdk, this._context);
+      });
+      zones.total = zones.length;
+      return zones;
+    });
   }
 
   getLayoutUrl () {
@@ -215,7 +240,7 @@ class Zone extends Resource {
   static getCurrent (sdk, context) {
     return Device.getCurrent(sdk, context).then(device => {
       if (!device) return [];
-      return device.getZones()
+      return device.getZones();
     });
   }
 
@@ -245,12 +270,18 @@ class Zone extends Resource {
     return Promise.resolve(this._location);
   }
 
-  getDevices () {
-    return this._sdk.api.Device.find({ 'location.uuid' : this._location.uuid, 'location.zones.key': this.key }, this._sdk, this._context);
+  getDevices (params) {
+    params = params || {};
+    params['location.uuid'] = this._location.uuid;
+    params['location.zones.key'] = this.key;
+    return this._sdk.api.Device.find(params, this._sdk, this._context);
   }
 
-  getThings () {
-    return this._sdk.api.Thing.find({ 'location.uuid' : this._location.document.uuid, 'location.zones.key': this.document.key }, this._sdk, this._context);
+  getThings (params) {
+    params = params || {};
+    params['location.uuid'] = this._location.uuid;
+    params['location.zones.key'] = this.key;
+    return this._sdk.api.Thing.find(params, this._sdk, this._context);
   }
 
   _getChannelName () {

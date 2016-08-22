@@ -139,13 +139,25 @@ module.exports = suite => {
             });
           });
         });
-
       });
-      it('Should resolve to an empty list if no zones match.', () => {
+
+      it('Return value should have field "total" which is number of zones', () => {
+        return exp.createLocation({ zones: [{ key: '1', name: '1' }, { key: '2', name: '2' }, { key: '3', name: '3' }]}).then(location => {
+          return exp.createDevice({ subtype: 'scala:device:server', location: { uuid: location.document.uuid, zones: [{ key: '1'}]} }).then(device => {
+            return device.getZones().then(zones => {
+              if (zones.length !== 1) throw new Error();
+              if (zones.total !== 1) throw new Error();
+            });
+          });
+        });
+      });
+
+      it('Should resolve to an empty list with total of 0 if no zones match.', () => {
         return exp.createLocation({ zones: [{ key: '1', name: '1' }, { key: '2', name: '2' }, { key: '3', name: '3' }]}).then(location => {
           return exp.createDevice({ subtype: 'scala:device:server', location: { uuid: location.document.uuid, zones: [{ key: '31'}]} }).then(device => {
             return device.getZones().then(zones => {
               if (zones.length !== 0) throw new Error();
+              if (zones.total !== 0) throw new Error();
             });
           });
         });
