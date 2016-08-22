@@ -19,6 +19,7 @@ class Authenticator {
   start () {
     if (this._sdk.options.auth) {
       this._reset();
+      this._auth = this._sdk.options.auth;
       setTimeout(() => this._onSuccess(this._sdk.options.auth));
     } else this._login();
     return this._promise;
