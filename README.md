@@ -1,7 +1,3 @@
-
-
-
-
 # Installation
 
 ## Bower
@@ -179,7 +175,7 @@ channel.listen('myEvent', (payload, respond) => {
 });
 ```
 
-**`channel.listen(callback)`** 
+**`channel.listen(callback)`**
 
 Registers a [listener](#listeners) callback for ALL events on the channel. Resolves to a [listener](#listeners) when the callback is registered and the connection has subscribed to the channel.
 
@@ -409,7 +405,7 @@ There is a limit of 16MB per data document.
 
 Resolves to the data item with the given group and key or `null` if the data item could not be found.
 
-```python
+```javascript
 exp.getData('cats', 'fluffy').then(data => {});
 ```
 
@@ -425,7 +421,7 @@ exp.createData('cats', 'fluffy', { 'color': 'brown'}).then(data => {});
 
 Resolves to an array of data items matching the given query parameters. `params` is a dictionary of query parameters.
 
-```python
+```javascript
 exp.findData({ group: 'cats' }).then(items => {});
 ```
 
@@ -472,8 +468,7 @@ Returns the delivery url for a variant of this content item.
 
 **`content.getChildren()`**
 
-Resolves to an array of the content items children.
-
+Resolves to an array of content items children with property total.
 
 ## Resources
 
