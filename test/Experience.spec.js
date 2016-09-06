@@ -170,13 +170,14 @@ module.exports = suite => {
         });
       });
 
-      it('Return value should have field "total" which is the number of devices in list.', () => {
+      it.only('Return value should have field "total" which is the number of devices in list.', () => {
         return exp.createExperience({}).then(experience => {
           return exp.createDevice({ subtype: 'scala:device:server', experience: { uuid: experience.document.uuid } }).then(() => {
             return exp.createDevice({ subtype: 'scala:device:server', experience: { uuid: experience.document.uuid } }).then(() => {
               return experience.getDevices({ limit: 1 }).then(devices => {
                 if (devices.length !== 1) throw new Error();
                 if (devices.total !== 2) throw new Error();
+                if (devices.results[0] !== devices[0].document) throw new Error();
               });
             });
           });

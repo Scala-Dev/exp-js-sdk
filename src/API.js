@@ -43,7 +43,7 @@ class Resource {
   static find (params, sdk, context) {
     return sdk.api.get(this._getCollectionPath(), params).then(query => {
       const results = query.results.map(document => new this(document, sdk, context));
-      results.total = query.total;
+      Object.keys(query).forEach(key => results[key] = query[key]);
       return results;
     });
   }
