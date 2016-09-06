@@ -170,7 +170,7 @@ module.exports = suite => {
         });
       });
 
-      it.only('Return value should have field "total" which is the number of devices in list.', () => {
+      it('Return value should have field "total" which is the number of devices in list.', () => {
         return exp.createExperience({}).then(experience => {
           return exp.createDevice({ subtype: 'scala:device:server', experience: { uuid: experience.document.uuid } }).then(() => {
             return exp.createDevice({ subtype: 'scala:device:server', experience: { uuid: experience.document.uuid } }).then(() => {
