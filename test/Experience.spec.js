@@ -177,6 +177,7 @@ module.exports = suite => {
               return experience.getDevices({ limit: 1 }).then(devices => {
                 if (devices.length !== 1) throw new Error();
                 if (devices.total !== 2) throw new Error();
+                if (devices.results[0] !== devices[0].document) throw new Error();
               });
             });
           });
