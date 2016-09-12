@@ -218,13 +218,15 @@ Resolves to the device with the given uuid or `null` if the device could be foun
 
 Resolves to a device created based on the supplied document.
 
-**`exp.findDevices(params)`**
-
-Resolves to an array of devices matching the given query parameters. `params` is a optional object map of query parameters. Array also contains original properties of the API response.
 
 ```javascript
 exp.createDevice({ subtype: 'scala:device:player' }).then(device => {});
 ```
+
+**`exp.findDevices(params)`**
+
+Resolves to an array of devices matching the given query parameters. `params` is a optional object map of query parameters. Array also contains original properties of the API response.
+
 
 **`exp.getCurrentDevice()`**
 
