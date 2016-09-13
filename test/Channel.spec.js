@@ -90,5 +90,22 @@ module.exports = suite => {
     });
 
 
+    it('should deep copy message payloads', done => {
+      let i = 0;
+      function receive (payload) {
+        if (payload.a) done(new Error());
+        payload.a = true;
+        i++;
+        if (i == 2) done();
+      }
+      const channel = exp.getChannel('test');
+      channel.listen('test', receive).then(() => {
+        channel.listen('test', receive).then(() => {
+          channel.broadcast('test', {});
+        });
+      });
+    });
+
+
   });
 };
