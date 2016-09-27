@@ -1,7 +1,7 @@
 'use strict';
 /* jshint -W074 */
 
-const jwt = require('jsonwebtoken');
+const jsrsasign = require('jsrsasign');
 
 class Authenticator {
 
@@ -76,9 +76,9 @@ class Authenticator {
     if (options.type === 'user') {
       payload = { type: 'user', username: options.username, password: options.password, organization: options.organization };
     } else if (options.type === 'device') {
-      payload = { token: jwt.sign({ type: 'device', uuid: options.uuid, allowPairing: options.allowPairing }, options.secret || '_') };
+      payload = { token: this._sign({ type: 'device', uuid: options.uuid, allowPairing: options.allowPairing }, options.secret || '_') };
     } else if (options.type === 'consumerApp') {
-      payload = { token : jwt.sign({ type: 'consumerApp', uuid: options.uuid }, options.apiKey) };
+      payload = { token : this._sign({ type: 'consumerApp', uuid: options.uuid }, options.apiKey) };
     } else if (options.type === 'direct') {
       return this._onFatal(new Error('Authentication payload is no longer valid and no credentials available to login again.'));
     }
@@ -94,6 +94,19 @@ class Authenticator {
       this._onError(error);
       this._timeout = setTimeout(() => this._login(), 5000);
     });
+  }
+
+  _sign (payload, secret) {
+    const header = {};
+    header.alg = 'HS256';
+    header.typ = 'JWT';
+    const body = {};
+    Object.keys(payload).forEach(k => body[k] = payload[k]);
+    body.iat = Math.round(Date.now() / 1000);
+    body.exp = body.iat + 86400;
+    const sheader = JSON.stringify(header);
+    const sbody = JSON.stringify(body);
+    return jsrsasign.jws.JWS.sign('HS256', sheader, sbody, { rstr: secret });
   }
 
   _refresh () {
@@ -113,7 +126,6 @@ class Authenticator {
       this._timeout = setTimeout(() => this._refresh(), 5000);
     });
   }
-
 
 }
 

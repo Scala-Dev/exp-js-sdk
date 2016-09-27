@@ -11,6 +11,25 @@ module.exports = suite => {
     });
 
 
+    describe('hex secret', () => {
+
+      let exp;
+
+      beforeEach((() => {
+        exp = suite.startAsDevice();
+      }));
+
+      it('should handle secrets with hex', () => {
+        return exp.createDevice({ subtype: 'scala:device:player' }).then(device => {
+          const exp2 = suite.EXP.start({ uuid: device.uuid, secret: device.document.secret, host: suite.credentials['device'].host });
+          return exp2.getAuth();
+        });
+      });
+
+
+    });
+
+
     describe('auth parameter', () => {
 
       let auth;
