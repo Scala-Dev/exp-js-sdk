@@ -96,17 +96,17 @@ class Authenticator {
     });
   }
 
-  _sign (o, s) {
+  _sign (payload, secret) {
     const header = {};
     header.alg = 'HS256';
     header.typ = 'JWT';
     const body = {};
-    Object.keys(o).forEach(k => body[k] = o[k]);
+    Object.keys(payload).forEach(k => body[k] = payload[k]);
     body.iat = Math.round(Date.now() / 1000);
     body.exp = body.iat + 86400;
     const sheader = JSON.stringify(header);
     const sbody = JSON.stringify(body);
-    return jsrsasign.jws.JWS.sign('HS256', sheader, sbody, { rstr: s });
+    return jsrsasign.jws.JWS.sign('HS256', sheader, sbody, { rstr: secret });
   }
 
   _refresh () {
