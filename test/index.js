@@ -51,6 +51,8 @@ require('./getChannel.spec')(suite);
 require('./isConnected.spec')(suite);
 
 require('./exp1511.spec')(suite);
+require('./exp3247.spec')(suite);
+
 require('./get.spec')(suite);
 require('./post.spec')(suite);
 require('./patch.spec')(suite);

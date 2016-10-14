@@ -465,7 +465,7 @@ class Api {
           return this.fetch(path, params, options);
         }
         if (options.method === 'DELETE') return Promise.resolve();
-        return response.json().then(body => {
+        return response.json().catch(() => null).then(body => {
           if (!response.ok) {
             if (body) {
               throw new ApiError(body.message, body.code, response.status);
