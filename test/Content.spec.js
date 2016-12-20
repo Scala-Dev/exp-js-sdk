@@ -8,7 +8,7 @@ module.exports = suite => {
     beforeEach(() => exp = suite.startAsDevice());
 
     it('Should be able to find files.', () => {
-      return exp.findContent().then(items => {
+      return exp.findContent({ limit: 20 }).then(items => {
         if (items.length === 0) throw new Error('Please seed the JCR with some content.');
       });
     });
@@ -22,7 +22,7 @@ module.exports = suite => {
 
     it('should be able to filter children', () => {
       let ok = false;
-      return exp.findContent({ subtype: 'scala:content:folder' }).then(items => {
+      return exp.findContent({ subtype: 'scala:content:folder', limit: 20  }).then(items => {
         return Promise.all(items.map(item => {
           return item.getChildren({ subtype: 'scala:content:folder' }).then(folders => {
             folders.forEach(folder => {
@@ -40,7 +40,7 @@ module.exports = suite => {
     });
 
     it('Should be able to get content by uuid.', () => {
-      return exp.findContent().then(items => {
+      return exp.findContent({ limit: 20 }).then(items => {
         return exp.getContent(items[0].document.uuid).then(content => {
           if (!(content instanceof exp._sdk.api.Content)) throw new Error();
         });
@@ -50,7 +50,7 @@ module.exports = suite => {
     it('Should be able to get children.', () => {
       // eek
       let ok = false;
-      return exp.findContent({ subtype: 'scala:content:folder' }).then(items => {
+      return exp.findContent({ subtype: 'scala:content:folder', limit: 20  }).then(items => {
         return Promise.all(items.map(item => {
           if (ok) return;
           if (item.document.subtype === 'scala:content:folder') {
@@ -76,7 +76,7 @@ module.exports = suite => {
 
     describe('content.getUrl()', () => {
       it('Should be able to get url of files.', done => {
-        exp.findContent({ subtype: 'scala:content:file' }).then(items => {
+        exp.findContent({ subtype: 'scala:content:file', limit: 20  }).then(items => {
           items.some(item => {
             if (item.document.subtype === 'scala:content:file') {
               if (!item.getUrl()) done(new Error());
@@ -88,7 +88,7 @@ module.exports = suite => {
       });
 
       it('Should be able to get url of urls!.', done => {
-        exp.findContent({ subtype: 'scala:content:url' }).then(items => {
+        exp.findContent({ subtype: 'scala:content:url', limit: 20  }).then(items => {
           items.some(item => {
             if (item.document.subtype === 'scala:content:url') {
               if (!item.getUrl()) done(new Error());
@@ -100,7 +100,7 @@ module.exports = suite => {
       });
 
       it('Should be able to get url of apps!.', () => {
-        return exp.findContent({ subtype: 'scala:content:app' }).then(items => {
+        return exp.findContent({ subtype: 'scala:content:app', limit: 20  }).then(items => {
           const item = items.find(item => item.subtype === 'scala:content:app');
           if (!item) throw new Error('Please add an app to root.');
           const url = item.getUrl();
@@ -112,7 +112,7 @@ module.exports = suite => {
 
     describe('content.getVariantUrl(name)', () => {
       it('Should return variant url if a variant exists.', () => {
-        return exp.findContent().then(items => {
+        return exp.findContent({ limit: 20 }).then(items => {
           const item = items.find(item => item.document.variants && item.document.variants.length > 0);
           if (!item) throw new Error('Please add content to root with variants.');
           const url = item.getVariantUrl(item.document.variants[0].name);
@@ -123,21 +123,21 @@ module.exports = suite => {
 
     describe('content.hasVariant(name)', () => {
       it('Should return true if variant exists.', () => {
-        return exp.findContent().then(items => {
+        return exp.findContent({ limit: 20 }).then(items => {
           const item = items.find(item => item.document.variants && item.document.variants.length > 0);
           if (!item) throw new Error('Please add content to root with variants.');
           if (!item.hasVariant(item.document.variants[0].name)) throw new Error();
         });
       });
       it('Should return false if variant does not exist', () => {
-        return exp.findContent().then(items => {
+        return exp.findContent({ limit: 20 }).then(items => {
           const item = items.find(item => item.document.variants && item.document.variants.length > 0);
           if (!item) throw new Error('Please add content to root with variants.');
           if (item.hasVariant('test')) throw new Error();
         });
       });
        it('Should return false if content has no variants', () => {
-        return exp.findContent().then(items => {
+        return exp.findContent({ limit: 20 }).then(items => {
           const item = items.find(item => !item.document.variants);
           if (!item) throw new Error('Please add content to root with variants.');
           if (item.hasVariant('test')) throw new Error();
@@ -158,7 +158,7 @@ module.exports = suite => {
 
 
     it('Should be able to communicate on content channel.', done => {
-      exp.findContent().then(items => {
+      exp.findContent({ limit: 20 }).then(items => {
         return items[0].getChannel().listen('test', () => done()).then(() => {
           return items[0].getChannel().broadcast('test');
         });
@@ -166,7 +166,7 @@ module.exports = suite => {
     });
 
     it('Should expose subtype field.', () => {
-      return exp.findContent().then(items => {
+      return exp.findContent({ limit: 20 }).then(items => {
         if (!items[0].subtype) throw new Error();
       });
     });
