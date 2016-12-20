@@ -90,6 +90,11 @@ class CommonResource extends Resource {
     });
   }
 
+  static delete (uuid, sdk) {
+    if (!uuid) return sdk.authenticator.getAuth().then(() => null);
+    const path = `${this._getCollectionPath()}/${uuid}`;
+    return sdk.api.delete(path);
+  }
 }
 
 
@@ -128,6 +133,9 @@ class Device extends CommonResource {
     });
   }
 
+  delete () {
+    return this._sdk.api.delete(this._getResourcePath());
+  }
 }
 
 
@@ -157,6 +165,9 @@ class Thing extends CommonResource {
     });
   }
 
+  delete () {
+    return this._sdk.api.delete(this._getResourcePath());
+  }
 }
 
 
@@ -179,6 +190,9 @@ class Experience extends CommonResource {
     return this._sdk.api.Device.find(params, this._sdk, this._context);
   }
 
+  delete () {
+    return this._sdk.api.delete(this._getResourcePath());
+  }
 }
 
 
@@ -226,6 +240,9 @@ class Location extends CommonResource {
     return `${this._getResourcePath()}/layout?_rt=${this._sdk.authenticator.getAuthSync().restrictedToken}`;
   }
 
+  delete () {
+    return this._sdk.api.delete(this._getResourcePath());
+  }
 }
 
 
@@ -304,6 +321,9 @@ class Feed extends CommonResource {
     return this._sdk.api.get(`${this._getResourcePath()}/data`, params);
   }
 
+  delete () {
+    return this._sdk.api.delete(this._getResourcePath());
+  }
 }
 
 
@@ -356,12 +376,23 @@ class Data extends Resource {
     return sdk.api.put(path, value).then(document => new this(document, sdk, context));
   }
 
+  static delete (group, key, sdk) {
+    if (!key) throw new Error('Please specify a key.');
+    if (!group) throw new Error('Please specify a group');
+    const path = this._getCollectionPath() + '/' + encodeURIComponent(group) + '/' + encodeURIComponent(key);
+    return sdk.api.delete(path);
+  }
+
   save () {
     return this._sdk.api.put(this._getResourcePath(), this.value);
   }
 
   _getChannelName () {
     return 'data' + ':' + this.key + ':' + this.group;
+  }
+
+  delete () {
+    return this._sdk.api.delete(this._getResourcePath());
   }
 
 }

@@ -30,6 +30,16 @@ module.exports = suite => {
       });
     });
 
+    it('Should be able to delete a thing', () => {
+      return exp.createThing(generateTestThing()).then(thing => {
+        return exp.deleteThing(thing.document.uuid)
+          .then(() => exp.getThing(thing.document.uuid))
+          .then(thing => {
+            if (thing !== null) throw new Error();
+          });
+      });
+    });
+
     it('Should be able to get a list of things.', () => {
       return exp.findThings().then(things => things.forEach(thing => {
         if (!(thing instanceof exp._sdk.api.Thing)) throw new Error();
@@ -149,6 +159,18 @@ module.exports = suite => {
         return exp.createThing(document).then(thing => {
           return thing.getZones().then(zones => {
             if (zones.length !== 0) throw new Error();
+          });
+        });
+      });
+    });
+
+    describe('thing.delete()', () => {
+      it('Should resolve when thing is deleted', () => {
+        return exp.createThing(generateTestThing()).then(thing => {
+          return thing.delete().then(() => {
+            return exp.getThing(thing.uuid).then(thing => {
+              if (thing !== null) throw new Error();
+            });
           });
         });
       });

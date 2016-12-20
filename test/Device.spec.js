@@ -36,6 +36,16 @@ module.exports = suite => {
       });
     });
 
+    it('Should be able to delete a device', () => {
+      return exp.createDevice({ subtype: 'scala:device:server', name: Math.random().toString() }).then(device => {
+        return exp.deleteDevice(device.document.uuid)
+          .then(() => exp.getDevice(device.document.uuid))
+          .then(device => {
+            if (device !== null) throw new Error();
+          });
+      });
+    });
+
     it('Should be able to save changes to a device.', () => {
       const name = Math.random().toString();
       return exp.createDevice({ subtype: 'scala:device:player' }).then(device => {
@@ -167,6 +177,18 @@ module.exports = suite => {
         return exp.createDevice({ subtype: 'scala:device:server', location: { uuid: 'poo', zones: [{ key: '1'}]} }).then(device => {
           return device.getZones().then(zones => {
             if (zones.length !== 0) throw new Error();
+          });
+        });
+      });
+    });
+
+    describe('device.delete()', () => {
+      it('Should resolve when device is deleted', () => {
+        return exp.createDevice({ subtype: 'scala:device:server' }).then(device => {
+          return device.delete().then(() => {
+            return exp.getDevice(device.uuid).then(device => {
+              if (device !== null) throw new Error();
+            });
           });
         });
       });

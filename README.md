@@ -232,6 +232,10 @@ Resolves to an array of devices matching the given query parameters. `params` is
 
 Resolves to the current device or null if not a device.
 
+**`exp.deleteDevice(uuid)`**
+
+Resolves on success.
+
 **`device.getLocation()`**
 
 Resolves to the device's [location](#locations) or `null`.
@@ -244,6 +248,9 @@ Resolves to an array of the device's [zones](#zones).
 
 Resolves to the device's [experience](#experiences) or `null`
 
+**`device.delete()`**
+
+Resolves on success.
 
 
 
@@ -267,6 +274,10 @@ exp.createThing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name': 'my-rfi
 
 Resolves to an array of things matching the given query parameters. `params` is an optional object map of query parameters. Array also contains original properties of the API response.
 
+**`exp.deleteThing(uuid)`**
+
+Resolves on success.
+
 **`thing.getLocation()`**
 
 Resolves to the thing's [location](#locations) or `null`.
@@ -278,6 +289,10 @@ Resolves to a list of the thing's [#zones](#zones).
 **`thing.getExperience()`**
 
 Resolves to the the device's [experience](#experiences) or `null`
+
+**`thing.delete()`**
+
+Resolves on success.
 
 
 ## Experiences
@@ -301,10 +316,17 @@ Returns a list of experiences matching the given query parameters. `params` is a
 
 Resolves to the current experience or null.
 
+**`exp.deleteExperience(uuid)`**
+
+Resolves on success.
+
 **`experience.getDevices(params)`**
 
 Resolves to an array of [devices](#devices) that are part of this experience. `params` is a optional object map of query parameters. Array also contains original properties of the API response.
 
+**`experience.delete()`**
+
+Resolves on success.
 
 ## Locations
 
@@ -326,6 +348,10 @@ Resolves to an array of locations matching the given query parameters. `params` 
 
 Resolves to the current location or null.
 
+**`exp.deleteLocation(uuid)`**
+
+Resolves on success.
+
 **`location.getDevices(params)`**
 
 Resolves to an array of [devices](#devices) that are part of this location. `params` is a optional object map of query parameters. Array also contains original properties of the API response.
@@ -337,12 +363,15 @@ Resolves to an array of [things](#things) that are part of this location. `param
 
 **`location.getZones()`**
 
-Resolves to an array of [zones](#zones) that are part of this location. 
+Resolves to an array of [zones](#zones) that are part of this location.
 
 **`location.getLayoutUrl()`**
 
 Returns a url pointing to the location's layout image.
 
+**`location.delete()`**
+
+Resolves on success.
 
 ## Zones
 
@@ -396,10 +425,17 @@ Resolves to an array of feeds matching the given query parameters. `params` is a
 exp.findFeeds({ subtype: 'scala:feed:facebook' }).then(feeds => {})
 ```
 
+**`exp.deleteFeed(uuid)`**
+
+Resolves on success.
+
 **`feed.getData(params)`**
 
 Resolves to the feed's data. Params is an object of key value query params for dynamic feeds.
 
+**`feed.delete()`**
+
+Resolves on success.
 
 ## Data
 
@@ -430,6 +466,10 @@ Resolves to an array of data items matching the given query parameters. `params`
 exp.findData({ group: 'cats' }).then(items => {});
 ```
 
+**`exp.deleteData(group, key)`**
+
+Resolves on success.
+
 **`data.key`**
 
 The data item's key. Settable.
@@ -441,6 +481,10 @@ The data item's group. Settable
 **`data.value`**
 
 The data item's value. Settable.
+
+**`data.delete()`**
+
+Resolves on success.
 
 ## Content
 
