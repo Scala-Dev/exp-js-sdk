@@ -95,6 +95,10 @@ class CommonResource extends Resource {
     const path = `${this._getCollectionPath()}/${uuid}`;
     return sdk.api.delete(path);
   }
+
+  delete () {
+    return this._sdk.api.delete(this._getResourcePath());
+  }
 }
 
 
@@ -132,10 +136,6 @@ class Device extends CommonResource {
       return zones;
     });
   }
-
-  delete () {
-    return this._sdk.api.delete(this._getResourcePath());
-  }
 }
 
 
@@ -164,10 +164,6 @@ class Thing extends CommonResource {
       return zones;
     });
   }
-
-  delete () {
-    return this._sdk.api.delete(this._getResourcePath());
-  }
 }
 
 
@@ -188,10 +184,6 @@ class Experience extends CommonResource {
     params = params || {};
     params['experience.uuid'] = this.uuid;
     return this._sdk.api.Device.find(params, this._sdk, this._context);
-  }
-
-  delete () {
-    return this._sdk.api.delete(this._getResourcePath());
   }
 }
 
@@ -238,10 +230,6 @@ class Location extends CommonResource {
 
   getLayoutUrl () {
     return `${this._getResourcePath()}/layout?_rt=${this._sdk.authenticator.getAuthSync().restrictedToken}`;
-  }
-
-  delete () {
-    return this._sdk.api.delete(this._getResourcePath());
   }
 }
 
@@ -319,10 +307,6 @@ class Feed extends CommonResource {
 
   getData (params) {
     return this._sdk.api.get(`${this._getResourcePath()}/data`, params);
-  }
-
-  delete () {
-    return this._sdk.api.delete(this._getResourcePath());
   }
 }
 
@@ -448,6 +432,13 @@ class Content extends CommonResource {
     return this.document.variants && this.document.variants.some(element => element.name === name);
   }
 
+  static delete () {
+    throw new Error('delete() is not supported');
+  }
+
+  delete () {
+    throw new Error('delete() is not supported');
+  }
 }
 
 
