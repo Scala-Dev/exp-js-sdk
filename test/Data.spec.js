@@ -51,6 +51,30 @@ module.exports = suite => {
 
     });
 
+    describe('exp.deleteData(group, key)', () => {
+      it('Should throw an error if group is not specified.', done => {
+        try {
+          return exp.deleteData();
+        } catch (error) { return done(); }
+      });
+
+      it('Should throw an error if key is not specified.', done => {
+        try {
+          return exp.deleteData('group');
+        } catch (error) { return done(); }
+      });
+
+      it('Should delete data with specified group and key.', () => {
+        return exp.createData('group99', 'key99', { a: 1 })
+          .then(() => exp.deleteData('group99', 'key99'))
+          .then(() => exp.getData('group99', 'key99'))
+          .then(data => {
+            if (data !== null) throw new Error();
+          });
+      });
+    });
+
+
     describe('exp.findData(params)', () => {
       it('Should retrieve an array of data', () => {
         return exp.findData().then(items => {
@@ -110,5 +134,15 @@ module.exports = suite => {
 
     });
 
+    describe('data.delete()', () => {
+      it('Should resolve when data is deleted', () => {
+        return exp.createData('group99', 'key99', { a:1 })
+        .then(data => data.delete())
+        .then(() => exp.getData('group99', 'key99'))
+        .then(data => {
+          if (data !== null) throw new Error();
+        });
+      });
+    });
   });
 };

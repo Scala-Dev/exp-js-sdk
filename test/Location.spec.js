@@ -12,7 +12,6 @@ module.exports = suite => {
   describe('Locations', () => {
     beforeEach(() => exp = suite.startAsDevice());
 
-
     it('Should resolve to null if uuid not specified', () => {
       return exp.getLocation().then(location => { if (location !== null) throw new Error(); });
     });
@@ -24,6 +23,16 @@ module.exports = suite => {
     it('Should be able to create a new location.', () => {
       return exp.createLocation(generateTestLocation()).then(location => {
         return exp.getLocation(location.document.uuid);
+      });
+    });
+
+    it('Should be able to delete a location.', () => {
+      return exp.createLocation(generateTestLocation()).then(location => {
+        return exp.deleteLocation(location.document.uuid)
+          .then(() => exp.getLocation(location.document.uuid))
+          .then(location => {
+            if (location !== null) throw new Error();
+          });
       });
     });
 
@@ -229,6 +238,18 @@ module.exports = suite => {
           return location.getZones().then(zones => {
             if (zones.length !== 2) throw new Error();
             if (!(zones[0] instanceof exp._sdk.api.Zone)) throw new Error();
+          });
+        });
+      });
+    });
+
+    describe('location.delete()', () => {
+      it('Should resolve when location is deleted', () => {
+        return exp.createLocation({}).then(location => {
+          return location.delete().then(() => {
+            return exp.getLocation(location.uuid).then(location => {
+              if (location !== null) throw new Error();
+            });
           });
         });
       });

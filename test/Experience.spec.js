@@ -27,6 +27,16 @@ module.exports = suite => {
       });
     });
 
+    it('Should be able to delete an Experience', () => {
+      return exp.createExperience(generateTestExperience()).then(experience => {
+        return exp.deleteExperience(experience.uuid)
+          .then(() => exp.getExperience(experience.uuid))
+          .then(experience => {
+            if (experience !== null) throw new Error();
+          });
+      });
+    });
+
     it('Should be able to get a list of experiences.', () => {
       return exp.createExperience({}).then(() => {
         return exp.findExperiences().then(experiences => {
@@ -184,6 +194,18 @@ module.exports = suite => {
         });
       });
 
+    });
+
+    describe('experience.delete()', () => {
+      it('Should resolve when experience is deleted', () => {
+        return exp.createExperience({}).then(experience => {
+          return experience.delete().then(() => {
+            return exp.getExperience(experience.uuid).then(experience => {
+              if (experience !== null) throw new Error();
+            });
+          });
+        });
+      });
     });
 
   });

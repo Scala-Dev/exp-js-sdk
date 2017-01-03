@@ -90,6 +90,15 @@ class CommonResource extends Resource {
     });
   }
 
+  static delete (uuid, sdk) {
+    if (!uuid) return sdk.authenticator.getAuth().then(() => null);
+    const path = `${this._getCollectionPath()}/${uuid}`;
+    return sdk.api.delete(path);
+  }
+
+  delete () {
+    return this._sdk.api.delete(this._getResourcePath());
+  }
 }
 
 
@@ -127,7 +136,6 @@ class Device extends CommonResource {
       return zones;
     });
   }
-
 }
 
 
@@ -156,7 +164,6 @@ class Thing extends CommonResource {
       return zones;
     });
   }
-
 }
 
 
@@ -178,7 +185,6 @@ class Experience extends CommonResource {
     params['experience.uuid'] = this.uuid;
     return this._sdk.api.Device.find(params, this._sdk, this._context);
   }
-
 }
 
 
@@ -225,7 +231,6 @@ class Location extends CommonResource {
   getLayoutUrl () {
     return `${this._getResourcePath()}/layout?_rt=${this._sdk.authenticator.getAuthSync().restrictedToken}`;
   }
-
 }
 
 
@@ -303,7 +308,6 @@ class Feed extends CommonResource {
   getData (params) {
     return this._sdk.api.get(`${this._getResourcePath()}/data`, params);
   }
-
 }
 
 
@@ -356,12 +360,23 @@ class Data extends Resource {
     return sdk.api.put(path, value).then(document => new this(document, sdk, context));
   }
 
+  static delete (group, key, sdk) {
+    if (!key) throw new Error('Please specify a key.');
+    if (!group) throw new Error('Please specify a group');
+    const path = this._getCollectionPath() + '/' + encodeURIComponent(group) + '/' + encodeURIComponent(key);
+    return sdk.api.delete(path);
+  }
+
   save () {
     return this._sdk.api.put(this._getResourcePath(), this.value);
   }
 
   _getChannelName () {
     return 'data' + ':' + this.key + ':' + this.group;
+  }
+
+  delete () {
+    return this._sdk.api.delete(this._getResourcePath());
   }
 
 }
@@ -417,6 +432,13 @@ class Content extends CommonResource {
     return this.document.variants && this.document.variants.some(element => element.name === name);
   }
 
+  static delete () {
+    throw new Error('delete() is not supported');
+  }
+
+  delete () {
+    throw new Error('delete() is not supported');
+  }
 }
 
 

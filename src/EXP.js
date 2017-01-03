@@ -113,23 +113,27 @@ class EXP {
   findDevices (params) { return this._sdk.api.Device.find(params, this._sdk, this._context); }
   createDevice (document) { return this._sdk.api.Device.create(document, this._sdk, this._context); }
   getCurrentDevice () { return this._sdk.api.Device.getCurrent(this._sdk, this._context); }
+  deleteDevice (uuid) { return this._sdk.api.Device.delete(uuid, this._sdk); }
 
   /* Things */
   getThing (uuid) { return this._sdk.api.Thing.get(uuid, this._sdk, this._context); }
   findThings (params) { return this._sdk.api.Thing.find(params, this._sdk, this._context); }
   createThing (document) { return this._sdk.api.Thing.create(document, this._sdk, this._context); }
+  deleteThing (uuid) { return this._sdk.api.Thing.delete(uuid, this._sdk); }
 
   /* Experiences */
   getExperience (uuid) { return this._sdk.api.Experience.get(uuid, this._sdk, this._context); }
   findExperiences (params) { return this._sdk.api.Experience.find(params, this._sdk, this._context); }
   createExperience (document) { return this._sdk.api.Experience.create(document, this._sdk, this._context); }
   getCurrentExperience () { return this._sdk.api.Experience.getCurrent(this._sdk, this._context); }
+  deleteExperience (uuid) { return this._sdk.api.Experience.delete(uuid, this._sdk); }
 
   /* Locations */
   getLocation (uuid) { return this._sdk.api.Location.get(uuid, this._sdk, this._context); }
   findLocations (params) { return this._sdk.api.Location.find(params, this._sdk, this._context); }
   createLocation (document) { return this._sdk.api.Location.create(document, this._sdk, this._context); }
   getCurrentLocation () { return this._sdk.api.Location.getCurrent(this._sdk, this._context); }
+  deleteLocation (uuid) { return this._sdk.api.Location.delete(uuid, this._sdk); }
 
   /* Zones */
   getCurrentZones () { return this._sdk.api.Zone.getCurrent(this._sdk, this._context); }
@@ -138,6 +142,7 @@ class EXP {
   getFeed (uuid) { return this._sdk.api.Feed.get(uuid, this._sdk, this._context); }
   findFeeds (params) { return this._sdk.api.Feed.find(params, this._sdk, this._context); }
   createFeed (document) { return this._sdk.api.Feed.create(document, this._sdk, this._context); }
+  deleteFeed (uuid) { return this._sdk.api.Feed.delete(uuid, this._sdk); }
 
   /* Content */
   getContent (uuid) { return this._sdk.api.Content.get(uuid, this._sdk, this._context); }
@@ -147,6 +152,7 @@ class EXP {
   getData (group, key) { return this._sdk.api.Data.get(group, key, this._sdk, this._context); }
   findData (params) { return this._sdk.api.Data.find(params, this._sdk, this._context); }
   createData (group, key, value) { return this._sdk.api.Data.create(group, key, value, this._sdk, this._context); }
+  deleteData (group, key) { return this._sdk.api.Data.delete(group, key, this._sdk); }
 
 }
 

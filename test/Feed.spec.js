@@ -4,9 +4,10 @@
 function generateTestFeed () {
   return {
     integrationUuid: null,
-    metadata: { type: 'static', filter: [], options: '' },
+    metadata: { filter: [], options: '' },
     subtype: 'scala:feed:weather',
     searchValue: '19713',
+    dataType: 'static',
     name: Math.random().toString()
   };
 }
@@ -16,7 +17,8 @@ function generateDynamicFeed () {
     integrationUuid: null,
     name: Math.random().toString(),
     subtype: 'scala:feed:weather',
-    metadata: { type: 'dynamic', options: '', filter: [] },
+    metadata: { options: '', filter: [] },
+    dataType: 'dynamic',
     searchValue: ''
   };
 }
@@ -28,7 +30,6 @@ module.exports = suite => {
   describe('Feeds', () => {
     beforeEach(() => exp = suite.startAsDevice());
 
-
     it('Should resolve to null if uuid not specified', () => {
       return exp.getFeed().then(feed => {
         if (feed !== null) throw new Error();
@@ -39,9 +40,19 @@ module.exports = suite => {
       return exp.getFeed('fakeuuid').then(feed => { if (feed !== null ) throw new Error(); });
     });
 
-    it('Should be able to create a new location.', () => {
+    it('Should be able to create a new feed.', () => {
       return exp.createFeed(generateTestFeed()).then(feed => {
         return exp.getFeed(feed.document.uuid);
+      });
+    });
+
+    it('Should be able to delete a feed.', () => {
+      return exp.createFeed(generateTestFeed()).then(feed => {
+        return exp.deleteFeed(feed.document.uuid)
+          .then(() => exp.getFeed(feed.document.uuid))
+          .then(feed => {
+            if (feed !== null) throw new Error();
+          });
       });
     });
 
@@ -113,6 +124,16 @@ module.exports = suite => {
       return exp.createFeed(generateDynamicFeed()).then(feed => {
         return feed.getData({ searchValue: '19713' }).then(data => {
           if (data.search.search !== '19713') throw new Error();
+        });
+      });
+    });
+
+    it('Should be able to delete feed', () => {
+      return exp.createFeed(generateDynamicFeed()).then(feed => {
+        return feed.delete().then(() => {
+          return exp.getFeed(feed.uuid).then(feed => {
+            if (feed !== null) throw new Error();
+          });
         });
       });
     });
