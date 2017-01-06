@@ -1,6 +1,6 @@
 {
   "name": "exp-sdk",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "EXP Javascript SDK",
   "main": "./index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "author": "James Dalessio <james.dalessio@scala.com>",
   "license": "MIT",
   "dependencies": {
-    "event-node": "0.3.0",
+    "event-node": "0.3.1",
     "isomorphic-fetch": "2.1.0",
     "jsrsasign": "6.1.1",
     "lodash": "3.10.1",
