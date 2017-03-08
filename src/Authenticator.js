@@ -110,7 +110,6 @@ class Authenticator {
   }
 
   _refresh () {
-    this._reset();
     fetch(this._sdk.options.host + '/api/auth/token', {
       method: 'POST',
       headers: {
@@ -122,8 +121,7 @@ class Authenticator {
       else if (!response.ok) throw new Error();
       else return response.json().then(auth => this._onSuccess(auth));
     }).catch(error => {
-      this._onError(error);
-      this._timeout = setTimeout(() => this._refresh(), 5000);
+      this._timeout = setTimeout(() => this._refresh(), 60000);
     });
   }
 
