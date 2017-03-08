@@ -45,6 +45,7 @@ class Authenticator {
     this._reset();
     this._timeout = setTimeout(() => this._refresh(), (auth.expiration - Date.now()) / 2);
     this._auth = auth;
+    this._lastAuth = auth;
     this._resolve(auth);
     this._sdk.events.trigger('update', auth);
   }
