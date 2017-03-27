@@ -229,7 +229,7 @@ class Location extends CommonResource {
   }
 
   getLayoutUrl () {
-    return `${this._getResourcePath()}/layout?_rt=${this._sdk.authenticator.getAuthSync().restrictedToken}`;
+    return `${this._getResourcePath()}/layout`;
   }
 }
 
@@ -425,7 +425,7 @@ class Content extends CommonResource {
   }
 
   getVariantUrl (name) {
-    return this.getUrl() + '&variant=' + name;
+    return this.getUrl() + '?variant=' + name;
   }
 
   hasVariant (name) {
