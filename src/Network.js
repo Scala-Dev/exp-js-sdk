@@ -140,7 +140,7 @@ class Network {
     this._disconnect();
     if (!this._status) return;
     if (!this._sdk.options.enableNetwork) return;
-    const socket = io(auth.network.host, {
+    const socket = io(this._sdk.options.host, {
       forceNew: true,
       reconnection: true,
       reconnectionDelay: 1000,

@@ -8,7 +8,7 @@ const Authenticator = require('./Authenticator');
 const API = require('./API');
 const Network = require('./Network');
 
-const defaults = { host: 'https://api.goexp.io', enableNetwork: true };
+const defaults = { enableNetwork: true };
 
 
 class SDK {
@@ -64,6 +64,7 @@ class SDK {
     } else {
       throw new Error('Please specify authentication type.');
     }
+    if (!options.host) throw new Error('Please specify a host.');
     return options;
   }
 
