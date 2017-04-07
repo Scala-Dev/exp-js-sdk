@@ -621,7 +621,8 @@ npm install -g Mocha
 ```  
 The tests project must be compiled with Babel  
 ```bash
-npm install -g babel
+npm install -g babel-cli
+npm install -g babel-core
 ```
 
 **Preparing the Environment**  
