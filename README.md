@@ -613,8 +613,8 @@ Send a DELETE request.
 exp.delete('/api/location/[uuid]').then(() => {});
 ```
 
-#Running the SDK Unit Tests  
-## Requirements
+## Running the SDK Unit Tests  
+**Requirements**
 The tests require Mocha  
 ```bash
 npm install -g Mocha
@@ -624,18 +624,18 @@ The tests project must be compiled with Babel
 npm install -g babel
 ```
 
-## Preparing the Environment  
+**Preparing the Environment**  
 The SDK requires access to a test API, Network, and Gateway.  The databases the API depends on will have to be seeded with a user, role, organization, devices, and content. 
 Running the API with **NODE_ENV=test** will cause the API to seed these things into the databases.  
 - *API* https://github.com/ScalaInc/exp-api
 - *Gateway* https://github.com/ScalaInc/exp-gateway
 - *Network* https://github.com/ScalaInc/exp-network
 
-## Configuring
+**Configuring**
 The settings for the test are located in **test/index.js**. The *username*, *password*, *api-key*, *test-secret*, and *organization* will have to match those used in the API test configuration.  
 The *host* should be set to the address of the Gateway.  
 
-## Running
+**Running**
 ```bash
 npm run build
 npm test
