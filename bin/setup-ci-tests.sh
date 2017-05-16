@@ -2,7 +2,7 @@
 set -e
 
 npm install
-sudo add-apt-repository ppa:nginx/stable
+sudo add-apt-repository ppa:nginx/stable -y
 sudo apt-get update
 sudo apt-get install nginx
 
