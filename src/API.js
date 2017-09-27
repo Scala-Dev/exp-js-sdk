@@ -416,9 +416,9 @@ class Content extends CommonResource {
   getUrl () {
     const auth = this._sdk.authenticator.getAuthSync();
     if (this.subtype === 'scala:content:file') {
-      return this._sdk.options.host + '/api/delivery' + Content._encodePath(this.document.path);
+      return this._sdk.options.host + '/api/delivery' + Content._encodePath(this.document.path) + '?_rt=' + auth.restrictedToken;
     } else if (this.subtype === 'scala:content:app') {
-      return this._sdk.options.host + '/api/delivery' + Content._encodePath(this.document.path) + '/index.html';
+      return this._sdk.options.host + '/api/delivery' + Content._encodePath(this.document.path) + '/index.html?_rt=' + auth.restrictedToken;
     } else if (this.subtype === 'scala:content:url') {
       return this.document.url;
     }
