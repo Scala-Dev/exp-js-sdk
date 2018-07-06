@@ -54,6 +54,7 @@ class SDK {
       options.type = 'device';
       if (!options.uuid && !options.allowPairing) throw new Error('Please specify the uuid.');
       if (!options.secret && !options.allowPairing) throw new Error('Please specify the device secret.');
+
     } else if (options.type === 'consumerApp' || options.apiKey) {
       options.type = 'consumerApp';
       if (!options.uuid) throw new Error('Please specify the uuid.');
@@ -61,10 +62,12 @@ class SDK {
     } else if (options.type === 'direct' || options.auth) {
       options.type = 'direct';
       if (!options.auth) throw new Error('Please specifiy an auth response payload.');
+    } else if (options.mode === 'standalone') { // TODO : Validate documents that were passed in.
+      options.type = 'device';
     } else {
       throw new Error('Please specify authentication type.');
     }
-    if (!options.host) throw new Error('Please specify a host.');
+    if (!options.host && options.mode !== 'standalone') throw new Error('Please specify a host.');
     return options;
   }
 

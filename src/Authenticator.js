@@ -43,7 +43,9 @@ class Authenticator {
 
   _onSuccess (auth) {
     this._reset();
-    this._timeout = setTimeout(() => this._refresh(), (auth.expiration - Date.now()) / 2);
+    if (this._sdk.options.mode !== 'standalone') {
+      this._timeout = setTimeout(() => this._refresh(), (auth.expiration - Date.now()) / 2);
+    }
     this._auth = auth;
     this._lastAuth = auth;
     this._resolve(auth);
@@ -71,6 +73,10 @@ class Authenticator {
 
 
   _login () {
+    if (this._sdk.options.mode === 'standalone') {
+      return setTimeout(this._onSuccess(this._sdk.options.documents.auth));
+    }
+
     this._reset();
     const options = this._sdk.options;
     let payload = {};
@@ -111,6 +117,11 @@ class Authenticator {
   }
 
   _refresh () {
+
+    if (this._sdk.options.mode === 'standalone') {
+      return setTimeout(this._onSuccess(this._sdk.options.documents.auth));
+    }
+
     fetch(this._sdk.options.host + '/api/auth/token', {
       method: 'POST',
       headers: {
@@ -120,10 +131,13 @@ class Authenticator {
     }).then(response => {
       if (response.status === 401) this._login();
       else if (!response.ok) throw new Error();
-      else return response.json().then(auth => this._onSuccess(auth));
+      else return response.json().then(auth => {
+        this._onSuccess(auth)
+      });
     }).catch(error => {
       this._timeout = setTimeout(() => this._refresh(), 60000);
     });
+
   }
 
 }
