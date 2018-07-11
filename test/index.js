@@ -4,19 +4,19 @@ const suite = { EXP: require('../') };
 
 
 function getDeviceCredentials () {
-  return { uuid: 'test-uuid', secret: 'test-secret', host: 'http://localhost:9000' };
+  return { uuid: 'test-uuid', secret: 'test-secret', host: 'http://localhost:8081' };
 }
 
 function getUserCredentials () {
-  return { username: 'test@goexp.io', password: 'test-Password1', organization: 'scala', host: 'http://localhost:9000'};
+  return { username: 'test@test.com', password: '12345test', organization: 'scala', host: 'http://localhost:8081'};
 }
 
 function getConsumerAppCredentials () {
-  return { uuid: 'test-uuid', apiKey: 'test-api-key', host: 'http://localhost:9000' };
+  return { uuid: 'test-uuid', apiKey: 'test-api-key', host: 'http://localhost:8081' };
 }
 
 function getPairingDeviceCredentials () {
-  return { allowPairing: true, host: 'http://localhost:9000' };
+  return { allowPairing: true, host: 'http://localhost:8081' };
 }
 
 function setup () {
@@ -51,7 +51,6 @@ require('./getChannel.spec')(suite);
 require('./isConnected.spec')(suite);
 
 require('./exp1511.spec')(suite);
-require('./exp3247.spec')(suite);
 
 require('./get.spec')(suite);
 require('./post.spec')(suite);

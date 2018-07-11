@@ -84,7 +84,7 @@ class CommonResource extends Resource {
   static get (uuid, sdk, context) {
     if (!uuid) return sdk.authenticator.getAuth().then(() => null);
     const path = `${this._getCollectionPath()}/${uuid}`;
-    return sdk.api.get(path).then(document => new this(document, sdk, context)).catch(error => {
+    return sdk.api.get(path, sdk.options).then(document => new this(document, sdk, context)).catch(error => {
       if (error && error.status === 404) return null;
       throw error;
     });
@@ -229,7 +229,7 @@ class Location extends CommonResource {
   }
 
   getLayoutUrl () {
-    return `${this._getResourcePath()}/layout?_rt=${this._sdk.authenticator.getAuthSync().restrictedToken}`;
+    return `${this._getResourcePath()}/layout`;
   }
 }
 
@@ -416,16 +416,19 @@ class Content extends CommonResource {
   getUrl () {
     const auth = this._sdk.authenticator.getAuthSync();
     if (this.subtype === 'scala:content:file') {
-      return auth.api.host + '/api/delivery' + Content._encodePath(this.document.path) + '?_rt=' + auth.restrictedToken;
+      if (this._sdk.options.mode === 'standalone') {
+        return `../../content/${this.document.uuid}`;
+      }
+      return this._sdk.options.host + '/api/delivery' + Content._encodePath(this.document.path);
     } else if (this.subtype === 'scala:content:app') {
-      return auth.api.host + '/api/delivery' + Content._encodePath(this.document.path) + '/index.html?_rt=' + auth.restrictedToken;
+      return this._sdk.options.host + '/api/delivery' + Content._encodePath(this.document.path) + '/index.html';
     } else if (this.subtype === 'scala:content:url') {
       return this.document.url;
     }
   }
 
-  getVariantUrl (name) {
-    return this.getUrl() + '&variant=' + name;
+  getVariantUrl (name) {W
+    return this.getUrl() + '?variant=' + name;
   }
 
   hasVariant (name) {
@@ -467,6 +470,15 @@ class Api {
 
   fetch (path, params, options) {
 
+    if (this._sdk.options.mode === 'standalone') {
+      return new Promise((resolve, reject) => {
+        if (options && options.method != "GET") reject(new Error('Can only GET in standalone mode'));
+        const a = path.split('/');
+        if(a[1] && a[2] && a[3]) resolve(this._sdk.options.documents[a[1]][a[2]][a[3]]);
+        else reject(new Error('Document not found'));
+      });
+    }
+
     // Wait for auth.
     // On 401, notify Auth and try again.
 
@@ -476,12 +488,13 @@ class Api {
     if (typeof options.body === 'object' && options.headers && options.headers['Content-Type'] === 'application/json') options.body = JSON.stringify(options.body);
     return this._sdk.authenticator.getAuth().then(auth => {
       if (auth.identity.isPairing) throw new Error('Cannot send request when in pairing mode.');
-      options.cors = true;
+      options.cors = false;
       options.credentials = 'include';
       options.headers = options.headers || {};
       options.headers.Authorization = 'Bearer ' + auth.token;
       options.headers.Accept = 'application/json';
-      return fetch(auth.api.host + fullPath, options).then(response => {
+
+      return fetch(this._sdk.options.host + fullPath, options).then(response => {
         if (response && !response.ok && response.status === 401) {
           this._sdk.authenticator._refresh(); // TODO: Make this method public? Should authenticator handle all requests?
           return this.fetch(path, params, options);
@@ -495,9 +508,11 @@ class Api {
               throw new ApiError('An unknown error has occured.');
             }
           }
+
           return body;
         });
       });
+
     });
   }
 
