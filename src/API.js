@@ -84,7 +84,7 @@ class CommonResource extends Resource {
   static get (uuid, sdk, context) {
     if (!uuid) return sdk.authenticator.getAuth().then(() => null);
     const path = `${this._getCollectionPath()}/${uuid}`;
-    return sdk.api.get(path).then(document => new this(document, sdk, context)).catch(error => {
+    return sdk.api.get(path, sdk.options).then(document => new this(document, sdk, context)).catch(error => {
       if (error && error.status === 404) return null;
       throw error;
     });
@@ -416,6 +416,9 @@ class Content extends CommonResource {
   getUrl () {
     const auth = this._sdk.authenticator.getAuthSync();
     if (this.subtype === 'scala:content:file') {
+      if (this._sdk.options.mode === 'standalone') {
+        return `../../content/${this.document.uuid}`;
+      }
       return this._sdk.options.host + '/api/delivery' + Content._encodePath(this.document.path);
     } else if (this.subtype === 'scala:content:app') {
       return this._sdk.options.host + '/api/delivery' + Content._encodePath(this.document.path) + '/index.html';
@@ -466,6 +469,15 @@ class Api {
   }
 
   fetch (path, params, options) {
+
+    if (this._sdk.options.mode === 'standalone') {
+      return new Promise((resolve, reject) => {
+        if (options && options.method != "GET") reject(new Error('Can only GET in standalone mode'));
+        const a = path.split('/');
+        if(a[1] && a[2] && a[3]) resolve(this._sdk.options.documents[a[1]][a[2]][a[3]]);
+        else reject(new Error('Document not found'));
+      });
+    }
 
     // Wait for auth.
     // On 401, notify Auth and try again.
