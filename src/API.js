@@ -84,7 +84,7 @@ class CommonResource extends Resource {
   static get (uuid, sdk, context) {
     if (!uuid) return sdk.authenticator.getAuth().then(() => null);
     const path = `${this._getCollectionPath()}/${uuid}`;
-    return sdk.api.get(path, sdk.options).then(document => new this(document, sdk, context)).catch(error => {
+    return sdk.api.get(path).then(document => new this(document, sdk, context)).catch(error => {
       if (error && error.status === 404) return null;
       throw error;
     });
