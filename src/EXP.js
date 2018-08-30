@@ -61,10 +61,12 @@ class SDK {
     } else if (options.type === 'direct' || options.auth) {
       options.type = 'direct';
       if (!options.auth) throw new Error('Please specifiy an auth response payload.');
+    } else if (options.mode === 'standalone') {
+      options.type = 'device';
     } else {
       throw new Error('Please specify authentication type.');
     }
-    if (!options.host) throw new Error('Please specify a host.');
+    if (!options.host && options.mode !== 'standalone') throw new Error('Please specify a host.');
     return options;
   }
 
